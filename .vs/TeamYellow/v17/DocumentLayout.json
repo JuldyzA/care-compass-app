@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\jm3zh\\Desktop\\systems-analysis-design-group-project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{AC89941A-738D-4CE4-B44A-F286CF1631B4}|TeamYellow\\TeamYellow.csproj|c:\\users\\jm3zh\\desktop\\systems-analysis-design-group-project\\teamyellow\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AC89941A-738D-4CE4-B44A-F286CF1631B4}|TeamYellow\\TeamYellow.csproj|solutionrelative:teamyellow\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 143,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\jm3zh\\Desktop\\systems-analysis-design-group-project\\TeamYellow\\appsettings.json",
+              "RelativeDocumentMoniker": "TeamYellow\\appsettings.json",
+              "ToolTip": "C:\\Users\\jm3zh\\Desktop\\systems-analysis-design-group-project\\TeamYellow\\appsettings.json",
+              "RelativeToolTip": "TeamYellow\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-06T19:46:45.091Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
