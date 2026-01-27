@@ -98,14 +98,19 @@ Additional layers include:
 ## 📁 Repository Structure
 
 ```
-/Controllers
+/DTOs
 /Models
+/Repositories
+/Controllers
 /ViewModels
 /Views
-/Data
 /Services
+/Data
+/Configurations
+/Helpers
+/Middlewares
 /wwwroot
-README.md
+../README.md
 ```
 
 ---
