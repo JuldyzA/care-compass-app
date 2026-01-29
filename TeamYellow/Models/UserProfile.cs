@@ -22,7 +22,7 @@ public class UserProfile
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Required]
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
 
     public string? ProfilePhotoUrl { get; set; }
 
