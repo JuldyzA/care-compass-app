@@ -1,24 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
-using TeamYellow.Data;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TeamYellow.Models;
-
-public class Counsellor
+namespace TeamYellow.Models
 {
-    public int CounsellorId { get; set; }
+    [Table("Counsellor")]
+    public class Counsellor
+    {
+        [Key]
+        [Column("pkCounsellorId")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int CounsellorId { get; set; }
 
-    [Required, MaxLength(50)]
-    public string PractitionerLicenceId { get; set; } = string.Empty;
+        [Column("practitionerLicenceId")]
+        [Required, MaxLength(50)]
+        public string PractitionerLicenceId { get; set; } = string.Empty;
 
-    [Required, MaxLength(100)]
-    public string DisplayName { get; set; } = string.Empty;
+        [Column("displayName")]
+        [Required, MaxLength(100)]
+        public string DisplayName { get; set; } = string.Empty;
 
-    public bool IsActive { get; set; } = true;
+        [Column("isActive")]
+        public bool IsActive { get; set; } = true;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("createdAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    [Required, MaxLength(450)]
-    public string UserId { get; set; } = string.Empty;
+        [Column("fkUserId")]
+        [Required, MaxLength(450)]
+        public string UserId { get; set; } = string.Empty;
 
-    public virtual ApplicationUser User { get; set; } = null!;
+        public virtual IdentityUser User { get; set; } = null!;
+    }
 }

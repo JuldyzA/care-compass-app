@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using TeamYellow.Models;
 
 namespace TeamYellow.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -13,24 +14,26 @@ namespace TeamYellow.Data
 
         public DbSet<Counsellor> Counsellors { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(modelBuilder);
 
-            builder.Entity<Counsellor>()
-                .HasOne(c => c.User)
-                .WithOne(u => u.Counsellor)
-                .HasForeignKey<Counsellor>(c => c.UserId)
-                //What is our bussiness logic?
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Counsellor>(entity =>
+            {
+                entity
+                    .HasOne(c => c.User)
+                    .WithOne()
+                    .HasForeignKey<Counsellor>(c => c.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Entity<Counsellor>()
-                .HasIndex(c => c.PractitionerLicenceId)
-                .IsUnique();
+                entity
+                    .HasIndex(c => c.PractitionerLicenceId)
+                    .IsUnique();
 
-            builder.Entity<Counsellor>()
-                .HasIndex(c => c.UserId)
-                .IsUnique();
+                entity
+                    .HasIndex(c => c.UserId)
+                    .IsUnique();
+            });
         }
     }
 }
