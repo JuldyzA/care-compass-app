@@ -1,29 +1,44 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TeamYellow.Models;
-
-public class Client
+namespace TeamYellow.Models
 {
-    public int ClientId { get; set; }
 
-    [Required, MaxLength(50)]
-    public string FirstName { get; set; } = string.Empty;
 
-    [Required, MaxLength(50)]
-    public string LastName { get; set; } = string.Empty;
+    [Table("Client")]
+    public class Client
+    {
+        [Key]
+        [Column("pkClientId")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ClientId { get; set; }
 
-    [Required, MaxLength(255)]
-    public string Email { get; set; } = string.Empty;
+        [Column("firstName")]
+        [Required, MaxLength(50)]
+        public string FirstName { get; set; } = string.Empty;
 
-    [Required, MaxLength(20)]
-    public string Phone { get; set; } = string.Empty;
+        [Column("lastName")]
+        [Required, MaxLength(50)]
+        public string LastName { get; set; } = string.Empty;
 
-    [Required, MaxLength(20)]
-    public string Status { get; set; } = string.Empty;
+        [Column("email")]
+        [Required, MaxLength(255)]
+        public string Email { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("phone")]
+        [Required, MaxLength(20)]
+        public string Phone { get; set; } = string.Empty;
 
-    public int CounsellorId { get; set; }
+        [Column("status")]
+        [Required, MaxLength(20)]
+        public string Status { get; set; } = string.Empty;
 
-    public virtual Counsellor Counsellor { get; set; } = null!;
+        [Column("createdAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("fkCounsellorId")]
+        public int CounsellorId { get; set; }
+
+        public virtual Counsellor Counsellor { get; set; } = null!;
+    }
 }

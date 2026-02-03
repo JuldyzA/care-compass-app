@@ -12,6 +12,8 @@ namespace TeamYellow.Data
         }
 
         public DbSet<Counsellor> Counsellors { get; set; }
+        
+        public DbSet<Client> Clients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +33,19 @@ namespace TeamYellow.Data
 
                 entity
                     .HasIndex(c => c.UserId)
+                    .IsUnique();
+            });
+
+            modelBuilder.Entity<Client>(entity =>
+            {
+                entity
+                    .HasOne(cl => cl.Counsellor)
+                    .WithOne()
+                    .HasForeignKey<Client>(cl => cl.CounsellorId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity
+                    .HasIndex(cl => cl.Email)
                     .IsUnique();
             });
         }
