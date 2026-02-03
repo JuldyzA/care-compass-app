@@ -4,40 +4,38 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace TeamYellow.Models;
-public enum BillingType { Monthly = 1, Yearly = 2 }
-[Table("Plans")]
+
+[Table("Plan")]
 public class Plan
 {
     [Key]
     [Column("pkPlanId")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int PlanId { get; set; }
 
     [Required, MaxLength(80)]
-    [Column("PlanName")]
+    [Column("planName")]
     public string PlanName { get; set; } = String.Empty;
 
     [Required, MaxLength(500)]
-    [Column("PlanDescription")]
+    [Column("planDescription")]
     public string PlanDescription { get; set; } = String.Empty;
 
     [Required] 
     [Range(0, 10000)] 
-    [Column("Price", TypeName = "decimal(10,2)")]
+    [Column("price", TypeName = "decimal(10,2)")]
     public decimal Price { get; set; }
 
     [Required]
-    [Column("BillingType")]
-    [EnumDataType(typeof(BillingType))]
-    public string BillingType { get; set; } = String.Empty;
-    // public BillingType BillingType { get; set; }
+    [Column("billingType")]
 
+    public string  { get; set; } = String.Empty;
     [Required]
-    [Column("IsActive")]
-    public int IsActive { get; set; }
-    // public bool IsActive { get; set; } = true;
+    [Column("isActive")]
+    public bool IsActive { get; set; } = true;
    
     [Required]
-    [Column("CreatedAt")]
+    [Column("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 }
