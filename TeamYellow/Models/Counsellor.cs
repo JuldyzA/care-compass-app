@@ -5,7 +5,7 @@ namespace TeamYellow.Models;
 
 public class Counsellor
 {
-    public int PkCounsellorId { get; set; }
+    public int CounsellorId { get; set; }
 
     [Required, MaxLength(50)]
     public string PractitionerLicenceId { get; set; } = string.Empty;
@@ -18,7 +18,7 @@ public class Counsellor
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Required, MaxLength(450)]
-    public string FkUserId { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
 
     public virtual ApplicationUser User { get; set; } = null!;
 }

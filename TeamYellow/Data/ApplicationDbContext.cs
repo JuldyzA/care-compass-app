@@ -20,7 +20,7 @@ namespace TeamYellow.Data
             builder.Entity<Counsellor>()
                 .HasOne(c => c.User)
                 .WithOne(u => u.Counsellor)
-                .HasForeignKey<Counsellor>(c => c.FkUserId)
+                .HasForeignKey<Counsellor>(c => c.UserId)
                 //What is our bussiness logic?
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -29,7 +29,7 @@ namespace TeamYellow.Data
                 .IsUnique();
 
             builder.Entity<Counsellor>()
-                .HasIndex(c => c.FkUserId)
+                .HasIndex(c => c.UserId)
                 .IsUnique();
         }
     }
