@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
 
 namespace TeamYellow.Models;
 
@@ -17,6 +16,9 @@ public class UserLog
 
     [Column("logOutTime")]
     public DateTime? LogOutTime { get; set; }
+
+    [Column("abandoned")]
+    public bool Abandoned { get; set; } = false;
 
     [Column("fkUserId")]
     [Required]
