@@ -1,12 +1,13 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 
 namespace TeamYellow.Models;
 
-public class UserProfile
+public class UserProfile : IdentityUser
 {
     public int UserProfileId { get; set; }
 
@@ -21,7 +22,6 @@ public class UserProfile
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    [Required]
     public DateTime? UpdatedAt { get; set; }
 
     public string? ProfilePhotoUrl { get; set; }
@@ -39,4 +39,6 @@ public class UserProfile
 
     [Required]
     public string FkUserId { get; set; } = String.Empty;
+
+    public IdentityUser User { get; set; } = null!;
 }
