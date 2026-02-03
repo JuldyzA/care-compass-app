@@ -1,17 +1,35 @@
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Data;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+public enum Status
+{
+    Active = 1,
+    Cancelled = 2,
+    Expired = 3,
+    Paused = 4,
+}
+
+[Table("Subscription")]
 public class Subscription
 {
     [Key]
+    [Column("pkSubscriptionId")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int SubscriptionId { get; set; }
-    public required bool IsActive { get; set; }
-    public required DateTime CycleStart { get; set; }
-    public required DateTime CycleEnd { get; set; }
-    public required DateTime CreateAt { get; set; }
-    public DateTime? UpdateAt { get; set; }
+
+    [Required]
+    [Column("status")]
+    public Status Status { get; set; } = Status.Active;
+
+    [Column("cycleStart")]
+    public DateTime CycleStart { get; set; }
+
+    [Column("cycleEnd")]
+    public DateTime CycleEnd { get; set; }
+
+    [Column("updatedAt")]
+    public DateTime UpdateAt { get; set; }
 
 }
