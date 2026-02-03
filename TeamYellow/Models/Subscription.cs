@@ -8,7 +8,6 @@ public enum Status
     Active = 1,
     Cancelled = 2,
     Expired = 3,
-    Paused = 4,
 }
 
 [Table("Subscription")]
@@ -30,6 +29,6 @@ public class Subscription
     public DateTime CycleEnd { get; set; }
 
     [Column("updatedAt")]
-    public DateTime UpdateAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
 }
