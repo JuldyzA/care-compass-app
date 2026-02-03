@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,14 +27,11 @@ public class Plan
 
     [Required]
     [Column("billingType")]
-
-    public string  { get; set; } = String.Empty;
-    [Required]
+    public string BillingType { get; set; } = String.Empty;
+   
     [Column("isActive")]
     public bool IsActive { get; set; } = true;
    
-    [Required]
     [Column("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
 }
