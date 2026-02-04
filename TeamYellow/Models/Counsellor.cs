@@ -14,6 +14,7 @@ public class Counsellor
 
     [Column("practitionerLicenceId")]
     [Required, MaxLength(50)]
+    [RegularExpression(@"^[A-Z0-9][0-9]{6}$", ErrorMessage = "Practitioner Licence Id must be 7 characters: starting with an uppercase letter or digit, followed by 6 digits.")]
     public string PractitionerLicenceId { get; set; } = string.Empty;
 
     [Column("displayName")]
