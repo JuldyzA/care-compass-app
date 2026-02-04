@@ -50,6 +50,9 @@ namespace TeamYellow.Data
                 entity
                     .HasIndex(cl => cl.Email)
                     .IsUnique();
+
+                entity.Property(cl => cl.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
     }
