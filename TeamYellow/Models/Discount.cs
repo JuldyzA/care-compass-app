@@ -19,10 +19,12 @@ public class Discount
 
     [Required]
     [Column("discountCode")]
+    [RegularExpression(
+        @"^[A-Z0-9]{3,40}$",
+        ErrorMessage = "Discount code must be 3–40 characters and contain only uppercase letters (A–Z) and numbers (0–9).")]
     [MaxLength(40)]
     public string DiscountCode { get; set; } = null!;
 
-    [Required]
     [Column("discountType")]
     public DiscountType DiscountType { get; set; } = DiscountType.Percent;
 
