@@ -34,6 +34,9 @@ namespace TeamYellow.Data
                 entity
                     .HasIndex(c => c.UserId)
                     .IsUnique();
+
+                entity.Property(c => c.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             modelBuilder.Entity<Client>(entity =>
