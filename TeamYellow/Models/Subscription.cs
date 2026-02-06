@@ -31,4 +31,20 @@ public class Subscription
     [Column("updatedAt")]
     public DateTime UpdatedAt { get; set; }
 
+    // Foreign Keys
+    [Required]
+    [Column("fkPlanId")]
+    public int PlanId { get; set; }
+
+    [Required]
+    [Column("fkCounsellorId")]
+    public int CounsellorId { get; set; }
+
+    // Navigation Properties
+    [ForeignKey("PlanId")]
+    public virtual Plan Plan { get; set; } = null!;
+
+    // [ForeignKey("CounsellorId")]
+    // public virtual Counsellor Counsellor { get; set; } = null!;
+
 }
