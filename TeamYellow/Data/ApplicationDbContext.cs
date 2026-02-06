@@ -43,9 +43,9 @@ namespace TeamYellow.Data
             {
                 entity
                     .HasOne(cl => cl.Counsellor)
-                    .WithOne()
-                    .HasForeignKey<Client>(cl => cl.CounsellorId)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .WithMany()
+                    .HasForeignKey(cl => cl.CounsellorId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity
                     .HasIndex(cl => cl.Email)
