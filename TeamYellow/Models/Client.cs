@@ -6,7 +6,7 @@ namespace TeamYellow.Models;
 public enum ClientStatus
 {
     Inactive = 0,
-    Actice = 1
+    Active = 1
 }
 
 [Table("Client")]
@@ -36,9 +36,8 @@ public class Client
     public string Phone { get; set; } = string.Empty;
 
     [Column("status")]
-    [Required, MaxLength(20)]
     [EnumDataType(typeof(ClientStatus), ErrorMessage = "Invalid status selected.")]
-    public ClientStatus Status { get; set; }
+    public ClientStatus Status { get; set; } = ClientStatus.Active;
 
     [Column("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
