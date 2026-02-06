@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
-public enum Status
+public enum SubscriptionStatus
 {
     Active = 1,
     Cancelled = 2,
@@ -20,7 +20,7 @@ public class Subscription
 
     [Required]
     [Column("status")]
-    public Status Status { get; set; } = Status.Active;
+    public SubscriptionStatus Status { get; set; } = SubscriptionStatus.Active;
 
     [Column("cycleStart")]
     public DateTime CycleStart { get; set; }
@@ -44,7 +44,6 @@ public class Subscription
     [ForeignKey("PlanId")]
     public virtual Plan Plan { get; set; } = null!;
 
-    // [ForeignKey("CounsellorId")]
-    // public virtual Counsellor Counsellor { get; set; } = null!;
-
+    [ForeignKey("CounsellorId")]
+    public virtual Counsellor Counsellor { get; set; } = null!;
 }
