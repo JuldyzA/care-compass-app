@@ -6,7 +6,7 @@ namespace TeamYellow.Models;
 public enum ClientStatus
 {
     Actice = 1,
-    Inactive = 1
+    Inactive = 0
 }
 
 [Table("Client")]
