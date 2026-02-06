@@ -13,6 +13,7 @@ namespace TeamYellow.Data
         }
 
         public DbSet<Discount> Discounts { get; set; }
+        public DbSet<Counsellor> Counsellors { get; set; }
 
         /// <summary>
         /// Configures entity models and seeds data.
@@ -41,6 +42,25 @@ namespace TeamYellow.Data
 
                 // createdAt datetime NOT NULL
                 entity.Property(d => d.CreatedAt)
+            });
+            
+            modelBuilder.Entity<Counsellor>(entity =>
+            {
+                entity
+                    .HasOne(c => c.User)
+                    .WithOne()
+                    .HasForeignKey<Counsellor>(c => c.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity
+                    .HasIndex(c => c.PractitionerLicenceId)
+                    .IsUnique();
+
+                entity
+                    .HasIndex(c => c.UserId)
+                    .IsUnique();
+
+                entity.Property(c => c.CreatedAt)
                       .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
