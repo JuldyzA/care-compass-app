@@ -46,4 +46,6 @@ public class Subscription
 
     [ForeignKey("CounsellorId")]
     public virtual Counsellor Counsellor { get; set; } = null!;
+
+    public virtual PaymentTransaction PaymentTransactions { get; set; } = null!;
 }

@@ -39,4 +39,8 @@ public class Discount
 
     [Column("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual ICollection<PlanDiscount> PlanDiscounts { get; set; } = new List<PlanDiscount>();
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

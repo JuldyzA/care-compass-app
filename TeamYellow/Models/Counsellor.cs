@@ -28,8 +28,14 @@ public class Counsellor
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Column("fkUserId")]
-    [Required, MaxLength(450)]
-    public string UserId { get; set; } = string.Empty;
+    [MaxLength(450)]
+    public string? UserId { get; set; } = null;
 
-    public virtual IdentityUser User { get; set; } = null!;
+    public virtual IdentityUser? User { get; set; }
+
+    public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+    public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
+
+
 }
