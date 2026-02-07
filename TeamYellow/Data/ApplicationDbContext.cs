@@ -102,6 +102,9 @@ namespace TeamYellow.Data
                     .WithMany(d => d.PaymentTransactions)
                     .HasForeignKey(pt => pt.DiscountId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                entity.Property(p => p.PaidAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             // PlanFeature: many-to-one with Plan
