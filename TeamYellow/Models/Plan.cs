@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace TeamYellow.Models;
 
 [Table("Plan")]
@@ -20,18 +19,24 @@ public class Plan
     [Column("planDescription")]
     public string PlanDescription { get; set; } = String.Empty;
 
-    [Required] 
-    [Range(0, 10000)] 
+    [Required]
+    [Range(0, 10000)]
     [Column("price", TypeName = "decimal(10,2)")]
     public decimal Price { get; set; }
 
     [Required]
     [Column("billingType")]
     public string BillingType { get; set; } = String.Empty;
-   
+
     [Column("isActive")]
     public bool IsActive { get; set; } = true;
-   
+
     [Column("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual ICollection<PlanFeature> PlanFeatures { get; set; } = new List<PlanFeature>();
+
+    public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+    public virtual ICollection<PlanDiscount> PlanDiscounts { get; set; } = new List<PlanDiscount>();
 }

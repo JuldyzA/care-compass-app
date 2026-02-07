@@ -22,8 +22,7 @@ public class UserLog
     public bool Abandoned { get; set; } = false;
 
     [Column("fkUserId")]
-    [Required]
-    public string UserId { get; set; } = string.Empty;
+    public string? UserId { get; set; }
 
-    public virtual IdentityUser User { get; set; } = null!;
+    public virtual IdentityUser? User { get; set; }
 }

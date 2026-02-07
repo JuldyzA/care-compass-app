@@ -10,7 +10,7 @@ public class PlanDiscount
 
     public virtual Plan Plan { get; set; } = null!;
 
-    [Column("fkDiscountId")] 
+    [Column("fkDiscountId")]
     public int DiscountId { get; set; }
 
     public virtual Discount Discount { get; set; } = null!;
