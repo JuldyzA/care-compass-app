@@ -29,13 +29,11 @@ public class Counsellor
 
     [Column("fkUserId")]
     [MaxLength(450)]
-    public string? UserId { get; set; } = null;
+    public string? UserId { get; set; };
 
     public virtual IdentityUser? User { get; set; }
 
     public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 
     public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
-
-
 }
