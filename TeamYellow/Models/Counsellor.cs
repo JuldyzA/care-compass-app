@@ -29,7 +29,7 @@ public class Counsellor
 
     [Column("fkUserId")]
     [MaxLength(450)]
-    public string? UserId { get; set; };
+    public string? UserId { get; set; }
 
     public virtual IdentityUser? User { get; set; }
 
