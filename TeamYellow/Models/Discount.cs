@@ -28,7 +28,7 @@ public class Discount
     [Column("discountType")]
     public DiscountType DiscountType { get; set; } = DiscountType.Percent;
 
-    [Column("value")]
+    [Column("value", TypeName= "decimal(10,2)")]
     public decimal Value { get; set; }
 
     [Column("startDateTime")]
@@ -38,7 +38,7 @@ public class Discount
     public DateTime EndDateTime { get; set; }
 
     [Column("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<PlanDiscount> PlanDiscounts { get; set; } = new List<PlanDiscount>();
 

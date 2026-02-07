@@ -25,7 +25,7 @@ public class Counsellor
     public bool IsActive { get; set; } = true;
 
     [Column("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     [Column("fkUserId")]
     [MaxLength(450)]

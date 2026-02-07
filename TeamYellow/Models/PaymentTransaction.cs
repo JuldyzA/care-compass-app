@@ -42,18 +42,15 @@ public class PaymentTransaction
     public PaymentTransactionStatus Status { get; set; } = PaymentTransactionStatus.Captured;
 
     [Column("paidAt")]
-    public DateTime PaidAt { get; set; } = DateTime.UtcNow;
+    public DateTime PaidAt { get; set; }
 
     [Column("fkSubscriptionId")]
     public int SubscriptionId { get; set; }
-
-    public virtual Subscription Subscription { get; set; } = null!;
 
     [Column("fkDiscountId")]
     public int? DiscountId { get; set; }
 
     public virtual Discount? Discount { get; set; }
 
-    public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
-
+    public virtual Subscription Subscription { get; set; } = null!;
 }

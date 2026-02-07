@@ -40,7 +40,7 @@ public class Client
     public ClientStatus Status { get; set; } = ClientStatus.Active;
 
     [Column("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     [Column("fkCounsellorId")]
     public int CounsellorId { get; set; }

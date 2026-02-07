@@ -11,7 +11,7 @@ using TeamYellow.Data;
 namespace TeamYellow.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260207005107_CreateBusinessTables")]
+    [Migration("20260207024641_CreateBusinessTables")]
     partial class CreateBusinessTables
     {
         /// <inheritdoc />
@@ -353,7 +353,7 @@ namespace TeamYellow.Migrations
                         .HasColumnName("startDateTime");
 
                     b.Property<decimal>("Value")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("decimal(10,2)")
                         .HasColumnName("value");
 
                     b.HasKey("DiscountId");
@@ -386,8 +386,10 @@ namespace TeamYellow.Migrations
                         .HasColumnName("fkDiscountId");
 
                     b.Property<DateTime>("PaidAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
-                        .HasColumnName("paidAt");
+                        .HasColumnName("paidAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("PayerName")
                         .IsRequired()
@@ -407,8 +409,10 @@ namespace TeamYellow.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("providerOrderId");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
                         .HasColumnName("status");
 
                     b.Property<int>("SubscriptionId")
@@ -538,9 +542,6 @@ namespace TeamYellow.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("cycleStart");
 
-                    b.Property<int?>("PaymentTransactionId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("PlanId")
                         .HasColumnType("INTEGER")
                         .HasColumnName("fkPlanId");
@@ -558,8 +559,6 @@ namespace TeamYellow.Migrations
                     b.HasKey("SubscriptionId");
 
                     b.HasIndex("CounsellorId");
-
-                    b.HasIndex("PaymentTransactionId");
 
                     b.HasIndex("PlanId");
 
@@ -609,8 +608,10 @@ namespace TeamYellow.Migrations
                         .HasColumnName("city");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
-                        .HasColumnName("createdAt");
+                        .HasColumnName("createdAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -749,7 +750,7 @@ namespace TeamYellow.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TeamYellow.Models.Subscription", "Subscription")
-                        .WithOne("PaymentTransactions")
+                        .WithOne("PaymentTransaction")
                         .HasForeignKey("TeamYellow.Models.PaymentTransaction", "SubscriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -797,10 +798,6 @@ namespace TeamYellow.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TeamYellow.Models.PaymentTransaction", null)
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("PaymentTransactionId");
-
                     b.HasOne("TeamYellow.Models.Plan", "Plan")
                         .WithMany("Subscriptions")
                         .HasForeignKey("PlanId")
@@ -847,11 +844,6 @@ namespace TeamYellow.Migrations
                     b.Navigation("PlanDiscounts");
                 });
 
-            modelBuilder.Entity("TeamYellow.Models.PaymentTransaction", b =>
-                {
-                    b.Navigation("Subscriptions");
-                });
-
             modelBuilder.Entity("TeamYellow.Models.Plan", b =>
                 {
                     b.Navigation("PlanDiscounts");
@@ -863,8 +855,7 @@ namespace TeamYellow.Migrations
 
             modelBuilder.Entity("TeamYellow.Models.Subscription", b =>
                 {
-                    b.Navigation("PaymentTransactions")
-                        .IsRequired();
+                    b.Navigation("PaymentTransaction");
                 });
 #pragma warning restore 612, 618
         }
