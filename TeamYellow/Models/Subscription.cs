@@ -41,11 +41,9 @@ public class Subscription
     public int CounsellorId { get; set; }
 
     // Navigation Properties
-    [ForeignKey("PlanId")]
     public virtual Plan Plan { get; set; } = null!;
 
-    [ForeignKey("CounsellorId")]
     public virtual Counsellor Counsellor { get; set; } = null!;
 
-    public virtual PaymentTransaction PaymentTransactions { get; set; } = null!;
+    public virtual PaymentTransaction? PaymentTransaction { get; set; }
 }

@@ -32,7 +32,7 @@ public class Plan
     public bool IsActive { get; set; } = true;
 
     [Column("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<PlanFeature> PlanFeatures { get; set; } = new List<PlanFeature>();
 

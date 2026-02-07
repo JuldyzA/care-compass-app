@@ -25,7 +25,7 @@ public class UserProfile
     public string? Phone { get; set; }
 
     [Column("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     [Column("updatedAt")]
     public DateTime? UpdatedAt { get; set; }

@@ -38,6 +38,10 @@ namespace TeamYellow.Data
                     .WithOne()
                     .HasForeignKey<UserProfile>(u => u.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(u => u.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
             });
 
             // UserLog: many-to-one with User
@@ -86,7 +90,8 @@ namespace TeamYellow.Data
             modelBuilder.Entity<Plan>(entity =>
             {
                 entity.Property(p => p.CreatedAt)
-                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
             });
 
             // PaymentTransaction: one-to-one with Subscription, many-to-one with Discount (nullable)
@@ -94,14 +99,22 @@ namespace TeamYellow.Data
             {
                 entity.HasIndex(pt => pt.SubscriptionId).IsUnique();
                 entity.HasOne(pt => pt.Subscription)
-                    .WithOne(s => s.PaymentTransactions)
-                    .HasForeignKey<PaymentTransaction>(pt => pt.SubscriptionId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                      .WithOne(s => s.PaymentTransaction)
+                      .HasForeignKey<PaymentTransaction>(pt => pt.SubscriptionId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(pt => pt.Discount)
                     .WithMany(d => d.PaymentTransactions)
                     .HasForeignKey(pt => pt.DiscountId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                entity.Property(pt => pt.PaidAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
+
+                entity.Property(pt => pt.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
             });
 
             // PlanFeature: many-to-one with Plan
@@ -126,7 +139,8 @@ namespace TeamYellow.Data
 
                 // createdAt datetime NOT NULL
                 entity.Property(d => d.CreatedAt)
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
             });
 
 
@@ -148,7 +162,8 @@ namespace TeamYellow.Data
                     .IsUnique();
 
                 entity.Property(c => c.CreatedAt)
-                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
             });
 
             modelBuilder.Entity<Client>(entity =>
@@ -164,11 +179,12 @@ namespace TeamYellow.Data
                     .IsUnique();
 
                 entity.Property(cl => cl.CreatedAt)
-                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                      .ValueGeneratedOnAdd();
 
                 entity.Property(cl => cl.Status)
-                    .HasConversion<string>()
-                    .HasMaxLength(20);
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
             });
         }
     }
