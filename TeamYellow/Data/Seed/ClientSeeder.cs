@@ -14,6 +14,7 @@ public class ClientSeeder : IDataSeeder
 
     public async Task SeedAsync()
     {
+        // Get counsellors by email
         var counsellor1 = await _db.Counsellors.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor1@test.ca");
 
@@ -23,13 +24,16 @@ public class ClientSeeder : IDataSeeder
         var counsellor3 = await _db.Counsellors.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor3@test.ca");
 
-        if (counsellor1 == null || counsellor2 == null || counsellor3 == null)
+        var counsellor4 = await _db.Counsellors.Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor4@test.ca");
+
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)
         {
             Console.WriteLine("One or more counsellors not found for client seeding.");
             return;
         }
 
-        // Sample client data generator
+        // Sample client data
         var firstNames = new[] { "John", "Jane", "Michael", "Emily", "Daniel", "Sarah", "David", "Laura", "Matthew", "Olivia", "James", "Chloe", "Joshua", "Sophia", "Andrew", "Grace", "Ryan", "Hannah", "Ethan", "Isabella" };
         var lastNames = new[] { "Smith", "Johnson", "Brown", "Taylor", "Wilson", "Lee", "Martin", "Clark", "Walker", "Hall", "Adams", "Baker", "Carter", "Evans", "Gonzalez", "Harris", "King", "Lewis", "Mitchell", "Perez" };
 
@@ -61,9 +65,11 @@ public class ClientSeeder : IDataSeeder
             }
         }
 
+        // Seed clients
         await AddClientsAsync(20, counsellor1);
         await AddClientsAsync(20, counsellor2);
         await AddClientsAsync(10, counsellor3);
+        await AddClientsAsync(5, counsellor4);
 
         await _db.SaveChangesAsync();
     }
