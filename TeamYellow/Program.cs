@@ -39,7 +39,7 @@ else
     app.UseHsts();
 }
 
-// Seeding (correct)
+// Seeding
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();

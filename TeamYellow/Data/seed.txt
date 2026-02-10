@@ -1,5 +1,5 @@
 
-Users:
+AspNetUsers:
 	admin@test.ca			Administrator			P@ssw0rd!
 	manager@test.ca			Manager					P@ssw0rd!
 	consellor1@test.ca		Paid_Counselor 			P@ssw0rd!
