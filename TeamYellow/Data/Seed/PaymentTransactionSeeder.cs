@@ -1,0 +1,77 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TeamYellow.Data;
+using TeamYellow.Data.Seed;
+using TeamYellow.Models;
+
+public class PaymentTransactionSeeder : IDataSeeder
+{
+    private readonly ApplicationDbContext _db;
+
+    public PaymentTransactionSeeder(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task SeedAsync()
+    {
+        if (await _db.PaymentTransactions.AnyAsync())
+            return;
+
+        var now = DateTime.UtcNow;
+
+        // Get counsellors
+        var counsellor1 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor1@test.ca");
+        var counsellor2 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor2@test.ca");
+        var counsellor3 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor3@test.ca");
+
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null)
+        {
+            Console.WriteLine("One or more counsellors not found for PaymentTransaction seeding.");
+            return;
+        }
+
+        // Hardcoded payer names
+        var transactions = new List<PaymentTransaction>
+        {
+            new PaymentTransaction
+            {
+                PayerName = "Ethan Collins",
+                Amount = 100m,
+                Currency = "CAD",
+                Provider = "PayPal",
+                ProviderOrderId = "ORDER-1001",
+                Status = PaymentTransactionStatus.Captured,
+                PaidAt = now,
+                SubscriptionId = 1,
+                DiscountId = null
+            },
+            new PaymentTransaction
+            {
+                PayerName = "Olivia Turner",
+                Amount = 100m,
+                Currency = "CAD",
+                Provider = "PayPal",
+                ProviderOrderId = "ORDER-1002",
+                Status = PaymentTransactionStatus.Captured,
+                PaidAt = now,
+                SubscriptionId = 2,
+                DiscountId = null
+            },
+            new PaymentTransaction
+            {
+                PayerName = "Liam Walker",
+                Amount = 50m,
+                Currency = "CAD",
+                Provider = "PayPal",
+                ProviderOrderId = "ORDER-1003",
+                Status = PaymentTransactionStatus.Captured,
+                PaidAt = now,
+                SubscriptionId = 3,
+                DiscountId = null
+            }
+        };
+
+        _db.PaymentTransactions.AddRange(transactions);
+        await _db.SaveChangesAsync();
+    }
+}

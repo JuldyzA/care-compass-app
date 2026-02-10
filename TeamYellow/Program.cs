@@ -29,6 +29,7 @@ builder.Services.AddTransient<UserLogSeeder>();
 builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
+builder.Services.AddTransient<PaymentTransactionSeeder>();
 
 var app = builder.Build();
 
@@ -61,6 +62,7 @@ if (app.Environment.IsDevelopment())
     await services.GetRequiredService<UserLogSeeder>().SeedAsync();
     await services.GetRequiredService<ClientSeeder>().SeedAsync();
     await services.GetRequiredService<SubscriptionSeeder>().SeedAsync();
+    await services.GetRequiredService<PaymentTransactionSeeder>().SeedAsync();
 }
 
 app.UseHttpsRedirection();
