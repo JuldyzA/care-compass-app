@@ -22,93 +22,93 @@ public class UserProfileSeeder : IDataSeeder
             new
             {
                 Email = "admin@test.ca",
-                FirstName = "Admin",
-                LastName = "User",
-                Phone = "111-111-1111",
+                FirstName = "Alexander",
+                LastName = "Harrison",
+                Phone = "604-555-0123",
                 City = "Vancouver",
                 Province = "BC",
                 PostalCode = "V5K 0A1",
-                Street = "123 Admin St",
+                Street = "123 Burrard St",
                 UnitNumber = 101,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/1.jpg"      
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/1.jpg"
             },
             new
             {
                 Email = "manager@test.ca",
-                FirstName = "Manager",
-                LastName = "User",
-                Phone = "222-222-2222",
+                FirstName = "Samantha",
+                LastName = "Reed",
+                Phone = "416-555-0456",
                 City = "Toronto",
                 Province = "ON",
                 PostalCode = "M5H 2N2",
-                Street = "456 Manager Rd",
+                Street = "456 King St W",
                 UnitNumber = 202,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/2.jpg"
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/2.jpg"
             },
             new
             {
                 Email = "consellor1@test.ca",
-                FirstName = "Counselor1",
-                LastName = "User",
-                Phone = "333-333-3333",
+                FirstName = "Ethan",
+                LastName = "Collins",
+                Phone = "514-555-0789",
                 City = "Montreal",
                 Province = "QC",
                 PostalCode = "H2X 1Y4",
-                Street = "789 Counselor Ln",
+                Street = "789 Saint Catherine St",
                 UnitNumber = 303,
                 ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/3.jpg"
             },
             new
             {
                 Email = "consellor2@test.ca",
-                FirstName = "Counselor2",
-                LastName = "User",
-                Phone = "444-444-4444",
+                FirstName = "Olivia",
+                LastName = "Turner",
+                Phone = "403-555-0912",
                 City = "Calgary",
                 Province = "AB",
                 PostalCode = "T2P 3G5",
-                Street = "321 Counselor Blvd",
+                Street = "321 8th Ave SW",
                 UnitNumber = 404,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/4.jpg"
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/4.jpg"
             },
             new
             {
                 Email = "consellor3@test.ca",
-                FirstName = "Counselor3",
-                LastName = "User",
-                Phone = "555-555-5555",
+                FirstName = "Liam",
+                LastName = "Walker",
+                Phone = "613-555-0345",
                 City = "Ottawa",
                 Province = "ON",
                 PostalCode = "K1A 0B1",
-                Street = "654 Counselor Ave",
+                Street = "654 Wellington St",
                 UnitNumber = 505,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/1.jpg"
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/5.jpg"
             },
             new
             {
                 Email = "consellor4@test.ca",
-                FirstName = "Counselor4",
-                LastName = "User",
-                Phone = "666-666-6666",
+                FirstName = "Emma",
+                LastName = "Morrison",
+                Phone = "204-555-0678",
                 City = "Winnipeg",
                 Province = "MB",
                 PostalCode = "R3C 4T3",
-                Street = "987 Free Ln",
+                Street = "987 Portage Ave",
                 UnitNumber = 606,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/2.jpg"
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/6.jpg"
             },
             new
             {
                 Email = "visiter@test.ca",
-                FirstName = "Visitor",
-                LastName = "User",
-                Phone = "777-777-7777",
+                FirstName = "Noah",
+                LastName = "Foster",
+                Phone = "902-555-0123",
                 City = "Halifax",
                 Province = "NS",
                 PostalCode = "B3H 1A1",
-                Street = "111 Visitor St",
+                Street = "111 Spring Garden Rd",
                 UnitNumber = 707,
-                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/3.jpg"
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/7.jpg"
             }
         };
 
