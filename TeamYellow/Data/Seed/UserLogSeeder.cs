@@ -33,10 +33,9 @@ public class UserLogSeeder : IDataSeeder
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) continue;
 
-            // Remove existing logs
             var existing = await _db.UserLogs.Where(l => l.UserId == user.Id).ToListAsync();
             if (existing.Any())
-                _db.UserLogs.RemoveRange(existing);
+                continue;
 
             // Create 2 new logs
             var logs = new List<UserLog>();
