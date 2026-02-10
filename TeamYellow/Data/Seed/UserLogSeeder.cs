@@ -33,8 +33,8 @@ public class UserLogSeeder : IDataSeeder
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) continue;
 
-            var existing = await _db.UserLogs.Where(l => l.UserId == user.Id).ToListAsync();
-            if (existing.Any())
+            var hasExistingLogs = await _db.UserLogs.AnyAsync(l => l.UserId == user.Id);
+            if (hasExistingLogs)
                 continue;
 
             // Create 2 new logs
