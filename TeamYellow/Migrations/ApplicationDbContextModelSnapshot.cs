@@ -156,11 +156,9 @@ namespace TeamYellow.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
@@ -198,11 +196,9 @@ namespace TeamYellow.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -359,6 +355,28 @@ namespace TeamYellow.Migrations
                         .IsUnique();
 
                     b.ToTable("Discount");
+
+                    b.HasData(
+                        new
+                        {
+                            DiscountId = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DiscountCode = "WELCOME10",
+                            DiscountType = "%",
+                            EndDateTime = new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StartDateTime = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = 10.00m
+                        },
+                        new
+                        {
+                            DiscountId = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DiscountCode = "YEARLY50",
+                            DiscountType = "$",
+                            EndDateTime = new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StartDateTime = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = 50.00m
+                        });
                 });
 
             modelBuilder.Entity("TeamYellow.Models.PaymentTransaction", b =>
@@ -467,6 +485,38 @@ namespace TeamYellow.Migrations
                     b.HasKey("PlanId");
 
                     b.ToTable("Plan");
+
+                    b.HasData(
+                        new
+                        {
+                            PlanId = 1,
+                            BillingType = "Free",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            PlanDescription = "Free basic access",
+                            PlanName = "Free",
+                            Price = 0.00m
+                        },
+                        new
+                        {
+                            PlanId = 2,
+                            BillingType = "Monthly",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            PlanDescription = "Monthly subscription",
+                            PlanName = "Monthly",
+                            Price = 49.99m
+                        },
+                        new
+                        {
+                            PlanId = 3,
+                            BillingType = "Yearly",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            PlanDescription = "Yearly subscription",
+                            PlanName = "Yearly",
+                            Price = 499.99m
+                        });
                 });
 
             modelBuilder.Entity("TeamYellow.Models.PlanDiscount", b =>
@@ -484,6 +534,23 @@ namespace TeamYellow.Migrations
                     b.HasIndex("DiscountId");
 
                     b.ToTable("PlanDiscount");
+
+                    b.HasData(
+                        new
+                        {
+                            PlanId = 2,
+                            DiscountId = 1
+                        },
+                        new
+                        {
+                            PlanId = 3,
+                            DiscountId = 1
+                        },
+                        new
+                        {
+                            PlanId = 3,
+                            DiscountId = 2
+                        });
                 });
 
             modelBuilder.Entity("TeamYellow.Models.PlanFeature", b =>
@@ -518,6 +585,72 @@ namespace TeamYellow.Migrations
                     b.HasIndex("PlanId");
 
                     b.ToTable("PlanFeature");
+
+                    b.HasData(
+                        new
+                        {
+                            PlanFeatureId = 1,
+                            FeatureDescription = "Access to limited resources and tools.",
+                            FeatureName = "Basic Access",
+                            PlanId = 1,
+                            sortOrder = 1
+                        },
+                        new
+                        {
+                            PlanFeatureId = 2,
+                            FeatureDescription = "Access to community forum support.",
+                            FeatureName = "Community Support",
+                            PlanId = 1,
+                            sortOrder = 2
+                        },
+                        new
+                        {
+                            PlanFeatureId = 3,
+                            FeatureDescription = "Includes all Free plan features.",
+                            FeatureName = "All Free Features",
+                            PlanId = 2,
+                            sortOrder = 1
+                        },
+                        new
+                        {
+                            PlanFeatureId = 4,
+                            FeatureDescription = "Get help faster with priority support.",
+                            FeatureName = "Priority Support",
+                            PlanId = 2,
+                            sortOrder = 2
+                        },
+                        new
+                        {
+                            PlanFeatureId = 5,
+                            FeatureDescription = "Access to detailed reports and analytics.",
+                            FeatureName = "Advanced Analytics",
+                            PlanId = 2,
+                            sortOrder = 3
+                        },
+                        new
+                        {
+                            PlanFeatureId = 6,
+                            FeatureDescription = "Includes all Monthly plan features.",
+                            FeatureName = "All Monthly Features",
+                            PlanId = 3,
+                            sortOrder = 1
+                        },
+                        new
+                        {
+                            PlanFeatureId = 7,
+                            FeatureDescription = "Assigned a dedicated account manager for support.",
+                            FeatureName = "Dedicated Account Manager",
+                            PlanId = 3,
+                            sortOrder = 2
+                        },
+                        new
+                        {
+                            PlanFeatureId = 8,
+                            FeatureDescription = "Store unlimited data and files.",
+                            FeatureName = "Unlimited Storage",
+                            PlanId = 3,
+                            sortOrder = 3
+                        });
                 });
 
             modelBuilder.Entity("TeamYellow.Models.Subscription", b =>

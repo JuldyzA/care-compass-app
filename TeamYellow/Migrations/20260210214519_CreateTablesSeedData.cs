@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace TeamYellow.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateBusinessTables : Migration
+    public partial class CreateTablesSeedData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -132,8 +134,8 @@ namespace TeamYellow.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
+                    ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
                     UserId = table.Column<string>(type: "TEXT", nullable: false)
                 },
@@ -177,8 +179,8 @@ namespace TeamYellow.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -399,6 +401,51 @@ namespace TeamYellow.Migrations
                         principalTable: "Subscription",
                         principalColumn: "pkSubscriptionId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Discount",
+                columns: new[] { "pkDiscountId", "createdAt", "discountCode", "endDateTime", "startDateTime", "value" },
+                values: new object[] { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "WELCOME10", new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 10.00m });
+
+            migrationBuilder.InsertData(
+                table: "Discount",
+                columns: new[] { "pkDiscountId", "createdAt", "discountCode", "discountType", "endDateTime", "startDateTime", "value" },
+                values: new object[] { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "YEARLY50", "$", new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 50.00m });
+
+            migrationBuilder.InsertData(
+                table: "Plan",
+                columns: new[] { "pkPlanId", "billingType", "createdAt", "isActive", "planDescription", "planName", "price" },
+                values: new object[,]
+                {
+                    { 1, "Free", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Free basic access", "Free", 0.00m },
+                    { 2, "Monthly", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Monthly subscription", "Monthly", 49.99m },
+                    { 3, "Yearly", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Yearly subscription", "Yearly", 499.99m }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PlanDiscount",
+                columns: new[] { "fkDiscountId", "fkPlanId" },
+                values: new object[,]
+                {
+                    { 1, 2 },
+                    { 1, 3 },
+                    { 2, 3 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PlanFeature",
+                columns: new[] { "pkPlanFeatureId", "featureDescription", "featureName", "fkPlanId", "sortOrder" },
+                values: new object[,]
+                {
+                    { 1, "Access to limited resources and tools.", "Basic Access", 1, 1 },
+                    { 2, "Access to community forum support.", "Community Support", 1, 2 },
+                    { 3, "Includes all Free plan features.", "All Free Features", 2, 1 },
+                    { 4, "Get help faster with priority support.", "Priority Support", 2, 2 },
+                    { 5, "Access to detailed reports and analytics.", "Advanced Analytics", 2, 3 },
+                    { 6, "Includes all Monthly plan features.", "All Monthly Features", 3, 1 },
+                    { 7, "Assigned a dedicated account manager for support.", "Dedicated Account Manager", 3, 2 },
+                    { 8, "Store unlimited data and files.", "Unlimited Storage", 3, 3 }
                 });
 
             migrationBuilder.CreateIndex(
