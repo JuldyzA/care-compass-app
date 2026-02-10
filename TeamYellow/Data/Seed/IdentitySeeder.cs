@@ -39,15 +39,19 @@ public class IdentitySeeder : IDataSeeder
                     EmailConfirmed = true
                 };
 
-                await _userManager.CreateAsync(user, password);
+                var createResult = await _userManager.CreateAsync(user, password);
+                if (!createResult.Succeeded)
+                {
+                    throw new Exception($"Failed to create user {entry.Email}: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
+                }
             }
 
             if (!await _userManager.IsInRoleAsync(user, entry.Role))
             {
-                var result = await _userManager.CreateAsync(user, password);
-                if (!result.Succeeded)
+                var roleResult = await _userManager.AddToRoleAsync(user, entry.Role);
+                if (!roleResult.Succeeded)
                 {
-                    throw new Exception($"Failed to create user {entry.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    throw new Exception($"Failed to add user {entry.Email} to role {entry.Role}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
                 }
             }
         }
