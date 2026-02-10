@@ -18,6 +18,7 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 // Seeders
