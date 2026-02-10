@@ -27,6 +27,7 @@ builder.Services.AddTransient<IdentitySeeder>();
 builder.Services.AddTransient<UserProfileSeeder>();
 builder.Services.AddTransient<UserLogSeeder>();
 builder.Services.AddTransient<CounsellorSeeder>();
+builder.Services.AddTransient<ClientSeeder>();
 
 var app = builder.Build();
 
@@ -57,6 +58,7 @@ if (app.Environment.IsDevelopment())
     await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
     await services.GetRequiredService<CounsellorSeeder>().SeedAsync();
     await services.GetRequiredService<UserLogSeeder>().SeedAsync();
+    await services.GetRequiredService<ClientSeeder>().SeedAsync();
 }
 
 app.UseHttpsRedirection();
