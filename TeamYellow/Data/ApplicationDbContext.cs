@@ -193,32 +193,148 @@ namespace TeamYellow.Data
                 new Plan
                 {
                     PlanId = 1,
-                    PlanName = "Free Plan",
-                    PlanDescription = "Basic access with limited features",
+                    PlanName = "Free",
+                    PlanDescription = "Free basic access",
                     Price = 0.00m,
-                    BillingType = "Trial",
+                    BillingType = "Free",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2025, 01, 01)
                 },
                 new Plan
                 {
                     PlanId = 2,
-                    PlanName = "Monthly Plan",
-                    PlanDescription = "Full access billed monthly",
+                    PlanName = "Monthly",
+                    PlanDescription = "Monthly subscription",
                     Price = 49.99m,
                     BillingType = "Monthly",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2025, 01, 01)
                 },
                 new Plan
                 {
                     PlanId = 3,
-                    PlanName = "Yearly Plan",
-                    PlanDescription = "Full access billed annually",
+                    PlanName = "Yearly",
+                    PlanDescription = "Yearly subscription",
                     Price = 499.99m,
                     BillingType = "Yearly",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2025, 01, 01)
+                }
+            );
+
+            // Seed Discounts
+            modelBuilder.Entity<Discount>().HasData(
+                new Discount
+                {
+                    DiscountId = 1,
+                    DiscountCode = "WELCOME10",
+                    DiscountType = DiscountType.Percent, 
+                    Value = 10.00m,
+                    StartDateTime = new DateTime(2025, 01, 01),
+                    EndDateTime = new DateTime(9999, 12, 31),
+                    CreatedAt = new DateTime(2025, 01, 01)
+                },
+                new Discount
+                {
+                    DiscountId = 2,
+                    DiscountCode = "YEARLY50",
+                    DiscountType = DiscountType.Amount,
+                    Value = 50.00m,
+                    StartDateTime = new DateTime(2025, 01, 01),
+                    EndDateTime = new DateTime(9999, 12, 31),
+                    CreatedAt = new DateTime(2025, 01, 01)
+                }
+            );
+
+            modelBuilder.Entity<PlanDiscount>().HasData(
+                new PlanDiscount
+                {
+                    PlanId = 2,   
+                    DiscountId = 1
+                },
+                new PlanDiscount
+                {
+                    PlanId = 3,  
+                    DiscountId = 1
+                },
+
+                // YEARLY50 applies only to Yearly
+                new PlanDiscount
+                {
+                    PlanId = 3,
+                    DiscountId = 2
+                }
+            );
+
+            modelBuilder.Entity<PlanFeature>().HasData(
+                // Free Plan Features
+                new PlanFeature
+                {
+                    PlanFeatureId = 1,
+                    PlanId = 1,
+                    FeatureName = "Basic Access",
+                    FeatureDescription = "Access to limited resources and tools.",
+                    sortOrder = 1
+                },
+                new PlanFeature
+                {
+                    PlanFeatureId = 2,
+                    PlanId = 1,
+                    FeatureName = "Community Support",
+                    FeatureDescription = "Access to community forum support.",
+                    sortOrder = 2
+                },
+
+                // Monthly Plan Features
+                new PlanFeature
+                {
+                    PlanFeatureId = 3,
+                    PlanId = 2,
+                    FeatureName = "All Free Features",
+                    FeatureDescription = "Includes all Free plan features.",
+                    sortOrder = 1
+                },
+                new PlanFeature
+                {
+                    PlanFeatureId = 4,
+                    PlanId = 2,
+                    FeatureName = "Priority Support",
+                    FeatureDescription = "Get help faster with priority support.",
+                    sortOrder = 2
+                },
+                new PlanFeature
+                {
+                    PlanFeatureId = 5,
+                    PlanId = 2,
+                    FeatureName = "Advanced Analytics",
+                    FeatureDescription = "Access to detailed reports and analytics.",
+                    sortOrder = 3
+                },
+
+                // Yearly Plan Features
+                new PlanFeature
+                {
+                    PlanFeatureId = 6,
+                    PlanId = 3,
+                    FeatureName = "All Monthly Features",
+                    FeatureDescription = "Includes all Monthly plan features.",
+                    sortOrder = 1
+                },
+                new PlanFeature
+                {
+                    PlanFeatureId = 7,
+                    PlanId = 3,
+                    FeatureName = "Dedicated Account Manager",
+                    FeatureDescription = "Assigned a dedicated account manager for support.",
+                    sortOrder = 2
+                },
+                new PlanFeature
+                {
+                    PlanFeatureId = 8,
+                    PlanId = 3,
+                    FeatureName = "Unlimited Storage",
+                    FeatureDescription = "Store unlimited data and files.",
+                    sortOrder = 3
                 }
             );
         }
