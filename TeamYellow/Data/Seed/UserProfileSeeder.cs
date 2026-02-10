@@ -1,0 +1,148 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using TeamYellow.Data;
+using TeamYellow.Data.Seed;
+using TeamYellow.Models;
+
+public class UserProfileSeeder : IDataSeeder
+{
+    private readonly ApplicationDbContext _db;
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public UserProfileSeeder(ApplicationDbContext db, UserManager<IdentityUser> userManager)
+    {
+        _db = db;
+        _userManager = userManager;
+    }
+
+    public async Task SeedAsync()
+    {
+        var profiles = new[]
+        {
+            new
+            {
+                Email = "admin@test.ca",
+                FirstName = "Admin",
+                LastName = "User",
+                Phone = "111-111-1111",
+                City = "Vancouver",
+                Province = "BC",
+                PostalCode = "V5K 0A1",
+                Street = "123 Admin St",
+                UnitNumber = 101,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/1.jpg"      
+            },
+            new
+            {
+                Email = "manager@test.ca",
+                FirstName = "Manager",
+                LastName = "User",
+                Phone = "222-222-2222",
+                City = "Toronto",
+                Province = "ON",
+                PostalCode = "M5H 2N2",
+                Street = "456 Manager Rd",
+                UnitNumber = 202,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/2.jpg"
+            },
+            new
+            {
+                Email = "consellor1@test.ca",
+                FirstName = "Counselor1",
+                LastName = "User",
+                Phone = "333-333-3333",
+                City = "Montreal",
+                Province = "QC",
+                PostalCode = "H2X 1Y4",
+                Street = "789 Counselor Ln",
+                UnitNumber = 303,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/3.jpg"
+            },
+            new
+            {
+                Email = "consellor2@test.ca",
+                FirstName = "Counselor2",
+                LastName = "User",
+                Phone = "444-444-4444",
+                City = "Calgary",
+                Province = "AB",
+                PostalCode = "T2P 3G5",
+                Street = "321 Counselor Blvd",
+                UnitNumber = 404,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/4.jpg"
+            },
+            new
+            {
+                Email = "consellor3@test.ca",
+                FirstName = "Counselor3",
+                LastName = "User",
+                Phone = "555-555-5555",
+                City = "Ottawa",
+                Province = "ON",
+                PostalCode = "K1A 0B1",
+                Street = "654 Counselor Ave",
+                UnitNumber = 505,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/1.jpg"
+            },
+            new
+            {
+                Email = "consellor4@test.ca",
+                FirstName = "Counselor4",
+                LastName = "User",
+                Phone = "666-666-6666",
+                City = "Winnipeg",
+                Province = "MB",
+                PostalCode = "R3C 4T3",
+                Street = "987 Free Ln",
+                UnitNumber = 606,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/2.jpg"
+            },
+            new
+            {
+                Email = "visiter@test.ca",
+                FirstName = "Visitor",
+                LastName = "User",
+                Phone = "777-777-7777",
+                City = "Halifax",
+                Province = "NS",
+                PostalCode = "B3H 1A1",
+                Street = "111 Visitor St",
+                UnitNumber = 707,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/3.jpg"
+            }
+        };
+
+        foreach (var entry in profiles)
+        {
+            var user = await _userManager.FindByEmailAsync(entry.Email);
+            if (user == null)
+            {
+                Console.WriteLine($"Skipping profile for {entry.Email}: user not found");
+                continue;
+            }
+
+            var existing = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (existing != null)
+                continue;
+
+            var profile = new UserProfile
+            {
+                FirstName = entry.FirstName,
+                LastName = entry.LastName,
+                Phone = entry.Phone,
+                City = entry.City,
+                Province = entry.Province,
+                PostalCode = entry.PostalCode,
+                Street = entry.Street,
+                UnitNumber = entry.UnitNumber,
+                ProfilePhotoUrl = entry.ProfilePhotoUrl,
+                UserId = user.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.UserProfiles.Add(profile);
+        }
+
+        await _db.SaveChangesAsync();
+    }
+}
