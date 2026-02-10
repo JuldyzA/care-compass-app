@@ -19,10 +19,16 @@ public class PaymentTransactionSeeder : IDataSeeder
 
         var now = DateTime.UtcNow;
 
-        // Get counsellors
-        var counsellor1 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor1@test.ca");
-        var counsellor2 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor2@test.ca");
-        var counsellor3 = await _db.Counsellors.FirstOrDefaultAsync(c => c.UserId == "consellor3@test.ca");
+        // Get counsellors by email safely
+        var counsellor1 = await _db.Counsellors
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor1@test.ca");
+        var counsellor2 = await _db.Counsellors
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor2@test.ca");
+        var counsellor3 = await _db.Counsellors
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor3@test.ca");
 
         if (counsellor1 == null || counsellor2 == null || counsellor3 == null)
         {
