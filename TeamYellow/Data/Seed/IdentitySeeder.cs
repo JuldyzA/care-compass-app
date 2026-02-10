@@ -5,10 +5,13 @@ namespace TeamYellow.Data.Seed;
 public class IdentitySeeder : IDataSeeder
 {
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly string _password;
 
-    public IdentitySeeder(UserManager<IdentityUser> userManager)
+    public IdentitySeeder(UserManager<IdentityUser> userManager, IConfiguration configuration)
     {
         _userManager = userManager;
+        _password = configuration["Seed:DefaultPassword"]
+            ?? throw new InvalidOperationException("Seed password not configured");
     }
 
     public async Task SeedAsync()
@@ -24,8 +27,6 @@ public class IdentitySeeder : IDataSeeder
             new { Email = "visitor@test.ca",    Role = "Registered_Visitor" }
         };
 
-        const string password = "P@ssw0rd!";
-
         foreach (var entry in users)
         {
             var user = await _userManager.FindByEmailAsync(entry.Email);
@@ -39,7 +40,7 @@ public class IdentitySeeder : IDataSeeder
                     EmailConfirmed = true
                 };
 
-                var createResult = await _userManager.CreateAsync(user, password);
+                var createResult = await _userManager.CreateAsync(user, _password);
                 if (!createResult.Succeeded)
                 {
                     throw new Exception($"Failed to create user {entry.Email}: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
