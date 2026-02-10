@@ -1,0 +1,9 @@
+
+Users:
+	admin@test.ca			Administrator			P@ssw0rd!
+	manager@test.ca			Manager					P@ssw0rd!
+	consellor1@test.ca		Paid_Counselor 			P@ssw0rd!
+	consellor2@test.ca		Paid_Counselor			P@ssw0rd!
+	consellor3@test.ca		Paid_Counselor			P@ssw0rd!
+	consellor4@test.ca		Free_Counselor			P@ssw0rd!
+	visitor@test.ca		    Registered_Visitor		P@ssw0rd!	
