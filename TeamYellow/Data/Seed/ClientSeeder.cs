@@ -14,6 +14,13 @@ public class ClientSeeder : IDataSeeder
 
     public async Task SeedAsync()
     {
+        // Prevent seeding if table is not empty
+        if (await _db.Clients.AnyAsync())
+        {
+            Console.WriteLine("Client table already has data. Skipping seeding.");
+            return;
+        }
+
         // Get counsellors by email
         var counsellor1 = await _db.Counsellors.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor1@test.ca");
