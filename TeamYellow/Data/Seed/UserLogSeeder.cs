@@ -25,7 +25,7 @@ public class UserLogSeeder : IDataSeeder
             "consellor2@test.ca",
             "consellor3@test.ca",
             "consellor4@test.ca",
-            "visiter@test.ca"
+            "visitor@test.ca"
         };
 
         foreach (var email in emails)
