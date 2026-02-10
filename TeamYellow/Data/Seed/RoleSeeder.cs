@@ -26,7 +26,11 @@ public class RoleSeeder : IDataSeeder
         {
             if (!await _roleManager.RoleExistsAsync(role))
             {
-                await _roleManager.CreateAsync(new IdentityRole(role));
+                var result = await _roleManager.CreateAsync(new IdentityRole(role));
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to create role {role}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
         }
     }

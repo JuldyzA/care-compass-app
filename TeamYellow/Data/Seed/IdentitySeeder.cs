@@ -44,7 +44,11 @@ public class IdentitySeeder : IDataSeeder
 
             if (!await _userManager.IsInRoleAsync(user, entry.Role))
             {
-                await _userManager.AddToRoleAsync(user, entry.Role);
+                var result = await _userManager.CreateAsync(user, password);
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to create user {entry.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
         }
     }
