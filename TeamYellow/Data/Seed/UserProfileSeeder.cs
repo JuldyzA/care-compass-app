@@ -123,24 +123,40 @@ public class UserProfileSeeder : IDataSeeder
 
             var existing = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
             if (existing != null)
-                continue;
-
-            var profile = new UserProfile
             {
-                FirstName = entry.FirstName,
-                LastName = entry.LastName,
-                Phone = entry.Phone,
-                City = entry.City,
-                Province = entry.Province,
-                PostalCode = entry.PostalCode,
-                Street = entry.Street,
-                UnitNumber = entry.UnitNumber,
-                ProfilePhotoUrl = entry.ProfilePhotoUrl,
-                UserId = user.Id,
-                CreatedAt = DateTime.UtcNow
-            };
+                // Update existing profile fields
+                existing.FirstName = entry.FirstName;
+                existing.LastName = entry.LastName;
+                existing.Phone = entry.Phone;
+                existing.City = entry.City;
+                existing.Province = entry.Province;
+                existing.PostalCode = entry.PostalCode;
+                existing.Street = entry.Street;
+                existing.UnitNumber = entry.UnitNumber;
+                existing.ProfilePhotoUrl = entry.ProfilePhotoUrl;
+                existing.UpdatedAt = DateTime.UtcNow;
 
-            _db.UserProfiles.Add(profile);
+                _db.UserProfiles.Update(existing);
+            }
+            else
+            {
+                var profile = new UserProfile
+                {
+                    FirstName = entry.FirstName,
+                    LastName = entry.LastName,
+                    Phone = entry.Phone,
+                    City = entry.City,
+                    Province = entry.Province,
+                    PostalCode = entry.PostalCode,
+                    Street = entry.Street,
+                    UnitNumber = entry.UnitNumber,
+                    ProfilePhotoUrl = entry.ProfilePhotoUrl,
+                    UserId = user.Id,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _db.UserProfiles.Add(profile);
+            }
         }
 
         await _db.SaveChangesAsync();
