@@ -30,6 +30,7 @@ namespace TeamYellow.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Business Rules
             // UserProfile: one-to-one with User, unique fkUserId
             modelBuilder.Entity<UserProfile>(entity =>
             {
@@ -186,6 +187,40 @@ namespace TeamYellow.Data
                       .HasConversion<string>()
                       .HasMaxLength(20);
             });
+
+            // Seed Plans
+            modelBuilder.Entity<Plan>().HasData(
+                new Plan
+                {
+                    PlanId = 1,
+                    PlanName = "Free Plan",
+                    PlanDescription = "Basic access with limited features",
+                    Price = 0.00m,
+                    BillingType = "Trial",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Plan
+                {
+                    PlanId = 2,
+                    PlanName = "Monthly Plan",
+                    PlanDescription = "Full access billed monthly",
+                    Price = 49.99m,
+                    BillingType = "Monthly",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Plan
+                {
+                    PlanId = 3,
+                    PlanName = "Yearly Plan",
+                    PlanDescription = "Full access billed annually",
+                    Price = 499.99m,
+                    BillingType = "Yearly",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                }
+            );
         }
     }
 }
