@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TeamYellow.Data;
-using TeamYellow.Data.Seed;
 using TeamYellow.Models;
+
+namespace TeamYellow.Data.Seed;
 
 public class SubscriptionSeeder : IDataSeeder
 {
