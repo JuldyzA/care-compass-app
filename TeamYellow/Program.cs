@@ -26,6 +26,7 @@ builder.Services.AddTransient<RoleSeeder>();
 builder.Services.AddTransient<IdentitySeeder>();
 builder.Services.AddTransient<UserProfileSeeder>();
 builder.Services.AddTransient<UserLogSeeder>();
+builder.Services.AddTransient<CounsellorSeeder>();
 
 var app = builder.Build();
 
@@ -47,14 +48,15 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
 
-    await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
-    await services.GetRequiredService<UserLogSeeder>().SeedAsync();
-
     var db = services.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
 
-    await services.GetRequiredService<RoleSeeder>().SeedAsync();
-    await services.GetRequiredService<IdentitySeeder>().SeedAsync();
+    await services.GetRequiredService<RoleSeeder>().SeedAsync();     
+    await services.GetRequiredService<IdentitySeeder>().SeedAsync(); 
+
+    await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
+    await services.GetRequiredService<CounsellorSeeder>().SeedAsync();
+    await services.GetRequiredService<UserLogSeeder>().SeedAsync();
 }
 
 app.UseHttpsRedirection();
