@@ -25,6 +25,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<RoleSeeder>();
 builder.Services.AddTransient<IdentitySeeder>();
 builder.Services.AddTransient<UserProfileSeeder>();
+builder.Services.AddTransient<UserLogSeeder>();
 
 var app = builder.Build();
 
@@ -47,6 +48,7 @@ if (app.Environment.IsDevelopment())
     var services = scope.ServiceProvider;
 
     await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
+    await services.GetRequiredService<UserLogSeeder>().SeedAsync();
 
     var db = services.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
