@@ -99,7 +99,7 @@ public class UserProfileSeeder : IDataSeeder
             },
             new
             {
-                Email = "visiter@test.ca",
+                Email = "visitor@test.ca",
                 FirstName = "Noah",
                 LastName = "Foster",
                 Phone = "902-555-0123",
