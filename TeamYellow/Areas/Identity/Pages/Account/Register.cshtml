@@ -1,5 +1,8 @@
 ﻿@page
 @model RegisterModel
+
+<script src='https://www.google.com/recaptcha/api.js'></script>
+
 @{
     ViewData["Title"] = "Register";
 }
@@ -27,6 +30,7 @@
                 <label asp-for="Input.ConfirmPassword">Confirm Password</label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
+            <div class="g-recaptcha" data-sitekey='@ViewData["SiteKey"]'></div><br />
             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </form>
     </div>

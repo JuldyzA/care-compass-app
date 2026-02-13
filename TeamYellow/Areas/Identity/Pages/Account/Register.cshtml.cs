@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using TeamYellow.Models;
 using TeamYellow.Services;
+using static TeamYellow.Services.ReCAPTCHA;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
 {
@@ -31,13 +32,15 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -45,6 +48,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -104,14 +108,34 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+            ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
+
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
+
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            // Read the reCAPTCHA response posted from the form
+            string captchaResponse = Request.Form["g-Recaptcha-Response"];
+            string secret = _configuration["Recaptcha:SecretKey"];
+
+            ReCaptchaValidationResult resultCaptcha =
+                ReCaptchaValidator.IsValid(secret, captchaResponse);
+
+            // Invalidate the form if the captcha is invalid.
+            if (!resultCaptcha.Success)
+            {
+                ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
+                ModelState.AddModelError(string.Empty,
+                    "The ReCaptcha is invalid.");
+            }
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
