@@ -1,0 +1,164 @@
+﻿@model List<TeamYellow.Models.Plan>
+
+@{
+    ViewData["Title"] = "Plan";
+}
+
+<!-- 1. Call to Action Banner -->
+<div class="bg-primary text-white py-5 mb-5">
+    <div class="container-xl text-center">
+        <h1 class="display-3 fw-bold mb-3">Start Growing Your Practice Today</h1>
+        <p class="lead mb-4">Choose a plan that works for you. Upgrade, downgrade, or cancel anytime.</p>
+        <a href="#pricing" class="btn btn-light btn-lg">View Plans</a>
+    </div>
+</div>
+
+
+<!-- 2. Pricing Section -->
+<div id="pricing" class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Choose Your Plan</h2>
+        <p class="text-muted">Select the plan that best fits your needs.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        @foreach (var plan in Model)
+        {
+            var isPopular = plan.PlanName == "Monthly";
+
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100 shadow-sm @(isPopular ? "border-primary border-2" : "")">
+                    @if (isPopular)
+                    {
+                        <div class="card-header bg-primary text-white text-center fw-bold">
+                            Most Popular
+                        </div>
+                    }
+                    <div class="card-body text-center">
+                        <div class="text-uppercase text-muted fw-bold mb-2">@plan.PlanName</div>
+                        <p class="text-muted">@plan.PlanDescription</p>
+
+                        <div class="my-4">
+                            <h1 class="display-5 fw-bold">
+                                @(plan.Price == 0 ? "Free" : $"${plan.Price}")
+                            </h1>
+                            @if (plan.Price > 0)
+                            {
+                                <span class="text-muted">/ @plan.BillingType.ToLower()</span>
+                            }
+                        </div>
+
+                        <ul class="list-unstyled text-start mb-4">
+                            @foreach (var feature in plan.PlanFeatures)
+                            {
+                                <li class="mb-2">
+                                    <span class="text-success me-2">&#10003;</span>
+                                    @feature.FeatureName
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="mt-4">
+                            <a asp-action="Checkout" asp-route-id="@plan.PlanId"
+                               class="btn w-100 @(isPopular ? "btn-primary" : "btn-outline-primary")">
+                                @(plan.Price == 0 ? "Get Started" : "Subscribe")
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 3. FAQ Section -->
+<div class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Frequently Asked Questions</h2>
+        <p class="text-muted">Everything you need to know about our platform.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion" id="faq">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq-1">
+                            What is a Counselor CRM?
+                        </button>
+                    </h2>
+                    <div id="faq-1" class="accordion-collapse collapse show" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            A Counselor CRM helps you organize client info, session history, notes, tasks, and follow-ups in one place—so you spend less time on admin work.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-2">
+                            Who is this for?
+                        </button>
+                    </h2>
+                    <div id="faq-2" class="accordion-collapse collapse" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            It's built for individual counselors, small practices, and support teams who need a simple way to manage clients, sessions, and follow-ups.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-3">
+                            What can I track for each client?
+                        </button>
+                    </h2>
+                    <div id="faq-3" class="accordion-collapse collapse" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            You can track contact details, intake status, session notes, goals/progress, shared resources, referrals, and follow-up tasks.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-4">
+                            Can I set reminders for follow-ups and tasks?
+                        </button>
+                    </h2>
+                    <div id="faq-4" class="accordion-collapse collapse" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            Yes—create reminders like "check in after 7 days," "send resources," or "review plan monthly," and see what's due on your dashboard.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-5">
+                            How are session notes handled?
+                        </button>
+                    </h2>
+                    <div id="faq-5" class="accordion-collapse collapse" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            You can write quick notes or use templates (like SOAP/DAP), attach files, and search notes later by date or tags.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-6">
+                            How do privacy and access permissions work?
+                        </button>
+                    </h2>
+                    <div id="faq-6" class="accordion-collapse collapse" data-bs-parent="#faq">
+                        <div class="accordion-body">
+                            You can limit access by role (admin/counselor/assistant), restrict clients to assigned counselors, and keep records protected with secure login and audit history.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
