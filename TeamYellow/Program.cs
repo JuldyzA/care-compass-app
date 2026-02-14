@@ -5,6 +5,8 @@ using TeamYellow.Data.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -20,6 +22,8 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient<TeamYellow.Services.PayPalService>();
+builder.Services.AddScoped<TeamYellow.Services.PayPalService>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
