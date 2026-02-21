@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
+using TeamYellow.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,9 @@ builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
+
+//Repository
+builder.Services.AddScoped<CounsellorRepository>();
 
 var app = builder.Build();
 

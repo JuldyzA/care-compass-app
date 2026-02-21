@@ -1,0 +1,55 @@
+﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using System.Security.Claims
+@model TeamYellow.ViewModels.ManagerDashboardVM
+
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <nav class="col-md-2 bg-light vh-100 p-3 border-end">
+            <h5 class="fw-bold">Care Compass</h5>
+
+            <div class="mb-4">
+                <small>@(User.FindFirstValue(ClaimTypes.Email) ?? "Manager email")</small>
+            </div>
+            <h5>Manager Dashboard</h5>
+            <ul class="nav flex-column">
+                <li><a asp-controller="Manager" asp-action="Index">Transactions</a></li>
+                <li><a asp-controller="Manager" asp-action="Plans">Plan & Pricing</a></li>
+                <li><a asp-controller="Manager" asp-action="Discounts">Discounts</a></li>
+
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-10 p-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Welcome Back, @(User.Identity?.Name ?? "Manager Name")</h4>
+                <button class="btn btn-outline-primary btn-sm">Sign Out</button>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card p-3">
+                <h5 class="mb-3">Transaction Details</h5>
+                <div>
+                    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
+                    <p><strong>Paid Date:</strong> @Model.PaidAt</p>
+                    <p><strong>Amount:</strong> @Model.Amount</p>
+                    <p><strong>Status:</strong> @Model.SOP</p>
+
+                    <p>
+                        <strong>Counsellor:</strong>
+                        @Model.CounsellorName
+                    </p>
+                    <p><strong>Email:</strong> @Model.Email</p>
+                    <p><strong>Registration Date:</strong> @Model.RegistrationDate</p>
+                </div>
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
+            </div>
+
+        </main>
+    </div>
+</div>

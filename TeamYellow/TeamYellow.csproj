@@ -31,7 +31,6 @@
     <Folder Include="Configurations\" />
     <Folder Include="Helpers\" />
     <Folder Include="Middlewares\" />
-    <Folder Include="ViewModels\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
