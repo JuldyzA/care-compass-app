@@ -81,11 +81,13 @@
                             <th>Counsellor ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Practitioner Licence ID</th>
-                            <th>Registration Date</th>
+                            <th>Currency</th>
+                            @* <th>Practitioner Licence ID</th>
+                            <th>Registration Date</th> *@
                             <th>Amount</th>
-                            <th>Transaction ID</th>
+                            @* <th>Transaction ID</th> *@
                             <th>Transaction Status</th>
+                            <th>Payment Date</th>
                             <th>Details</th>
                         </tr>
                     </thead>
@@ -97,11 +99,13 @@
                                 <td>@vm.CounsellorId</td>
                                 <td>@vm.CounsellorName</td>
                                 <td>@vm.Email</td>
-                                <td>@vm.PractitionerLicenceId</td>
-                                <td>@vm.RegistrationDate</td>
+                                <th>@vm.Currency</th>
+                                @* <td>@vm.PractitionerLicenceId</td>
+                                <td>@vm.RegistrationDate</td> *@
                                 <td>@vm.Amount</td>
-                                <td>@vm.PaymentTransactionId</td>
+                                @* <td>@vm.PaymentTransactionId</td> *@
                                 <td>@vm.SOP</td>
+                                <td>@vm.PaidAt</td>
                                 <td>
                                     <a class="btn btn-sm btn-primary"
                                        asp-controller="Manager"

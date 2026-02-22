@@ -10,6 +10,7 @@ namespace TeamYellow.ViewModels
         public decimal Amount { get; set; }
         public string SOP { get; set; } = string.Empty;
         public string RegistrationDate { get; set; } = string.Empty;
+        public string Currency { get; set; } = "CAD";
         public string? PaidAt { get; set; }
         public int PaymentTransactionId { get; set; }
     }

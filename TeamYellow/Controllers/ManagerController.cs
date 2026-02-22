@@ -44,6 +44,7 @@ namespace TeamYellow.Controllers
                 Email = counsellor.User?.Email ?? "No email",
                 Amount = payments.Sum(p => p?.Amount ?? 0),
                 PaymentTransactionId = firstPayment?.PaymentTransactionId ?? 0,
+                Currency = firstPayment?.Currency ?? "CAD",
                 SOP = payments?.Any(p => p.Status == PaymentTransactionStatus.Failed) ?? false
                     ? "Failed"
                     : "Paid",
