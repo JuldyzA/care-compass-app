@@ -22,8 +22,7 @@
                 <input asp-for="Input.LastName" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label asp-for="Input.LastName">Last Name</label>
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            </div>      
             <div class="form-floating mb-3">
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label asp-for="Input.Email">Email</label>
@@ -39,6 +38,7 @@
                 <label asp-for="Input.ConfirmPassword">Confirm Password</label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
+        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="g-recaptcha" data-sitekey='@ViewData["SiteKey"]'></div><br />
             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Create Account</button>
         </form>

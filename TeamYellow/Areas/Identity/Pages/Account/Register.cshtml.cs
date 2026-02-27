@@ -125,9 +125,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
-        {
-            ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
-
+        {           
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
