@@ -118,4 +118,7 @@ src/.vs/config/applicationhost.config
 .idea/
 
 # Personal notes  
-.notes.md
+.notes.md 
+
+# Secrets
+secrets.json
