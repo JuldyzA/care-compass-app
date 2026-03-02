@@ -32,8 +32,8 @@
     <Folder Include="Helpers\" />
     <Folder Include="Middlewares\" />
     <Folder Include="ViewModels\" />
-    <Folder Include="Services\" />
     <Folder Include="Views\Plan\" />
+    <Folder Include="Views\Subscription\" />
   </ItemGroup>
 
 </Project>
