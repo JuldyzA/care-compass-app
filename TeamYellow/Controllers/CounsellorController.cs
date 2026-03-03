@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using TeamYellow.DTOs;
 using TeamYellow.Services;
 
 namespace TeamYellow.Controllers
 {
-    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    [Authorize]
     public class CounsellorController : Controller
     {
         private readonly CounsellorService _service;
@@ -16,22 +15,12 @@ namespace TeamYellow.Controllers
             _service = service;
         }
 
-        [Authorize]
-        [HttpGet("dashboard")]
-        public async Task<IActionResult> Dashboard()
+
+        public async Task<IActionResult> index()
         {
-            if (User.IsInRole("Counsellor"))
-            {
-                CounsellorDashboardDto dashboard = await _service.GetCounsellorDashboardAsync(User);
-                return View("CounsellorDashboard", dashboard);
-            }
-
-            if (User.IsInRole("RegisteredVisitor"))
-            {
-                return View("VisitorDashboard");
-            }
-
-            return Forbid();
+            CounsellorDashboardDto dashboard = await _service.GetCounsellorDashboardAsync(User);
+                
+            return View("CounsellorDashboard", dashboard);
         }
     }
 }

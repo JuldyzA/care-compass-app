@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
+using TeamYellow.Repositories;
+using TeamYellow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,12 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+
+// Services
+builder.Services.AddScoped<CounsellorService>();
+
+// Repositories
+builder.Services.AddScoped<ICounsellorRepository, CounsellorRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();

@@ -21,72 +21,82 @@ public class CounsellorRepository : ICounsellorRepository
 
     public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string userId)
     {
-        // Eagerly load Counsellor with Subscriptions (and their Plans) and Clients in one query
-        Counsellor? counsellor = await _context.Counsellors
+        CounsellorDashboardDto? dto = await _context.Counsellors
             .Where(c => c.UserId == userId)
-            .Include(c => c.Subscriptions)        
-                .ThenInclude(s => s.Plan)        
-            .Include(c => c.Clients)             
-            .FirstOrDefaultAsync();
-
-        if (counsellor == null)
-            return null;
-
-        // Join with UserProfile to get profile details
-        UserProfile? userProfile = await _context.UserProfiles
-            .FirstOrDefaultAsync(u => u.UserId == counsellor.UserId);
-
-        Subscription? latestSubscription = counsellor.Subscriptions
-            .OrderByDescending(s => s.UpdatedAt)
-            .FirstOrDefault();
-
-        IReadOnlyCollection<ClientDto> clients = counsellor.Clients
-            .Select(cl => new ClientDto
+            .Include(c => c.Subscriptions.OrderByDescending(s => s.UpdatedAt).Take(1))
+                .ThenInclude(s => s.Plan)
+            .Include(c => c.Clients)
+            .Join(_context.UserProfiles,
+                c => c.UserId,
+                u => u.UserId,
+                (counsellor, userProfile) => new
+                {
+                    Counsellor = counsellor,
+                    UserProfile = userProfile,
+                    LatestSubscription = counsellor.Subscriptions.FirstOrDefault()
+                })
+            .Select(data => new CounsellorDashboardDto
             {
-                FirstName = cl.FirstName,
-                LastName = cl.LastName,
-                Email = cl.Email,
-                Phone = cl.Phone,
-                Status = cl.Status,
-                CreatedAt = cl.CreatedAt
+                // UserProfile data
+                FirstName = data.UserProfile.FirstName,
+                LastName = data.UserProfile.LastName,
+                Phone = data.UserProfile.Phone,
+                profileCreateAt = data.UserProfile.CreatedAt,
+                ProfilePhotoUrl = data.UserProfile.ProfilePhotoUrl,
+                UnitNumber = data.UserProfile.UnitNumber,
+                Street = data.UserProfile.Street,
+                City = data.UserProfile.City,
+                Province = data.UserProfile.Province,
+                PostalCode = data.UserProfile.PostalCode,
+
+                // Counsellor data
+                PractitionerLicenceId = data.Counsellor.PractitionerLicenceId,
+                DisplayName = data.Counsellor.DisplayName,
+                IsCounsellorActive = data.Counsellor.IsActive,
+
+                // Subscription data
+                status = data.LatestSubscription != null 
+                    ? data.LatestSubscription.Status 
+                    : SubscriptionStatus.Expired,
+                CycleStart = data.LatestSubscription != null 
+                    ? data.LatestSubscription.CycleStart 
+                    : DateTime.MinValue,
+                CycleEnd = data.LatestSubscription != null 
+                    ? data.LatestSubscription.CycleEnd 
+                    : DateTime.MinValue,
+                UpdatedAt = data.LatestSubscription != null 
+                    ? data.LatestSubscription.UpdatedAt 
+                    : DateTime.MinValue,
+
+                // Plan data
+                PlanName = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.PlanName
+                    : "No Plan",
+                PlanDescription = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.PlanDescription
+                    : string.Empty,
+                Price = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.Price
+                    : 0m,
+                BillingType = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.BillingType
+                    : string.Empty,
+                IsPlanActive = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.IsActive
+                    : false,
+
+                // Clients collection (with navigation property)
+                Clients = data.Counsellor.Clients.Select(client => new ClientDto
+                {
+                    FirstName = client.FirstName,
+                    LastName = client.LastName,
+                    Email = client.Email,
+                    Phone = client.Phone,
+                    Status = client.Status,
+                    CreatedAt = client.CreatedAt
+                })
             })
-            .ToList();
-
-        CounsellorDashboardDto dto = new CounsellorDashboardDto
-        {
-            // UserProfile
-            FirstName = userProfile?.FirstName ?? "Unknown",
-            LastName = userProfile?.LastName ?? "Unknown",
-            Phone = userProfile?.Phone,
-            profileCreateAt = userProfile?.CreatedAt ?? DateTime.MinValue,
-            ProfilePhotoUrl = userProfile?.ProfilePhotoUrl,
-            UnitNumber = userProfile?.UnitNumber,
-            Street = userProfile?.Street,
-            City = userProfile?.City,
-            Province = userProfile?.Province,
-            PostalCode = userProfile?.PostalCode,
-
-            // Counsellor
-            PractitionerLicenceId = counsellor.PractitionerLicenceId,
-            DisplayName = counsellor.DisplayName,
-            IsCounsellorActive = counsellor.IsActive,
-
-            // Subscription
-            status = latestSubscription?.Status ?? SubscriptionStatus.Expired,
-            CycleStart = latestSubscription?.CycleStart ?? DateTime.MinValue,
-            CycleEnd = latestSubscription?.CycleEnd ?? DateTime.MinValue,
-            UpdatedAt = latestSubscription?.UpdatedAt ?? DateTime.MinValue,
-
-            // Plan
-            PlanName = latestSubscription?.Plan?.PlanName ?? "No Plan",
-            PlanDescription = latestSubscription?.Plan?.PlanDescription ?? string.Empty,
-            Price = latestSubscription?.Plan?.Price ?? 0m,
-            BillingType = latestSubscription?.Plan?.BillingType ?? string.Empty,
-            IsPlanActive = latestSubscription?.Plan?.IsActive ?? false,
-
-            // Clients
-            Clients = clients
-        };
+            .FirstOrDefaultAsync();
 
         return dto;
     }
