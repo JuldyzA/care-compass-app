@@ -7,7 +7,7 @@ namespace TeamYellow.Repositories;
 
 public interface ICounsellorRepository
 {
-    Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string userId);
+    Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId);
 }
 
 public class CounsellorRepository : ICounsellorRepository
@@ -19,7 +19,7 @@ public class CounsellorRepository : ICounsellorRepository
         _context = context;
     }
 
-    public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string userId)
+    public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId)
     {
         CounsellorDashboardDto? dto = await _context.Counsellors
             .Where(c => c.UserId == userId)
@@ -41,7 +41,7 @@ public class CounsellorRepository : ICounsellorRepository
                 FirstName = data.UserProfile.FirstName,
                 LastName = data.UserProfile.LastName,
                 Phone = data.UserProfile.Phone,
-                profileCreateAt = data.UserProfile.CreatedAt,
+                ProfileCreateAt = data.UserProfile.CreatedAt,
                 ProfilePhotoUrl = data.UserProfile.ProfilePhotoUrl,
                 UnitNumber = data.UserProfile.UnitNumber,
                 Street = data.UserProfile.Street,
@@ -55,7 +55,7 @@ public class CounsellorRepository : ICounsellorRepository
                 IsCounsellorActive = data.Counsellor.IsActive,
 
                 // Subscription data
-                status = data.LatestSubscription != null 
+                Status = data.LatestSubscription != null 
                     ? data.LatestSubscription.Status 
                     : SubscriptionStatus.Expired,
                 CycleStart = data.LatestSubscription != null 

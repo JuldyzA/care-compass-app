@@ -12,7 +12,7 @@ public class CounsellorDashboardDto
 
     public string? Phone { get; set; }
 
-    public DateTime profileCreateAt { get; set; }
+    public DateTime ProfileCreateAt { get; set; }
 
     public string? ProfilePhotoUrl { get; set; }
 
@@ -32,7 +32,9 @@ public class CounsellorDashboardDto
 
     public bool IsCounsellorActive { get; set; }
 
-    public SubscriptionStatus status { get; set; }
+    public SubscriptionStatus Status { get; set; }
+
+    public bool IsSubscriptionActive { get; set; }
 
     public DateTime CycleStart { get; set; }
 
@@ -50,8 +52,7 @@ public class CounsellorDashboardDto
 
     public bool IsPlanActive { get; set; } = true;
 
-    [Column("createdAt")]
-    public DateTime CreatedAt { get; set; }
+    public DateTime PlanCreatedAt { get; set; }
 
     public IEnumerable<ClientDto> Clients { get; init; } = new List<ClientDto>();
 }
