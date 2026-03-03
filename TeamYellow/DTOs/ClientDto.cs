@@ -13,4 +13,6 @@ public class ClientDto
     public string Phone { get; set; } = null!;
 
     public ClientStatus Status { get; set; }
+
+    public DateTime CreatedAt { get; set; }
 }

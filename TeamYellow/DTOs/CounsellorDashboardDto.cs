@@ -1,4 +1,8 @@
-﻿namespace TeamYellow.DTOs;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using TeamYellow.Models;
+
+namespace TeamYellow.DTOs;
 
 public class CounsellorDashboardDto
 {
@@ -7,6 +11,8 @@ public class CounsellorDashboardDto
     public string LastName { get; set; } = null!;
 
     public string? Phone { get; set; }
+
+    public DateTime profileCreateAt { get; set; }
 
     public string? ProfilePhotoUrl { get; set; }
 
@@ -24,10 +30,28 @@ public class CounsellorDashboardDto
 
     public string DisplayName { get; set; } = null!;
 
-    public bool IsActive { get; set; }
+    public bool IsCounsellorActive { get; set; }
 
-    // 1-to-many lists to avoid row explosion and tracking duplicates
-    public IReadOnlyCollection<string> CounsellorSubscriptions { get; init; } = new List<string>();
+    public SubscriptionStatus status { get; set; }
 
-    public IReadOnlyCollection<ClientDto> Clients { get; init; } = new List<ClientDto>();
+    public DateTime CycleStart { get; set; }
+
+    public DateTime CycleEnd { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public string PlanName { get; set; } = string.Empty;
+
+    public string PlanDescription { get; set; } = string.Empty;
+
+    public decimal Price { get; set; }
+
+    public string BillingType { get; set; } = string.Empty;
+
+    public bool IsPlanActive { get; set; } = true;
+
+    [Column("createdAt")]
+    public DateTime CreatedAt { get; set; }
+
+    public IEnumerable<ClientDto> Clients { get; init; } = new List<ClientDto>();
 }

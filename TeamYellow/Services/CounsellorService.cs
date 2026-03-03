@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using TeamYellow.DTOs;
-using TeamYellow.Models;
 using TeamYellow.Repositories;
 
 namespace TeamYellow.Services;
@@ -19,9 +18,11 @@ public class CounsellorService
         _userManager = userManager;
     }
 
-    public async Task<CounsellorDashboardDto?> GetCurrentCounsellorProfileAsync(ClaimsPrincipal user)
+    public async Task<CounsellorDashboardDto> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
-        var userId = _userManager.GetUserId(user);
-        return await _repository.GetCounsellorInfoByUserIdAsync(userId!);
+        string userId = _userManager.GetUserId(user);
+        CounsellorDashboardDto dto = await _repository.GetCounsellorDashboardDtoAsync(userId);
+
+        return dto;
     }
 }
