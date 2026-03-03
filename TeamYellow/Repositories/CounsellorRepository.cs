@@ -19,92 +19,74 @@ public class CounsellorRepository : ICounsellorRepository
         _context = context;
     }
 
-    public async Task<CounsellorDashboardDto> GetCounsellorDashboardDtoAsync(string userId)
+    public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string userId)
     {
-        CounsellorDashboardDto? dto = await _context.Counsellors
+        // Eagerly load Counsellor with Subscriptions (and their Plans) and Clients in one query
+        Counsellor? counsellor = await _context.Counsellors
             .Where(c => c.UserId == userId)
-            .Join(_context.UserProfiles,
-                c => c.UserId,
-                u => u.UserId,
-                (c, u) => new
-                {
-                    Counsellor = c,
-                    UserProfile = u
-                })
-
-            .Select(x => new
-            {
-                x.Counsellor,
-                x.UserProfile,
-                LatestSubscription = _context.Subscriptions
-                    .Where(s => s.CounsellorId == x.Counsellor.CounsellorId)
-                    .OrderByDescending(s => s.UpdatedAt)
-                    .Select(s => new
-                    {
-                        s.Status,
-                        s.CycleStart,
-                        s.CycleEnd,
-                        s.UpdatedAt,
-                        Plan = _context.Plans.FirstOrDefault(p => p.PlanId == s.PlanId)
-                    })
-                    .FirstOrDefault()
-            })
-            .Select(x => new CounsellorDashboardDto
-            {
-                // From UserProfile
-                FirstName = x.UserProfile.FirstName,
-                LastName = x.UserProfile.LastName,
-                Phone = x.UserProfile.Phone,
-                profileCreateAt = x.UserProfile.CreatedAt,
-                ProfilePhotoUrl = x.UserProfile.ProfilePhotoUrl,
-                UnitNumber = x.UserProfile.UnitNumber,
-                Street = x.UserProfile.Street,
-                City = x.UserProfile.City,
-                Province = x.UserProfile.Province,
-                PostalCode = x.UserProfile.PostalCode,
-
-                // From Counsellor
-                PractitionerLicenceId = x.Counsellor.PractitionerLicenceId,
-                DisplayName = x.Counsellor.DisplayName,
-                IsCounsellorActive = x.Counsellor.IsActive,
-
-                // From Subscription (with null checks)
-                status = x.LatestSubscription != null ? x.LatestSubscription.Status : SubscriptionStatus.Expired,
-                CycleStart = x.LatestSubscription != null ? x.LatestSubscription.CycleStart : DateTime.MinValue,
-                CycleEnd = x.LatestSubscription != null ? x.LatestSubscription.CycleEnd : DateTime.MinValue,
-                UpdatedAt = x.LatestSubscription != null ? x.LatestSubscription.UpdatedAt : DateTime.MinValue,
-
-                // From Plan
-                PlanName = (x.LatestSubscription != null && x.LatestSubscription.Plan != null)
-                    ? x.LatestSubscription.Plan.PlanName
-                    : "No Plan",
-                PlanDescription = (x.LatestSubscription != null && x.LatestSubscription.Plan != null)
-                    ? x.LatestSubscription.Plan.PlanDescription
-                    : string.Empty,
-                Price = (x.LatestSubscription != null && x.LatestSubscription.Plan != null)
-                    ? x.LatestSubscription.Plan.Price
-                    : 0m,
-                BillingType = (x.LatestSubscription != null && x.LatestSubscription.Plan != null)
-                    ? x.LatestSubscription.Plan.BillingType
-                    : string.Empty,
-                IsPlanActive = (x.LatestSubscription != null && x.LatestSubscription.Plan != null)
-                    ? x.LatestSubscription.Plan.IsActive
-                    : false,
-
-                // From Client (List)
-                Clients = _context.Clients
-                    .Where(cl => cl.CounsellorId == x.Counsellor.CounsellorId)
-                    .Select(cl => new ClientDto
-                    {
-                        FirstName = cl.FirstName,
-                        LastName = cl.LastName,
-                        Email = cl.Email,
-                        Phone = cl.Phone,
-                        Status = cl.Status,
-                        CreatedAt = cl.CreatedAt
-                    })
-            })
+            .Include(c => c.Subscriptions)        
+                .ThenInclude(s => s.Plan)        
+            .Include(c => c.Clients)             
             .FirstOrDefaultAsync();
+
+        if (counsellor == null)
+            return null;
+
+        // Join with UserProfile to get profile details
+        UserProfile? userProfile = await _context.UserProfiles
+            .FirstOrDefaultAsync(u => u.UserId == counsellor.UserId);
+
+        Subscription? latestSubscription = counsellor.Subscriptions
+            .OrderByDescending(s => s.UpdatedAt)
+            .FirstOrDefault();
+
+        IReadOnlyCollection<ClientDto> clients = counsellor.Clients
+            .Select(cl => new ClientDto
+            {
+                FirstName = cl.FirstName,
+                LastName = cl.LastName,
+                Email = cl.Email,
+                Phone = cl.Phone,
+                Status = cl.Status,
+                CreatedAt = cl.CreatedAt
+            })
+            .ToList();
+
+        CounsellorDashboardDto dto = new CounsellorDashboardDto
+        {
+            // UserProfile
+            FirstName = userProfile?.FirstName ?? "Unknown",
+            LastName = userProfile?.LastName ?? "Unknown",
+            Phone = userProfile?.Phone,
+            profileCreateAt = userProfile?.CreatedAt ?? DateTime.MinValue,
+            ProfilePhotoUrl = userProfile?.ProfilePhotoUrl,
+            UnitNumber = userProfile?.UnitNumber,
+            Street = userProfile?.Street,
+            City = userProfile?.City,
+            Province = userProfile?.Province,
+            PostalCode = userProfile?.PostalCode,
+
+            // Counsellor
+            PractitionerLicenceId = counsellor.PractitionerLicenceId,
+            DisplayName = counsellor.DisplayName,
+            IsCounsellorActive = counsellor.IsActive,
+
+            // Subscription
+            status = latestSubscription?.Status ?? SubscriptionStatus.Expired,
+            CycleStart = latestSubscription?.CycleStart ?? DateTime.MinValue,
+            CycleEnd = latestSubscription?.CycleEnd ?? DateTime.MinValue,
+            UpdatedAt = latestSubscription?.UpdatedAt ?? DateTime.MinValue,
+
+            // Plan
+            PlanName = latestSubscription?.Plan?.PlanName ?? "No Plan",
+            PlanDescription = latestSubscription?.Plan?.PlanDescription ?? string.Empty,
+            Price = latestSubscription?.Plan?.Price ?? 0m,
+            BillingType = latestSubscription?.Plan?.BillingType ?? string.Empty,
+            IsPlanActive = latestSubscription?.Plan?.IsActive ?? false,
+
+            // Clients
+            Clients = clients
+        };
 
         return dto;
     }
