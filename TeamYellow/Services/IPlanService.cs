@@ -1,9 +1,9 @@
 using TeamYellow.DTOs;
 using TeamYellow.Models;
 
-namespace TeamYellow.Repositories
+namespace TeamYellow.Services
 {
-    public interface IPlanRepository
+    public interface IPlanService
     {
         Task<List<Plan>> GetActivePlans();
 

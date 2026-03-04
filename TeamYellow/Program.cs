@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
+using TeamYellow.Repositories;
+using TeamYellow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +24,10 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient<TeamYellow.Services.PayPalService>();
-builder.Services.AddScoped<TeamYellow.Services.PayPalService>();
+builder.Services.AddHttpClient<PayPalService>();
+builder.Services.AddScoped<PayPalService>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<IPlanService, PlanService>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
