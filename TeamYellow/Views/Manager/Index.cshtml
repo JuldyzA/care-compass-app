@@ -2,25 +2,11 @@
 @using System.Security.Claims
 @model IEnumerable<TeamYellow.ViewModels.ManagerDashboardVM>
 
-
 <div class="container-fluid">
     <div class="row">
 
         <!-- Sidebar -->
-        <nav class="col-md-2 bg-light vh-100 p-3 border-end">
-            <h5 class="fw-bold">Care Compass</h5>
-
-            <div class="mb-4">
-                <small>@(User.FindFirstValue(ClaimTypes.Email) ?? "Manager email")</small>
-            </div>
-            <h5>Manager Dashboard</h5>
-            <ul class="nav flex-column">
-                <li><a asp-controller="Manager" asp-action="Index">Transactions</a></li>
-                <li><a asp-controller="Manager" asp-action="Plans">Plan & Pricing</a></li>
-                <li><a asp-controller="Manager" asp-action="Discounts">Discounts</a></li>
-
-            </ul>
-        </nav>
+        @await Html.PartialAsync("_ManagerSideBar", Model)
 
         <!-- Main Content -->
         <main class="col-md-10 p-4">
@@ -31,45 +17,42 @@
                 <button class="btn btn-outline-primary btn-sm">Sign Out</button>
             </div>
 
-
             <!-- Summary Cards -->
             <div class="row mb-4">
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Total Counsellors</small>
-                        <h5>@Model.Count()</h5>
+                        @* <h5>@vm.Stats.TotalTransactions</h5> *@
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
-                        <small>Monthly Revenue</small>
-                        <h5>@Model.Sum(vm => vm.Amount)</h5>
+                        <small>Total Revenue</small>
+                        @* <h5>@vm.Stats.TotalRevanue</h5> *@
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Paid Transactions</small>
-                        <h5>@Model.Count(vm => vm.SOP == "Paid" && vm.Amount > 0)</h5>
+                        @* <h5>@vm.Stats.SuccessfulPayments</h5> *@
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Failed Transactions</small>
-                        <h5>@Model.Count(vm => vm.SOP == "Failed")</h5>
+                        @* <h5>@vm.Stats.FailedPayments</h5> *@
                     </div>
                 </div>
             </div>
-
 
             <!-- Chart Placeholder -->
             <div class="card mb-4 p-4">
                 <h6>Charts Area</h6>
                 <p>Later you can add Chart.js here.</p>
             </div>
-
 
             <!-- Transactions Table -->
             <div class="card p-3">
@@ -81,11 +64,8 @@
                             <th>Counsellor ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Currency</th>
-                            @* <th>Practitioner Licence ID</th>
-                            <th>Registration Date</th> *@
+                            <th>Currency</th>                          
                             <th>Amount</th>
-                            @* <th>Transaction ID</th> *@
                             <th>Transaction Status</th>
                             <th>Payment Date</th>
                             <th>Details</th>
@@ -99,11 +79,8 @@
                                 <td>@vm.CounsellorId</td>
                                 <td>@vm.CounsellorName</td>
                                 <td>@vm.Email</td>
-                                <th>@vm.Currency</th>
-                                @* <td>@vm.PractitionerLicenceId</td>
-                                <td>@vm.RegistrationDate</td> *@
-                                <td>@vm.Amount</td>
-                                @* <td>@vm.PaymentTransactionId</td> *@
+                                <th>@vm.Currency</th>                              
+                                <td>@vm.Amount</td>                               
                                 <td>@vm.SOP</td>
                                 <td>@vm.PaidAt</td>
                                 <td>

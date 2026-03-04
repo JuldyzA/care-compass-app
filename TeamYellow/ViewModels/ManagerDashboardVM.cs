@@ -13,5 +13,6 @@ namespace TeamYellow.ViewModels
         public string Currency { get; set; } = "CAD";
         public string? PaidAt { get; set; }
         public int PaymentTransactionId { get; set; }
+        public DashboardStatsVM? Stats { get; set; }
     }
 }

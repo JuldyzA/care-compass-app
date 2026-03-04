@@ -5,22 +5,42 @@
 
 <div class="container-fluid">
     <div class="row">
-
-        <!-- Sidebar -->
-        <nav class="col-md-2 bg-light vh-100 p-3 border-end">
-            <h5 class="fw-bold">Care Compass</h5>
-
-            <div class="mb-4">
-                <small>@(User.FindFirstValue(ClaimTypes.Email) ?? "Manager email")</small>
+        @await Html.PartialAsync("_ManagerSideBar", Model)
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Total Counsellors</small>
+                    <h5>vm.Stats.TotalTransactions</h5>
+                </div>
             </div>
-            <h5>Manager Dashboard</h5>
-            <ul class="nav flex-column">
-                <li><a asp-controller="Manager" asp-action="Index">Transactions</a></li>
-                <li><a asp-controller="Manager" asp-action="Plans">Plan & Pricing</a></li>
-                <li><a asp-controller="Manager" asp-action="Discounts">Discounts</a></li>
 
-            </ul>
-        </nav>
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Total Revenue</small>
+                    <h5>vm.Stats.TotalRevanue</h5>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Paid Transactions</small>
+                    <h5>vm.Stats.SuccessfulPayments</h5>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Failed Transactions</small>
+                    <h5>vm.Stats.FailedPayments</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 p-4">
+            <h6>Charts Area</h6>
+            <p>Later you can add Chart.js here.</p>
+        </div>
 
         <!-- Main Content -->
         <main class="col-md-10 p-4">
@@ -39,7 +59,7 @@
                     <p><strong>Paid Date:</strong> @Model.PaidAt</p>
                     <p><strong>Amount:</strong> @Model.Amount</p>
                     <p><strong>Status:</strong> @Model.SOP</p>
-
+                    <p><strong>Practitioner Licence ID:</strong> @Model.PractitionerLicenceId</p>
                     <p>
                         <strong>Counsellor:</strong>
                         @Model.CounsellorName

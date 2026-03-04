@@ -1,0 +1,89 @@
+﻿@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@model TeamYellow.ViewModels.ManagerDashboardVM
+
+
+<div class="container-fluid">
+    <div class="row">
+        @await Html.PartialAsync("_ManagerSideBar", Model)
+
+        <!-- Sidebar -->
+        @* <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Total Counsellors</small>
+                    <h5>@Model.Count()</h5>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Monthly Revenue</small>
+                    <h5>@Model.Sum(vm => vm.Amount)</h5>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Paid Transactions</small>
+                    <h5>@Model.Count(vm => vm.SOP == "Paid" && vm.Amount > 0)</h5>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 text-center">
+                    <small>Failed Transactions</small>
+                    <h5>@Model.Count(vm => vm.SOP == "Failed")</h5>
+                </div>
+            </div>
+        </div> *@
+
+        <div class="card mb-4 p-4">
+            <h6>Charts Area</h6>
+            <p>Later you can add Chart.js here.</p>
+        </div>
+
+        <!-- Main Content -->
+        <main class="col-md-10 p-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Welcome Back, @(User.Identity?.Name ?? "Manager")</h4>
+                <button class="btn btn-outline-primary btn-sm">Sign Out</button>
+            </div>
+
+            <!-- Plans Table -->
+            <div class="card p-3">
+                <h2>Plans</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Plan Name</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Billing Type</th>
+                            <th>Is Active</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var plan in Model.Plans)
+                        {
+                            <tr>
+                                <td>@plan.PlanName</td>
+                                <td>@plan.PlanDescription</td>
+                                <td>@plan.Price.ToString("C")</td>
+                                <td>@plan.BillingType</td>
+                                <td>@plan.IsActive</td>
+                                <td>@plan.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+
+            </div>
+
+        </main>
+    </div>
+</div>
