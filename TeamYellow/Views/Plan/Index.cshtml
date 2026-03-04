@@ -1,4 +1,4 @@
-﻿@model List<TeamYellow.Models.Plan>
+﻿@model List<TeamYellow.ViewModels.PlanVM>
 
 @{
     ViewData["Title"] = "Plan";
@@ -27,14 +27,14 @@
             var isPopular = plan.PlanName == "Monthly";
 
             <div class="col-sm-6 col-lg-4">
-                <div class="card h-100 shadow-sm @(isPopular ? "border-primary border-2" : "")">
+                <div class="card h-100 shadow-sm position-relative @(isPopular ? "border-primary border-2" : "")">
                     @if (isPopular)
                     {
-                        <div class="card-header bg-primary text-white text-center fw-bold">
+                        <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-primary">
                             Most Popular
-                        </div>
+                        </span>
                     }
-                    <div class="card-body text-center">
+                    <div class="card-body text-center pt-4">
                         <div class="text-uppercase text-muted fw-bold mb-2">@plan.PlanName</div>
                         <p class="text-muted">@plan.PlanDescription</p>
 
