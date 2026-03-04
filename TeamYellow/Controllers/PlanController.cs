@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.DTOs;
 using TeamYellow.Services;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
 {
@@ -15,7 +16,22 @@ namespace TeamYellow.Controllers
         public async Task<IActionResult> Index()
         {
             var plans = await _planService.GetActivePlans();
-            return View(plans);
+            var planVMs = plans.Select(p => new PlanVM
+            {
+                PlanId = p.PlanId,
+                PlanName = p.PlanName,
+                PlanDescription = p.PlanDescription,
+                Price = p.Price,
+                BillingType = p.BillingType,
+                IsActive = p.IsActive,
+                PlanFeatures = [.. p.PlanFeatures.Select(f => new PlanFeatureVM
+                {
+                    FeatureName = f.FeatureName,
+                    FeatureDescription = f.FeatureDescription
+                })]
+            }).ToList();
+
+            return View(planVMs);
         }
 
         [Authorize]
@@ -28,13 +44,43 @@ namespace TeamYellow.Controllers
                 return NotFound();
             }
 
-            return View(plan);
+            var planVM = new PlanVM
+            {
+                PlanId = plan.PlanId,
+                PlanName = plan.PlanName,
+                PlanDescription = plan.PlanDescription,
+                Price = plan.Price,
+                BillingType = plan.BillingType,
+                IsActive = plan.IsActive,
+                PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
+                {
+                    FeatureName = f.FeatureName,
+                    FeatureDescription = f.FeatureDescription
+                })]
+            };
+
+            return View(planVM);
         }
 
         public async Task<IActionResult> Manage()
         {
             var plans = await _planService.GetAllPlans();
-            return View(plans);
+            var planVMs = plans.Select(p => new PlanVM
+            {
+                PlanId = p.PlanId,
+                PlanName = p.PlanName,
+                PlanDescription = p.PlanDescription,
+                Price = p.Price,
+                BillingType = p.BillingType,
+                IsActive = p.IsActive,
+                PlanFeatures = [.. p.PlanFeatures.Select(f => new PlanFeatureVM
+                {
+                    FeatureName = f.FeatureName,
+                    FeatureDescription = f.FeatureDescription
+                })]
+            }).ToList();
+
+            return View(planVMs);
         }
 
         public IActionResult Create()
