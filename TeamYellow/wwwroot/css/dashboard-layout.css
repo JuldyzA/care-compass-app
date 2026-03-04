@@ -1,0 +1,476 @@
+/* ========================================
+   Dashboard Layout Styles
+   ======================================== */
+
+:root {
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #cbd5e1;
+    --sidebar-hover: #334155;
+    --sidebar-active: #0d6efd;
+    --content-bg: #f1f5f9;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--content-bg);
+    overflow-x: hidden;
+}
+
+/* ========================================
+   Dashboard Wrapper
+   ======================================== */
+
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ========================================
+   Sidebar Styles
+   ======================================== */
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    z-index: 1040;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .user-details,
+.sidebar.collapsed .sidebar-footer-content span,
+.sidebar.collapsed .user-info-dropdown i.bi-chevron-down {
+    display: none;
+}
+
+.sidebar.collapsed .logo-container {
+    justify-content: center;
+}
+
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 1rem;
+}
+
+.sidebar.collapsed .user-info {
+    justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-footer-content {
+    text-align: center;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    position: relative;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-text {
+    color: white;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Sidebar Toggle Button - Outside Sidebar, Dark & Narrow */
+.sidebar-toggle-inline {
+    position: fixed;
+    left: var(--sidebar-width);
+    top: 33%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 80px;
+    background: linear-gradient(to right, #0f172a, #1e293b);
+    border: none;
+    border-radius: 0 6px 6px 0;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+/* Toggle button follows collapsed sidebar */
+.sidebar.collapsed ~ .sidebar-toggle-inline {
+    left: var(--sidebar-collapsed-width);
+}
+
+.sidebar-toggle-inline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(13, 110, 253, 0.5), transparent);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.sidebar-toggle-inline:hover {
+    width: 16px;
+    background: linear-gradient(to right, #1e293b, #334155);
+}
+
+.sidebar-toggle-inline:hover::before {
+    opacity: 1;
+}
+
+.sidebar-toggle-inline:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.sidebar-toggle-inline:active {
+    background: linear-gradient(to right, var(--sidebar-bg), var(--sidebar-hover));
+}
+
+.sidebar-toggle-inline i {
+    font-size: 0.7rem;
+    transition: var(--transition);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Sidebar User Section */
+.sidebar-user-section {
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info-dropdown {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.75rem;
+    color: var(--sidebar-text);
+    transition: var(--transition);
+    cursor: pointer;
+    text-align: left;
+}
+
+.user-info-dropdown:hover {
+    background: var(--sidebar-hover);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.user-info-dropdown:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    color: var(--sidebar-text);
+    flex-shrink: 0;
+}
+
+.user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role {
+    font-size: 0.75rem;
+}
+
+/* ========================================
+   User Dropdown Menu - With Animations
+   ======================================== */
+
+/* Dropdown Menu Base Styles */
+.sidebar-user-section .dropdown-menu {
+    background-color: var(--sidebar-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.98);
+    transform-origin: top center;
+    transition: opacity 0.2s ease-in, transform 0.2s ease-in, visibility 0s linear 0.2s;
+}
+
+.sidebar-user-section .dropdown-menu.show {
+    z-index: 1000;
+    min-width: 220px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s linear 0s;
+}
+
+/* Dropdown Items */
+.sidebar-user-section .dropdown-item {
+    color: var(--sidebar-text);
+    padding: 0.75rem 1rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-user-section .dropdown-item:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.sidebar-user-section .dropdown-item:focus {
+    background-color: var(--sidebar-hover);
+    color: white;
+    outline: none;
+}
+
+.sidebar-user-section .dropdown-item i {
+    margin-right: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-user-section .dropdown-item:hover i {
+    transform: translateX(2px);
+}
+
+.sidebar-user-section .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem 0;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.sidebar-nav .nav-item {
+    margin: 0.25rem 0.5rem;
+}
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: var(--transition);
+    font-size: 0.95rem;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.sidebar-nav .nav-link:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+}
+
+.sidebar-nav .nav-link.active {
+    background-color: var(--sidebar-active);
+    color: white;
+    font-weight: 500;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 1rem 0.5rem;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer-content {
+    text-align: center;
+}
+
+.sidebar-footer-content a {
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.sidebar-footer-content a:hover {
+    color: white;
+}
+
+.sidebar-footer-content a:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.sidebar-footer-content i {
+    margin-right: 0.25rem;
+}
+
+/* ========================================
+   Main Content Area
+   ======================================== */
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed ~ .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* ========================================
+   Content Area
+   ======================================== */
+
+.content-area {
+    flex: 1;
+    padding: 2rem;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 991.98px) {
+    /* Adjust main content for mobile - let JavaScript handle sidebar state */
+    .main-content {
+        /* Don't override margin-left here, let it be controlled by .sidebar.collapsed */
+    }
+    
+    .content-area {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .content-area {
+        padding: 0.75rem;
+    }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.card {
+    border: none;
+    box-shadow: var(--card-shadow);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    font-weight: 600;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.badge {
+    padding: 0.35em 0.65em;
+    border-radius: 6px;
+}
