@@ -1,0 +1,39 @@
+﻿@model IEnumerable<TeamYellow.ViewModels.RoleVM>
+
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<h1>Role Management</h1>
+
+@if (!string.IsNullOrEmpty(ViewBag.Message))
+{
+    <div class="alert alert-info" style="max-width: 600px;">
+        @ViewBag.Message
+    </div>
+}
+
+<p>
+    <a asp-action="RoleCreate" class="btn btn-primary">Create New Role</a>
+</p>
+<table class="table table-striped" style="width: 320px;">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.First().RoleName)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.RoleName)
+            </td>
+            <td>
+                <a asp-action="RoleDelete" asp-route-roleName="@item.RoleName"
+                    class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -148,5 +148,111 @@ namespace TeamYellow.Controllers
             }
             return View(userRoleVM);
         }
+
+        /// <summary>
+        /// Displays all available roles in the system.
+        /// </summary>
+        public IActionResult RoleIndex(string message = "")
+        {
+            IEnumerable<RoleVM> roles = _roleRepository.GetAllRolesVM();
+            ViewBag.Message = message;
+
+            return View(roles);
+        }
+
+        /// <summary>
+        /// Displays the form for creating a new role.
+        /// </summary>
+        [HttpGet]
+        public IActionResult RoleCreate()
+        {
+            return View(new RoleVM());
+        }
+
+        /// <summary>
+        /// Creates a new role if it does not already exist.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RoleCreate(RoleVM roleVM)
+        {
+            if (ModelState.IsValid)
+            {
+                bool isSuccess = _roleRepository.CreateRole(roleVM.RoleName);
+
+                if (isSuccess)
+                {
+                    string message = "Successfully added " +
+                                     roleVM.RoleName +
+                                     " to Roles.";
+                    return RedirectToAction(nameof(RoleIndex), new { message });
+                }
+                else
+                {
+                    string message = "Role creation failed. " +
+                                     roleVM.RoleName +
+                                     " may already exist.";
+
+                    ModelState.AddModelError("", message);
+                    _logger.LogError(message);
+                }
+            }
+            return View(roleVM);
+        }
+
+        /// <summary>
+        /// Displays a confirmation page before removing a role.
+        /// </summary>
+        public IActionResult RoleDelete(string roleName)
+        {
+            if (string.IsNullOrEmpty(roleName))
+            {
+                string message = "Role name cannot be empty.";
+                _logger.LogWarning(message);
+                return RedirectToAction(nameof(RoleIndex), new { message });
+            }
+
+            RoleVM? role = _roleRepository.GetRoleVM(roleName);
+
+            if (role == null)
+            {
+                string message = $"Role '{roleName}' not found";
+                _logger.LogWarning(message);
+                return RedirectToAction(nameof(RoleIndex), new { message = message });
+            }
+            return View(role);
+        }
+
+        /// <summary>
+        /// Deletes a role securely using POST and Anti-Forgery Token validation.
+        /// A role cannot be deleted if users are currently assigned to it.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RoleDelete(RoleVM roleVM)
+        {
+            if (ModelState.IsValid)
+            {
+                bool isSuccess = _roleRepository.DeleteRole(roleVM.RoleName);
+
+                if (isSuccess)
+                {
+                    string message = "Successfully removed " +
+                                     roleVM.RoleName +
+                                     " from Roles.";
+                    return RedirectToAction(nameof(RoleIndex), new { message = message });
+                }
+                else
+                {
+                    string message = "Role deletion failed. " +
+                                     roleVM.RoleName +
+                                     " may have users attached.";
+
+                    ModelState.AddModelError("", message);
+                    _logger.LogError(message);
+                }
+            }
+            return View(roleVM);
+        }
     }
 }
