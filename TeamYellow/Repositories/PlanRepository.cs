@@ -11,17 +11,19 @@ namespace TeamYellow.Repositories
 
         public async Task<List<Plan>> GetActivePlans()
         {
-            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
                 .Where(p => p.IsActive)
-                .OrderBy(p => p.Price)
                 .ToListAsync();
+
+            return [.. plans.OrderBy(p => p.Price)];
         }
 
         public async Task<List<Plan>> GetAllPlans()
         {
-            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
-                .OrderBy(p => p.Price)
+            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
                 .ToListAsync();
+
+            return [.. plans.OrderBy(p => p.Price)];
         }
 
         public async Task<Plan?> GetPlanById(int id)
