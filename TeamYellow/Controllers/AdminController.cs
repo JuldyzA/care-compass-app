@@ -254,5 +254,15 @@ namespace TeamYellow.Controllers
             }
             return View(roleVM);
         }
+
+        /// <summary>
+        /// Get all the user logs for Admin
+        /// </summary>
+        public IActionResult UserLogAll()
+        {
+            var userLogVM = _userLogRepository.GetAll();
+
+            return View(userLogVM);
+        }
     }
 }
