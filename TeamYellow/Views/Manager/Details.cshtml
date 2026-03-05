@@ -2,45 +2,11 @@
 @using System.Security.Claims
 @model TeamYellow.ViewModels.ManagerDashboardVM
 
-
 <div class="container-fluid">
     <div class="row">
+
+        <!-- Sidebar -->
         @await Html.PartialAsync("_ManagerSideBar", Model)
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card shadow-sm p-3 text-center">
-                    <small>Total Counsellors</small>
-                    <h5>vm.Stats.TotalTransactions</h5>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card shadow-sm p-3 text-center">
-                    <small>Total Revenue</small>
-                    <h5>vm.Stats.TotalRevanue</h5>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card shadow-sm p-3 text-center">
-                    <small>Paid Transactions</small>
-                    <h5>vm.Stats.SuccessfulPayments</h5>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card shadow-sm p-3 text-center">
-                    <small>Failed Transactions</small>
-                    <h5>vm.Stats.FailedPayments</h5>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-4 p-4">
-            <h6>Charts Area</h6>
-            <p>Later you can add Chart.js here.</p>
-        </div>
 
         <!-- Main Content -->
         <main class="col-md-10 p-4">

@@ -1,12 +1,12 @@
 ﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using System.Security.Claims
-@model IEnumerable<TeamYellow.ViewModels.ManagerDashboardVM>
+@model TeamYellow.ViewModels.ManagerDashboardPageVM
 
 <div class="container-fluid">
     <div class="row">
 
         <!-- Sidebar -->
-        @await Html.PartialAsync("_ManagerSideBar", Model)
+        @await Html.PartialAsync("_ManagerSideBar")
 
         <!-- Main Content -->
         <main class="col-md-10 p-4">
@@ -14,7 +14,7 @@
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4>Welcome Back, @(User.Identity?.Name ?? "Manager")</h4>
-                <button class="btn btn-outline-primary btn-sm">Sign Out</button>
+                
             </div>
 
             <!-- Summary Cards -->
@@ -22,28 +22,28 @@
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Total Counsellors</small>
-                        @* <h5>@vm.Stats.TotalTransactions</h5> *@
+                        <h5>@Model.Stats.TotalTransactions</h5>
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Total Revenue</small>
-                        @* <h5>@vm.Stats.TotalRevanue</h5> *@
+                        <h5>@Model.Stats.TotalRevenue.ToString("C")</h5>
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Paid Transactions</small>
-                        @* <h5>@vm.Stats.SuccessfulPayments</h5> *@
+                        <h5>@Model.Stats.SuccessfulPayments</h5>
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card shadow-sm p-3 text-center">
                         <small>Failed Transactions</small>
-                        @* <h5>@vm.Stats.FailedPayments</h5> *@
+                        <h5>@Model.Stats.FailedPayments</h5>
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var vm in Model)
+                        @foreach (var vm in Model.Counsellors)
                         {
                             <tr>
                                 <td>@vm.CounsellorId</td>

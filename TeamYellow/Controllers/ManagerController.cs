@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using TeamYellow.Repositories;
 using TeamYellow.Models;
 using TeamYellow.ViewModels;
-using Microsoft.EntityFrameworkCore;
 
 namespace TeamYellow.Controllers
 {
@@ -27,89 +26,97 @@ namespace TeamYellow.Controllers
             var dashboardData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .ToList();
-            
-            return View(dashboardData);
+
+            var stats = new DashboardStatsVM
+            {
+                TotalTransactions = dashboardData.Count,
+
+                TotalRevenue = dashboardData.Sum(x => x.Amount),
+
+                FailedPayments = dashboardData.Count(x => x.SOP == "Failed"),
+
+                SuccessfulPayments = dashboardData.Count(x => x.SOP == "Paid")
+            };
+            var pageVM = new ManagerDashboardPageVM
+            {
+                Stats = stats,
+                Counsellors = dashboardData
+            };
+
+            return View(pageVM);
         }
 
 
         private ManagerDashboardVM GetManagerDashboardData(Counsellor counsellor)
         {
-            var payments = counsellor.Subscriptions
+            var payments = counsellor.Subscriptions?
                 .Select(s => s.PaymentTransaction)
                 .Where(p => p != null)
-                .ToList() ?? new List<PaymentTransaction>();
+                .ToList() ?? new List<PaymentTransaction?>();
 
             var firstPayment = payments.FirstOrDefault();
-            var stats = new DashboardStatsVM
-            {
-                TotalTransactions = payments.Count,
-                TotalRevenue = payments.Sum(p => p?.Amount ?? 0),
-                FailedPayments = payments.Count(p => p.Status == PaymentTransactionStatus.Failed),
-                SuccessfulPayments = payments.Count(p => p.Status == PaymentTransactionStatus.Captured),
-                ActiveSubscriptions = counsellor.Subscriptions.Count(s => s.Status == SubscriptionStatus.Active)
-            };
 
             return new ManagerDashboardVM
             {
                 CounsellorId = counsellor.CounsellorId,
                 PractitionerLicenceId = counsellor.PractitionerLicenceId,
                 CounsellorName = counsellor.DisplayName,
+
                 Email = counsellor.User?.Email ?? "No email",
                 Amount = payments.Sum(p => p?.Amount ?? 0),
                 PaymentTransactionId = firstPayment?.PaymentTransactionId ?? 0,
                 Currency = firstPayment?.Currency ?? "CAD",
-                SOP = payments?.Any(p => p.Status == PaymentTransactionStatus.Failed) ?? false
+                SOP = payments.Any(p => p?.Status == PaymentTransactionStatus.Failed)
                     ? "Failed"
                     : "Paid",
                 PaidAt = firstPayment?.PaidAt.ToString("yyyy-MM-dd"),
                 RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
-                Stats = stats
             };
         }
 
-        private static ManagerPlanDiscountVM GetManagerPlanDiscount(Plan plan)
-        {
-            var subscriptions = plan.Subscriptions ?? new List<Subscription>();
+        //private static ManagerPlanDiscountVM GetManagerPlanDiscount(Plan plan)
+        //{
+        //    var subscriptions = plan.Subscriptions ?? new List<Subscription>();
 
-            var discounts = plan.PlanDiscounts?.Select(pd => new DiscountVM
-            {
-                DiscountId = pd.Discount.DiscountId,
-                DiscountCode = pd.Discount.DiscountCode,
-                DiscountType = pd.Discount.DiscountType,
-                DiscountValue = pd.Discount.Value,
-                StartDate = pd.Discount.StartDateTime,
-                EndDate = pd.Discount.EndDate
-            }).ToList() ?? new List<DiscountVM>();
+        //    var discounts = plan.PlanDiscounts?.Select(pd => new DiscountVM
+        //    {
+        //        DiscountId = pd.Discount.DiscountId,
+        //        DiscountCode = pd.Discount.DiscountCode,
+        //        DiscountType = pd.Discount.DiscountType,
+        //        DiscountValue = pd.Discount.Value,
+        //        StartDate = pd.Discount.StartDateTime,
+        //        EndDate = pd.Discount.EndDateTime
+        //    }).ToList() ?? new List<DiscountVM>();
 
-            var stats = new DashboardStatsVM
-            {
-                TotalTransactions = subscriptions.Count,
-                TotalRevenue = subscriptions
-                    .Select(s => s.PaymentTransaction)
-                    .Where(p => p != null)
-                    .Sum(p => p.Amount),
-                FailedPayments = subscriptions
-                    .Select(s => s.PaymentTransaction)
-                    .Count(p => p != null && p.Status == PaymentTransactionStatus.Failed),
-                SuccessfulPayments = subscriptions
-                    .Select(s => s.PaymentTransaction)
-                    .Count(p => p != null && p.Status == PaymentTransactionStatus.Captured),
-                ActiveSubscriptions = subscriptions.Count(s => s.Status == SubscriptionStatus.Active)
-            };
+        //    var stats = new DashboardStatsVM
+        //    {
+        //        TotalTransactions = subscriptions.Count,
+        //        TotalRevenue = subscriptions
+        //            .Select(s => s.PaymentTransaction)
+        //            .Where(p => p != null)
+        //            .Sum(p => p.Amount),
+        //        FailedPayments = subscriptions
+        //            .Select(s => s.PaymentTransaction)
+        //            .Count(p => p != null && p.Status == PaymentTransactionStatus.Failed),
+        //        SuccessfulPayments = subscriptions
+        //            .Select(s => s.PaymentTransaction)
+        //            .Count(p => p != null && p.Status == PaymentTransactionStatus.Captured),
+        //        ActiveSubscriptions = subscriptions.Count(s => s.Status == SubscriptionStatus.Active)
+        //    };
 
-            return new ManagerPlanDiscountVM
-            {
-                Id = plan.PlanId,
-                PlanName = plan.PlanName,
-                PlanDescription = plan.PlanDescription,
-                PlanPrice = plan.Price,
-                PlanBillingType = plan.BillingType,
-                PlanIsActive = plan.IsActive,
-                PlanCreatedAt = plan.CreatedAt,
-                Discounts = discounts,
-                Stats = stats
-            };
-        }
+        //    return new ManagerPlanDiscountVM
+        //    {
+        //        Id = plan.PlanId,
+        //        PlanName = plan.PlanName,
+        //        PlanDescription = plan.PlanDescription,
+        //        PlanPrice = plan.Price,
+        //        PlanBillingType = plan.BillingType,
+        //        PlanIsActive = plan.IsActive,
+        //        PlanCreatedAt = plan.CreatedAt,
+        //        Discounts = discounts,
+        //        Stats = stats
+        //    };
+        //}
         
 
         // private Counsellor MapToCounsellor(ManagerDashboardVM vm)
@@ -126,22 +133,21 @@ namespace TeamYellow.Controllers
         public IActionResult Details(int id)
         {
             var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
-            var datailsData = counsellors
+            var detailsData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .FirstOrDefault(d => d.PaymentTransactionId == id);
 
-            if (datailsData == null)
+            if (detailsData == null)
             {
                 return NotFound();
             }
-
-            return View(datailsData);
+            return View(detailsData);
         }
 
-        //[Route("Manager/Plans")]
+       
         public IActionResult Plans()
         {
-            var plans = PlanRepository.GetAll() ?? new List<Plan>();
+            var plans = PlanRepository.GetAll().ToList();
             return View(plans);
         }
     }
