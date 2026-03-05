@@ -39,7 +39,7 @@
                         <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <div class="user-info">
                                 <div class="user-avatar" aria-hidden="true">
-                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? "https://randomuser.me/api/portraits/med/men/1.jpg")" alt="User Profile Picture" />
+                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? ViewData["DefaultUserProfilePicture"])" alt="User Profile Picture" />
                                     @* <i class="bi bi-person-circle fs-3"></i> *@
                                 </div>
                                 <div class="user-details">
@@ -132,7 +132,8 @@
             <div class="site-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h2 class="header-welcome">Welcome back, @(SignInManager.IsSignedIn(User) ? UserManager.GetUserName(User) : "Guest")!</h2>
+                        <h2 class="header-welcome">Welcome back, Dr. @(ViewData["DisplayName"])!</h2>
+                        <p class="header-message">Here is the latest update of your clinic</p>
                     </div>
                     <div class="header-right">
                         @if (SignInManager.IsSignedIn(User))
@@ -142,7 +143,7 @@
                                 <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                                     <div class="header-user-info">
                                         <div class="header-user-avatar" aria-hidden="true">
-                                            <img class="header-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? "https://randomuser.me/api/portraits/med/men/1.jpg")" alt="User Profile Picture" />
+                                            <img class="header-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? ViewData["DefaultUserProfilePicture"])" alt="User Profile Picture" />
                                         </div>
                                         <div class="header-user-details">
                                             <div class="header-user-name">@userName</div>

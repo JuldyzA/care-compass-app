@@ -363,7 +363,6 @@ body {
     margin: 1rem 0.5rem;
 }
 
-/* Sidebar Footer */
 .sidebar-footer {
     padding: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -486,8 +485,11 @@ body {
    ======================================== */
 
 .site-header {
-    padding: 1rem 2rem;
-    position: sticky;
+    background-color: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
     top: 0;
     z-index: 1030;
 }
@@ -507,6 +509,10 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--dark-color);
+}
+
+.header-message {
+    margin: 0;
 }
 
 .header-right {
@@ -623,18 +629,27 @@ body {
     margin: 0.5rem 0;
 }
 
-/* Mobile Responsiveness - Hide user section on mobile */
 @media (max-width: 767.98px) {
-    .site-header {
-        padding: 1rem;
-    }
 
+     .site-header {
+         min-height: 64px;
+     }
+     
     .header-welcome {
         font-size: 1.25rem;
     }
 
-    /* Hide user section on mobile */
     .header-right {
+        display: none;
+    }
+}
+
+@media (max-width: 400px) {
+    .header-welcome {
+        margin: 0.5rem 0;
+    }
+
+    .header-message {
         display: none;
     }
 }
