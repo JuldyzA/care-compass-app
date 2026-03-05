@@ -3,33 +3,35 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
-using TeamYellow.Models;
+using TeamYellow.DTOs;
+using TeamYellow.Repositories;
 using TeamYellow.Services;
 
 namespace TeamYellow.Controllers;
 
 [Authorize]
-public class SubscriptionController : Controller
+public class SubscriptionController(
+    PayPalService payPalService,
+    ApplicationDbContext context,
+    UserManager<IdentityUser> userManager,
+    IPlanRepository planRepository,
+    ISubscriptionRepository subscriptionRepository,
+    ITransactionRepository transactionRepository) : Controller
 {
-    private readonly PayPalService _payPalService;
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
-
-    public SubscriptionController(PayPalService payPalService, ApplicationDbContext context, UserManager<IdentityUser> userManager)
-    {
-        _payPalService = payPalService;
-        _context = context;
-        _userManager = userManager;
-    }
+    private readonly PayPalService _payPalService = payPalService;
+    private readonly ApplicationDbContext _context = context;
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IPlanRepository _planRepository = planRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
+    private readonly ITransactionRepository _transactionRepository = transactionRepository;
 
     [HttpPost]
     public async Task<IActionResult> Subscribe(int planId)
     {
-        var plan = await _context.Plans.FindAsync(planId);
+        var plan = await _planRepository.GetPlanById(planId);
         if (plan == null) return NotFound();
 
-        // Create PayPal Order
-        var returnUrl = Url.Action("Success", "Subscription", new { planId = planId }, Request.Scheme);
+        var returnUrl = Url.Action("Success", "Subscription", new { planId }, Request.Scheme);
         var cancelUrl = Url.Action("Cancel", "Subscription", null, Request.Scheme);
 
         try
@@ -43,7 +45,7 @@ public class SubscriptionController : Controller
         }
     }
 
-    public async Task<IActionResult> Success(string token, string PayerID, int planId)
+    public async Task<IActionResult> Success(string token, int planId)
     {
         try
         {
@@ -51,52 +53,35 @@ public class SubscriptionController : Controller
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            // Find existing Counsellor Profile for this user
-            // Assuming 1-to-1 rel based on userId string on Counsellor
             var counsellor = await _context.Counsellors.FirstOrDefaultAsync(c => c.UserId == user.Id);
-            
             if (counsellor == null)
-            {
-                // Should handle creating one if needed, but assuming user is a Counsellor
-                // Here we fallback or error out
                 return RedirectToAction("Index", "Home", new { error = "Counsellor profile not found." });
-            }
 
-            var plan = await _context.Plans.FindAsync(planId);
+            var plan = await _planRepository.GetPlanById(planId);
+            if (plan == null) return NotFound();
 
-            // Create Subscription
-            var subscription = new Subscription
+            var subscription = await _subscriptionRepository.CreateSubscription(new AddSubscriptionDto
             {
                 CounsellorId = counsellor.CounsellorId,
                 PlanId = planId,
-                Status = SubscriptionStatus.Active,
-                CycleStart = DateTime.UtcNow,
-                CycleEnd = DateTime.UtcNow.AddMonths(1),
-                UpdatedAt = DateTime.UtcNow
-            };
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
+                BillingType = plan.BillingType
+            });
 
-            // Create Payment Transaction
-            var transaction = new PaymentTransaction
+            await _transactionRepository.CreateTransaction(new AddTransactionDto
             {
                 SubscriptionId = subscription.SubscriptionId,
                 PayerName = user.UserName ?? "Unknown",
-                Amount = plan!.Price,
+                Amount = plan.Price,
                 Currency = "CAD",
                 Provider = "PayPal",
-                ProviderOrderId = captureId, // The ID returned from CaptureOrder
-                Status = PaymentTransactionStatus.Captured,
-                PaidAt = DateTime.UtcNow
-            };
-            _context.PaymentTransactions.Add(transaction);
-            await _context.SaveChangesAsync();
+                ProviderOrderId = captureId
+            });
 
             return View();
         }
         catch (Exception ex)
         {
-             return RedirectToAction("Index", "Home", new { error = $"Payment failed: {ex.Message}" });
+            return RedirectToAction("Index", "Home", new { error = $"Payment failed: {ex.Message}" });
         }
     }
 

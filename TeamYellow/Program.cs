@@ -28,6 +28,8 @@ builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<PayPalService>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
@@ -62,8 +64,8 @@ if (app.Environment.IsDevelopment())
     var db = services.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
 
-    await services.GetRequiredService<RoleSeeder>().SeedAsync();     
-    await services.GetRequiredService<IdentitySeeder>().SeedAsync(); 
+    await services.GetRequiredService<RoleSeeder>().SeedAsync();
+    await services.GetRequiredService<IdentitySeeder>().SeedAsync();
 
     await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
     await services.GetRequiredService<CounsellorSeeder>().SeedAsync();
