@@ -129,6 +129,50 @@
         <!-- Main Content Area -->
         <div class="main-content">
 
+            <div class="site-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h2 class="header-welcome">Welcome back, @(SignInManager.IsSignedIn(User) ? UserManager.GetUserName(User) : "Guest")!</h2>
+                    </div>
+                    <div class="header-right">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            var userName = UserManager.GetUserName(User);
+                            <div class="dropdown">
+                                <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                                    <div class="header-user-info">
+                                        <div class="header-user-avatar" aria-hidden="true">
+                                            <img class="header-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? "https://randomuser.me/api/portraits/med/men/1.jpg")" alt="User Profile Picture" />
+                                        </div>
+                                        <div class="header-user-details">
+                                            <div class="header-user-name">@userName</div>
+                                            <div class="header-user-role">Counsellor</div>
+                                        </div>
+                                        <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
+                                    <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
+                                    <li><a class="dropdown-item" href="/Counsellor/Clients"><i class="bi bi-people" aria-hidden="true"></i> Clients</a></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" id="headerNotificationsLink">
+                                            <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+                                            <span class="badge bg-danger ms-2">3</span>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
             <!-- Page Content -->
             <main class="content-area" role="main" aria-label="Main content">
                 @RenderBody()
