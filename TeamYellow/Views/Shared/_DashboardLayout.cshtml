@@ -39,7 +39,8 @@
                         <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <div class="user-info">
                                 <div class="user-avatar" aria-hidden="true">
-                                    <i class="bi bi-person-circle fs-3"></i>
+                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? "https://randomuser.me/api/portraits/med/men/1.jpg")" alt="User Profile Picture" />
+                                    @* <i class="bi bi-person-circle fs-3"></i> *@
                                 </div>
                                 <div class="user-details">
                                     <div class="user-name">@userName</div>

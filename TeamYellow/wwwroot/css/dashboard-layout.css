@@ -215,6 +215,12 @@ body {
     flex-shrink: 0;
 }
 
+.sidebar-user-profile-picture {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+}
+
 .user-details {
     flex: 1;
     min-width: 0;
