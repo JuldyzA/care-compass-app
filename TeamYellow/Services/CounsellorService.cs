@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Services;
 
@@ -19,7 +21,7 @@ public class CounsellorService
         _userManager = userManager;
     }
 
-    public async Task<CounsellorDashboardDto?> GetCounsellorDashboardAsync(ClaimsPrincipal user)
+    public async Task<CounsellorDashboardVM?> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
         CounsellorDashboardDto? dto = await _repository.GetCounsellorDashboardDtoAsync(userId);
@@ -29,6 +31,8 @@ public class CounsellorService
             dto.IsSubscriptionActive = dto.CycleEnd > DateTime.UtcNow && dto.Status == SubscriptionStatus.Active;
         }
 
-        return dto;
+        CounsellorDashboardVM? vm = CounsellorDashboardHelper.MapToVm(dto, userId, user.Identity?.Name);
+
+        return vm;
     }
 }

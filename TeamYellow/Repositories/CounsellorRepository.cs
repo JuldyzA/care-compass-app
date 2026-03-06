@@ -25,7 +25,6 @@ public class CounsellorRepository : ICounsellorRepository
             .Where(c => c.UserId == userId)
             .Include(c => c.Subscriptions.OrderByDescending(s => s.UpdatedAt).Take(1))
                 .ThenInclude(s => s.Plan)
-            .Include(c => c.Clients)
             .Join(_context.UserProfiles,
                 c => c.UserId,
                 u => u.UserId,
@@ -38,6 +37,7 @@ public class CounsellorRepository : ICounsellorRepository
             .Select(data => new CounsellorDashboardDto
             {
                 // UserProfile data
+                UserProfileId = data.UserProfile.UserProfileId,
                 FirstName = data.UserProfile.FirstName,
                 LastName = data.UserProfile.LastName,
                 Phone = data.UserProfile.Phone,
@@ -50,11 +50,15 @@ public class CounsellorRepository : ICounsellorRepository
                 PostalCode = data.UserProfile.PostalCode,
 
                 // Counsellor data
+                CounsellerId = data.Counsellor.CounsellorId,
                 PractitionerLicenceId = data.Counsellor.PractitionerLicenceId,
                 DisplayName = data.Counsellor.DisplayName,
                 IsCounsellorActive = data.Counsellor.IsActive,
 
                 // Subscription data
+                SubscriptionId = data.LatestSubscription != null 
+                    ? data.LatestSubscription.SubscriptionId 
+                    : 0,
                 Status = data.LatestSubscription != null 
                     ? data.LatestSubscription.Status 
                     : SubscriptionStatus.Expired,
@@ -69,6 +73,9 @@ public class CounsellorRepository : ICounsellorRepository
                     : DateTime.MinValue,
 
                 // Plan data
+                PlanId = data.LatestSubscription != null && data.LatestSubscription.Plan != null
+                    ? data.LatestSubscription.Plan.PlanId
+                    : 0,
                 PlanName = data.LatestSubscription != null && data.LatestSubscription.Plan != null
                     ? data.LatestSubscription.Plan.PlanName
                     : "No Plan",
@@ -83,18 +90,7 @@ public class CounsellorRepository : ICounsellorRepository
                     : string.Empty,
                 IsPlanActive = data.LatestSubscription != null && data.LatestSubscription.Plan != null
                     ? data.LatestSubscription.Plan.IsActive
-                    : false,
-
-                // Clients collection (with navigation property)
-                Clients = data.Counsellor.Clients.Select(client => new ClientDto
-                {
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Email = client.Email,
-                    Phone = client.Phone,
-                    Status = client.Status,
-                    CreatedAt = client.CreatedAt
-                })
+                    : false
             })
             .FirstOrDefaultAsync();
 

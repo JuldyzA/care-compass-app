@@ -1,9 +1,13 @@
 ﻿using TeamYellow.Models;
 
-namespace TeamYellow.DTOs;
+namespace TeamYellow.ViewModels;
 
-public class CounsellorDashboardDto
+public class CounsellorDashboardVM
 {
+    public string UserId { get; set; } = null!;
+
+    public string Email { get; set; } = null!;
+
     public int UserProfileId { get; set; }
 
     public string FirstName { get; set; } = null!;

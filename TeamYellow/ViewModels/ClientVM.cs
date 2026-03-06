@@ -1,8 +1,8 @@
 ﻿using TeamYellow.Models;
 
-namespace TeamYellow.DTOs;
+namespace TeamYellow.ViewModels;
 
-public class ClientDto
+public class ClientVM
 {
     public string FirstName { get; set; } = null!;
 
