@@ -4,5 +4,85 @@
     ViewData["DefaultUserProfilePicture"] = "https://randomuser.me/api/portraits/med/men/1.jpg";
     ViewData["DisplayName"] = "Jinming Zhang";
 }
-<h1>Dashboard Overview</h1>
 
+<style>
+
+</style>
+
+<div class="row">
+    <div class="col-sm">
+        <div class="card">
+            <div class="card-body p-0">
+
+                <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
+                    <div>
+                        <div class="text-secondary">Sessions This Month</div>
+                        <div class="h1 mb-0">12</div>
+                    </div>
+
+                    <div class="text-success">
+                        +12%
+                    </div>
+                </div>
+
+                <div id="sessionsChart" class=""></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var options = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Sessions',
+                data: [18,32,20,28,26,30,74]
+            }],
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#206bc4']
+        };
+
+        var chart = new ApexCharts(
+            document.querySelector("#sessionsChart"),
+            options
+        );
+
+        chart.render();
+
+    </script>
+}
