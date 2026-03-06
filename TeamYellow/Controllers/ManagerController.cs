@@ -10,13 +10,13 @@ namespace TeamYellow.Controllers
     public class ManagerController : Controller
     {
         private readonly CounsellorRepository CounsellorRepository;
-        private readonly PlanRepository PlanRepository; 
-    
+        private readonly PlanRepository PlanRepository;
+
 
         public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository)
         {
             CounsellorRepository = counsellorRepository;
-            PlanRepository = planRepository; 
+            PlanRepository = planRepository;
 
         }
 
@@ -74,50 +74,6 @@ namespace TeamYellow.Controllers
             };
         }
 
-        //private static ManagerPlanDiscountVM GetManagerPlanDiscount(Plan plan)
-        //{
-        //    var subscriptions = plan.Subscriptions ?? new List<Subscription>();
-
-        //    var discounts = plan.PlanDiscounts?.Select(pd => new DiscountVM
-        //    {
-        //        DiscountId = pd.Discount.DiscountId,
-        //        DiscountCode = pd.Discount.DiscountCode,
-        //        DiscountType = pd.Discount.DiscountType,
-        //        DiscountValue = pd.Discount.Value,
-        //        StartDate = pd.Discount.StartDateTime,
-        //        EndDate = pd.Discount.EndDateTime
-        //    }).ToList() ?? new List<DiscountVM>();
-
-        //    var stats = new DashboardStatsVM
-        //    {
-        //        TotalTransactions = subscriptions.Count,
-        //        TotalRevenue = subscriptions
-        //            .Select(s => s.PaymentTransaction)
-        //            .Where(p => p != null)
-        //            .Sum(p => p.Amount),
-        //        FailedPayments = subscriptions
-        //            .Select(s => s.PaymentTransaction)
-        //            .Count(p => p != null && p.Status == PaymentTransactionStatus.Failed),
-        //        SuccessfulPayments = subscriptions
-        //            .Select(s => s.PaymentTransaction)
-        //            .Count(p => p != null && p.Status == PaymentTransactionStatus.Captured),
-        //        ActiveSubscriptions = subscriptions.Count(s => s.Status == SubscriptionStatus.Active)
-        //    };
-
-        //    return new ManagerPlanDiscountVM
-        //    {
-        //        Id = plan.PlanId,
-        //        PlanName = plan.PlanName,
-        //        PlanDescription = plan.PlanDescription,
-        //        PlanPrice = plan.Price,
-        //        PlanBillingType = plan.BillingType,
-        //        PlanIsActive = plan.IsActive,
-        //        PlanCreatedAt = plan.CreatedAt,
-        //        Discounts = discounts,
-        //        Stats = stats
-        //    };
-        //}
-        
 
         // private Counsellor MapToCounsellor(ManagerDashboardVM vm)
         // {
@@ -144,11 +100,41 @@ namespace TeamYellow.Controllers
             return View(detailsData);
         }
 
-       
+
         public IActionResult Plans()
         {
             var plans = PlanRepository.GetAll().ToList();
             return View(plans);
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var plan = PlanRepository.GetById(id);
+
+            if (plan == null)
+            {
+                return NotFound();
+            }
+
+            return View(plan);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Plan entity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(entity);
+            }
+
+            var result = PlanRepository.Update(entity);
+
+            if (string.IsNullOrEmpty(result))
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction("Plans");
         }
     }
 }

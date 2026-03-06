@@ -48,9 +48,10 @@ namespace TeamYellow.Repositories
         }
 
 
-        string IRepository<Plan>.Update(Plan entity)
+        public string Update(Plan entity)
         {
             var existingPlan = Context.Plans.Find(entity.PlanId);
+
             if (existingPlan == null)
             {
                 return string.Empty;
@@ -61,9 +62,9 @@ namespace TeamYellow.Repositories
             existingPlan.Price = entity.Price;
             existingPlan.BillingType = entity.BillingType;
             existingPlan.IsActive = entity.IsActive;
-            existingPlan.CreatedAt = entity.CreatedAt;
 
             Context.SaveChanges();
+
             return existingPlan.PlanId.ToString();
         }
     }
