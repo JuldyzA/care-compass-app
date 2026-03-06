@@ -1,150 +1,76 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using TeamYellow.DTOs;
-using TeamYellow.Models;
-using TeamYellow.Services;
-using TeamYellow.ViewModels;
+namespace TeamYellow.Controllers;
 
-namespace TeamYellow.Controllers
+[Authorize]
+public class PlanController(IPlanService planService) : Controller
 {
+    private readonly IPlanService _planService = planService;
 
-    [Authorize]
-    public class PlanController(IPlanService planService) : Controller
+    [AllowAnonymous]
+    public async Task<IActionResult> Index()
     {
-        private readonly IPlanService _planService = planService;
+        var plans = await _planService.GetActivePlans();
+        return View(plans.Select(MapToPlanVM).ToList());
+    }
 
-        [AllowAnonymous]
-        public async Task<IActionResult> Index()
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public async Task<IActionResult> Checkout(int id)
+    {
+        var plan = await _planService.GetPlanById(id);
+
+        if (plan == null || !plan.IsActive)
         {
-            var plans = await _planService.GetActivePlans();
-            return View(plans.Select(MapToPlanVM).ToList());
+            return NotFound();
         }
 
-        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
-        public async Task<IActionResult> Checkout(int id)
+        return View(MapToPlanVM(plan));
+    }
+
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Manage()
+    {
+        var plans = await _planService.GetAllPlans();
+        return View(plans.Select(MapToPlanVM).ToList());
+    }
+
+    [Authorize(Roles = "Manager")]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Create(AddPlanDto addPlanDto)
+    {
+        if (!ModelState.IsValid)
         {
-            var plan = await _planService.GetPlanById(id);
-
-            if (plan == null || !plan.IsActive)
-            {
-                return NotFound();
-            }
-
-            return View(MapToPlanVM(plan));
+            return View(addPlanDto);
         }
 
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Manage()
+        try
         {
-            var plans = await _planService.GetAllPlans();
-            return View(plans.Select(MapToPlanVM).ToList());
+            await _planService.AddPlan(addPlanDto);
+            return RedirectToAction(nameof(Manage));
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "An error occurred while creating the plan. Please try again.");
+            return View(addPlanDto);
+        }
+    }
+
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var plan = await _planService.GetPlanById(id);
+
+        if (plan == null)
+        {
+            return NotFound();
         }
 
-        [Authorize(Roles = "Manager")]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Create(AddPlanDto addPlanDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(addPlanDto);
-            }
-
-            try
-            {
-                await _planService.AddPlan(addPlanDto);
-                return RedirectToAction(nameof(Manage));
-            }
-            catch (Exception)
-            {
-                ModelState.AddModelError(string.Empty, "An error occurred while creating the plan. Please try again.");
-                return View(addPlanDto);
-            }
-        }
-
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var plan = await _planService.GetPlanById(id);
-
-            if (plan == null)
-            {
-                return NotFound();
-            }
-
-            var updatePlanDto = new UpdatePlanDto
-            {
-                PlanId = plan.PlanId,
-                PlanName = plan.PlanName,
-                PlanDescription = plan.PlanDescription,
-                Price = plan.Price,
-                BillingType = plan.BillingType,
-                IsActive = plan.IsActive,
-                PlanFeatureDtos = [.. plan.PlanFeatures.Select(f => new AddPlanFeatureDto
-                {
-                    FeatureName = f.FeatureName,
-                    FeatureDescription = f.FeatureDescription
-                })],
-            };
-
-            return View(updatePlanDto);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Edit(UpdatePlanDto updatePlanDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(updatePlanDto);
-            }
-
-            try
-            {
-                await _planService.UpdatePlan(updatePlanDto);
-                return RedirectToAction(nameof(Manage));
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                ModelState.AddModelError(string.Empty, "An error occurred while updating the plan. Please try again.");
-                return View(updatePlanDto);
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
-            {
-                var deleted = await _planService.DeletePlan(id);
-
-                if (!deleted)
-                {
-                    return NotFound();
-                }
-
-                return RedirectToAction(nameof(Manage));
-            }
-            catch (Exception)
-            {
-                return RedirectToAction(nameof(Manage));
-            }
-        }
-
-        private static PlanVM MapToPlanVM(Plan plan) => new()
+        var updatePlanDto = new UpdatePlanDto
         {
             PlanId = plan.PlanId,
             PlanName = plan.PlanName,
@@ -152,11 +78,77 @@ namespace TeamYellow.Controllers
             Price = plan.Price,
             BillingType = plan.BillingType,
             IsActive = plan.IsActive,
-            PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
+            PlanFeatureDtos = [.. plan.PlanFeatures.Select(f => new AddPlanFeatureDto
+                {
+                    FeatureName = f.FeatureName,
+                    FeatureDescription = f.FeatureDescription
+                })],
+        };
+
+        return View(updatePlanDto);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Edit(UpdatePlanDto updatePlanDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(updatePlanDto);
+        }
+
+        try
+        {
+            await _planService.UpdatePlan(updatePlanDto);
+            return RedirectToAction(nameof(Manage));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "An error occurred while updating the plan. Please try again.");
+            return View(updatePlanDto);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var deleted = await _planService.DeletePlan(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Manage));
+        }
+        catch (Exception)
+        {
+            return RedirectToAction(nameof(Manage));
+        }
+    }
+
+    private static PlanVM MapToPlanVM(Plan plan) => new()
+    {
+        PlanId = plan.PlanId,
+        PlanName = plan.PlanName,
+        PlanDescription = plan.PlanDescription,
+        Price = plan.Price,
+        BillingType = plan.BillingType,
+        IsActive = plan.IsActive,
+        PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
             {
                 FeatureName = f.FeatureName,
                 FeatureDescription = f.FeatureDescription
             })]
-        };
-    }
+    };
 }
+
