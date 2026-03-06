@@ -76,6 +76,16 @@
 @section Scripts {
     <script>
 
+        const now = new Date();
+        const currentMonthFull = now.toLocaleString('default', { month: 'long' });
+
+        const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
+              const date = new Date();
+              date.setMonth(now.getMonth() + i);
+              return date.toLocaleString('default', { month: 'long' });
+        });
+
+
         // Sessions This Month Option
         let monthlySessionsOptions = {
             chart: {
@@ -99,10 +109,7 @@
             }],
 
             xaxis: {
-                categories: [
-                    'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'
-                ]
+                categories: monthsStartingFromNow
             },
 
             stroke: {
@@ -149,10 +156,7 @@
             }],
 
             xaxis: {
-                categories: [
-                    'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'
-                ]
+                categories: monthsStartingFromNow
             },
 
             stroke: {
@@ -199,10 +203,7 @@
             }],
 
             xaxis: {
-                categories: [
-                    'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'
-                ]
+                categories: monthsStartingFromNow
             },
 
             stroke: {
@@ -249,10 +250,7 @@
             }],
 
             xaxis: {
-                categories: [
-                    'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'
-                ]
+                categories: monthsStartingFromNow
             },
 
             stroke: {
