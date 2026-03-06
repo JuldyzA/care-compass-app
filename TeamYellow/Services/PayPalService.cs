@@ -10,6 +10,9 @@ public class PayPalService : IPayPalService
     private readonly HttpClient _client;
     private readonly IConfiguration _configuration;
 
+    private static string? _cachedToken;
+    private static DateTime _tokenExpiry = DateTime.MinValue;
+
     public PayPalService(HttpClient client, IConfiguration configuration)
     {
         _client = client;
@@ -23,6 +26,9 @@ public class PayPalService : IPayPalService
 
     private async Task<string> GetAccessToken()
     {
+        if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
+            return _cachedToken;
+
         var clientId = _configuration["ApiKeys:PayPal:ClientId"];
         var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
 
@@ -36,7 +42,12 @@ public class PayPalService : IPayPalService
 
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonNode.Parse(content);
-        return json?["access_token"]?.ToString() ?? throw new Exception("Failed to get access token");
+
+        _cachedToken = json?["access_token"]?.ToString() ?? throw new Exception("Failed to get access token");
+        var expiresIn = json?["expires_in"]?.GetValue<int>() ?? 32400;
+        _tokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60);
+
+        return _cachedToken;
     }
 
     public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl)
