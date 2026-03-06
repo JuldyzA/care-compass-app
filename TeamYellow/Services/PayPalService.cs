@@ -18,6 +18,10 @@ public class PayPalService : IPayPalService
         _client = client;
         _configuration = configuration;
 
+        // Configuration key: ApiKeys:PayPal:Mode
+        // Expected values:
+        //   - "Sandbox" (default if not set) -> uses https://api-m.sandbox.paypal.com
+        //   - "Live"                        -> uses https://api-m.paypal.com
         var mode = _configuration["ApiKeys:PayPal:Mode"] ?? "Sandbox";
         _client.BaseAddress = new Uri(mode == "Live"
             ? "https://api-m.paypal.com"
