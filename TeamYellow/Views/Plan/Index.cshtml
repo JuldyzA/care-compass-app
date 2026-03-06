@@ -44,7 +44,7 @@
                             </h1>
                             @if (plan.Price > 0)
                             {
-                                <span class="text-muted">/ @plan.BillingType.ToLower()</span>
+                                <span class="text-muted">/ @plan.BillingType.ToLowerInvariant()</span>
                             }
                         </div>
 
@@ -60,7 +60,7 @@
 
                         <div class="mt-4">
                             <a asp-action="Checkout" asp-route-id="@plan.PlanId"
-                               class="btn w-100 @(isPopular ? "btn-primary" : "btn-outline-primary")">
+                                   class="btn w-100 @(isPopular ? "btn-primary" : "btn-outline-primary")">
                                 @(plan.Price == 0 ? "Get Started" : "Subscribe")
                             </a>
                         </div>
@@ -83,78 +83,90 @@
             <div class="accordion" id="faq">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq-1">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-1">
                             What is a Counselor CRM?
                         </button>
                     </h2>
                     <div id="faq-1" class="accordion-collapse collapse show" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            A Counselor CRM helps you organize client info, session history, notes, tasks, and follow-ups in one place—so you spend less time on admin work.
+                            A Counselor CRM helps you organize client info, session history, notes, tasks, and
+                            follow-ups in one place—so you spend less time on admin work.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-2">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-2">
                             Who is this for?
                         </button>
                     </h2>
                     <div id="faq-2" class="accordion-collapse collapse" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            It's built for individual counselors, small practices, and support teams who need a simple way to manage clients, sessions, and follow-ups.
+                            It's built for individual counselors, small practices, and support teams who need a simple
+                            way to manage clients, sessions, and follow-ups.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-3">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-3">
                             What can I track for each client?
                         </button>
                     </h2>
                     <div id="faq-3" class="accordion-collapse collapse" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            You can track contact details, intake status, session notes, goals/progress, shared resources, referrals, and follow-up tasks.
+                            You can track contact details, intake status, session notes, goals/progress, shared
+                            resources, referrals, and follow-up tasks.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-4">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-4">
                             Can I set reminders for follow-ups and tasks?
                         </button>
                     </h2>
                     <div id="faq-4" class="accordion-collapse collapse" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            Yes—create reminders like "check in after 7 days," "send resources," or "review plan monthly," and see what's due on your dashboard.
+                            Yes—create reminders like "check in after 7 days," "send resources," or "review plan
+                            monthly," and see what's due on your dashboard.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-5">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-5">
                             How are session notes handled?
                         </button>
                     </h2>
                     <div id="faq-5" class="accordion-collapse collapse" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            You can write quick notes or use templates (like SOAP/DAP), attach files, and search notes later by date or tags.
+                            You can write quick notes or use templates (like SOAP/DAP), attach files, and search notes
+                            later by date or tags.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-6">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq-6">
                             How do privacy and access permissions work?
                         </button>
                     </h2>
                     <div id="faq-6" class="accordion-collapse collapse" data-bs-parent="#faq">
                         <div class="accordion-body">
-                            You can limit access by role (admin/counselor/assistant), restrict clients to assigned counselors, and keep records protected with secure login and audit history.
+                            You can limit access by role (admin/counselor/assistant), restrict clients to assigned
+                            counselors, and keep records protected with secure login and audit history.
                         </div>
                     </div>
                 </div>
