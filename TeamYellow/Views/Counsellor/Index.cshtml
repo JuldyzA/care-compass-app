@@ -2,41 +2,73 @@
 
 @{
     Layout = "_DashboardLayout";
-    ViewData["UserProfilePicture"] = null;
-    ViewData["DefaultUserProfilePicture"] = "https://randomuser.me/api/portraits/med/men/1.jpg";
-    ViewData["DisplayName"] = "Jinming Zhang";
+    ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
+    ViewData["DisplayName"] = Model.DisplayName;
 }
 
 <div class="row">
-    <div class="col-sm">
+    <div class="col-3">
         <div class="card">
             <div class="card-body p-0">
-
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
                     <div>
                         <div class="text-secondary">Sessions This Month</div>
                         <div class="h1 mb-0">12</div>
                     </div>
-
                     <div class="text-success">
                         +12%
                     </div>
                 </div>
-
-                <div id="sessionsChart" class=""></div>
-
+                <div id="monthlySessionsChart"></div>
             </div>
         </div>
     </div>
-    <div class="col-sm">
+    <div class="col-3">
         <div class="card">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
+                    <div>
+                        <div class="text-secondary">Completed This Month</div>
+                        <div class="h1 mb-0">43</div>
+                    </div>
+                    <div class="text-success">
+                        +52%
+                    </div>
+                </div>
+                <div id="monthlyCompletedSessionsChart"></div>
+            </div>
         </div>
     </div>
-    <div class="col-sm">
+    <div class="col-3">
         <div class="card">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
+                    <div>
+                        <div class="text-secondary">Cancelled This Month</div>
+                        <div class="h1 mb-0">22</div>
+                    </div>
+                    <div class="text-danger">
+                        -12%
+                    </div>
+                </div>
+                <div id="monthlyCancelledSessionChart"></div>
+            </div>
         </div>
-    </div><div class="col-sm">
+    </div>
+    <div class="col-3">
         <div class="card">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
+                    <div>
+                        <div class="text-secondary">New Patient This Month</div>
+                        <div class="h1 mb-0">52</div>
+                    </div>
+                    <div class="text-success">
+                        +33%
+                    </div>
+                </div>
+                <div id="monthlyNewClientChart"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -44,7 +76,8 @@
 @section Scripts {
     <script>
 
-        var options = {
+        // Sessions This Month Option
+        let monthlySessionsOptions = {
             chart: {
                 type: 'area',
                 height: 100,
@@ -62,8 +95,15 @@
 
             series: [{
                 name: 'Sessions',
-                data: [18,32,20,28,26,30,74]
+                data: [18,32,20,28,26,30,74,18,32,20,28,26]
             }],
+
+            xaxis: {
+                categories: [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+            },
 
             stroke: {
                 curve: 'smooth',
@@ -83,15 +123,180 @@
                 enabled: true
             },
 
-            colors: ['#206bc4']
+            colors: ['#206bc4'],
         };
 
-        var chart = new ApexCharts(
-            document.querySelector("#sessionsChart"),
-            options
+        // Monthly Completed Sessions Option
+        let monthlyCompletedSessionsOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Completed Sessions',
+                data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
+            }],
+
+            xaxis: {
+                categories: [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#1da1f2']
+        };
+
+        // Monthly Cancelled Session Option
+        let monthlyCancelledSessionOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Cancelled Session',
+                data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
+            }],
+
+            xaxis: {
+                categories: [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#667eea']
+        };
+
+        // Monthly New Client Option
+        let monthlyNewClientOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{  
+                name: 'New Clients',
+                data: [64, 22, 91, 5, 47, 83, 19, 72, 38, 54, 11, 95]
+            }],
+
+            xaxis: {
+                categories: [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#4299e1']
+        };
+
+        let monthlySessionsChart = new ApexCharts(
+            document.querySelector("#monthlySessionsChart"),
+            monthlySessionsOptions
+        );
+        let monthlyCompletedSessionsChart = new ApexCharts(
+            document.querySelector("#monthlyCompletedSessionsChart"),
+            monthlyCompletedSessionsOptions
+        );
+        let monthlyCancelledSessionChart = new ApexCharts(
+            document.querySelector("#monthlyCancelledSessionChart"),
+            monthlyCancelledSessionOptions
+        );
+        let monthlyNewClientChart = new ApexCharts(
+            document.querySelector("#monthlyNewClientChart"),
+            monthlyNewClientOptions
         );
 
-        chart.render();
+        monthlySessionsChart.render();
+        monthlyCompletedSessionsChart.render();
+        monthlyCancelledSessionChart.render();
+        monthlyNewClientChart.render();
 
     </script>
 }

@@ -9,10 +9,12 @@ namespace TeamYellow.Controllers
     public class CounsellorController : Controller
     {
         private readonly CounsellorService _service;
+        private readonly IConfiguration _configuration;
 
-        public CounsellorController(CounsellorService service)
+        public CounsellorController(CounsellorService service, IConfiguration configuration)
         {
             _service = service;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
@@ -22,6 +24,7 @@ namespace TeamYellow.Controllers
             //TODO: Handle null case (e.g. redirect to error page or show message)
             //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
 
+            ViewData["DefaultUserProfilePicture"] = _configuration["DefaultSettings:DefaultUserProfilePicture"];
 
             return View(dashboardVM);
         }
