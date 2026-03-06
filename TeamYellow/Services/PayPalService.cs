@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 
 namespace TeamYellow.Services;
 
-public class PayPalService
+public class PayPalService : IPayPalService
 {
     private readonly HttpClient _client;
     private readonly IConfiguration _configuration;
@@ -16,8 +16,8 @@ public class PayPalService
         _configuration = configuration;
 
         var mode = _configuration["ApiKeys:PayPal:Mode"] ?? "Sandbox";
-        _client.BaseAddress = new Uri(mode == "Live" 
-            ? "https://api-m.paypal.com" 
+        _client.BaseAddress = new Uri(mode == "Live"
+            ? "https://api-m.paypal.com"
             : "https://api-m.sandbox.paypal.com");
     }
 
@@ -25,7 +25,7 @@ public class PayPalService
     {
         var clientId = _configuration["ApiKeys:PayPal:ClientId"];
         var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
         request.Headers.Authorization = new AuthenticationHeaderValue(
             "Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}")));
@@ -65,14 +65,14 @@ public class PayPalService
             }
         };
 
-        var response = await _client.PostAsync("/v2/checkout/orders", 
+        var response = await _client.PostAsync("/v2/checkout/orders",
             new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json"));
-        
+
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonNode.Parse(content);
-        
+
         // Find the 'approve' link
         var links = json?["links"]?.AsArray();
         var approveLink = links?.FirstOrDefault(l => l?["rel"]?.ToString() == "approve")?["href"]?.ToString();
@@ -85,18 +85,22 @@ public class PayPalService
         var accessToken = await GetAccessToken();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await _client.PostAsync($"/v2/checkout/orders/{token}/capture", null);
+        var response = await _client.PostAsync(
+            $"/v2/checkout/orders/{token}/capture",
+            new StringContent("{}", Encoding.UTF8, "application/json")
+        );
+
         response.EnsureSuccessStatusCode();
-        
+
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonNode.Parse(content);
-        
+
         var status = json?["status"]?.ToString();
         var id = json?["id"]?.ToString(); // Capture ID or Order ID depending on response structure
 
         if (status == "COMPLETED")
         {
-             return id ?? token;
+            return id ?? token;
         }
 
         throw new Exception($"Payment capture failed. Status: {status}");

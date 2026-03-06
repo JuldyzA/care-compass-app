@@ -22,14 +22,21 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<PayPalService>();
-builder.Services.AddScoped<PayPalService>();
+builder.Services.AddScoped<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ICounsellorRepository, CounsellorRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();

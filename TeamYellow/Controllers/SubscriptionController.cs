@@ -1,26 +1,24 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
 
 namespace TeamYellow.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Paid_Counselor,Free_Counselor")]
 public class SubscriptionController(
-    PayPalService payPalService,
-    ApplicationDbContext context,
+    IPayPalService payPalService,
     UserManager<IdentityUser> userManager,
+    ICounsellorRepository counsellorRepository,
     IPlanRepository planRepository,
     ISubscriptionRepository subscriptionRepository,
     ITransactionRepository transactionRepository) : Controller
 {
-    private readonly PayPalService _payPalService = payPalService;
-    private readonly ApplicationDbContext _context = context;
+    private readonly IPayPalService _payPalService = payPalService;
     private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly ICounsellorRepository _counsellorRepository = counsellorRepository;
     private readonly IPlanRepository _planRepository = planRepository;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
@@ -39,9 +37,9 @@ public class SubscriptionController(
             var approvalUrl = await _payPalService.CreateOrder(plan.Price, "CAD", returnUrl!, cancelUrl!);
             return Redirect(approvalUrl);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest($"Error creating payment: {ex.Message}");
+            return BadRequest("Unable to process payment. Please try again.");
         }
     }
 
@@ -53,7 +51,7 @@ public class SubscriptionController(
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            var counsellor = await _context.Counsellors.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
             if (counsellor == null)
                 return RedirectToAction("Index", "Home", new { error = "Counsellor profile not found." });
 
@@ -79,9 +77,9 @@ public class SubscriptionController(
 
             return View();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return RedirectToAction("Index", "Home", new { error = $"Payment failed: {ex.Message}" });
+            return RedirectToAction("Index", "Home", new { error = "Payment failed. Please try again." });
         }
     }
 

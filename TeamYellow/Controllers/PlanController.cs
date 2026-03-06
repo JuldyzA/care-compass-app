@@ -7,7 +7,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Controllers
 {
 
-    [Authorize(Roles = "Manager")]
+    [Authorize]
     public class PlanController(IPlanService planService) : Controller
     {
         private readonly IPlanService _planService = planService;
@@ -34,7 +34,7 @@ namespace TeamYellow.Controllers
             return View(planVMs);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
         public async Task<IActionResult> Checkout(int id)
         {
             var plan = await _planService.GetPlanById(id);
@@ -62,6 +62,7 @@ namespace TeamYellow.Controllers
             return View(planVM);
         }
 
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Manage()
         {
             var plans = await _planService.GetAllPlans();
@@ -83,6 +84,7 @@ namespace TeamYellow.Controllers
             return View(planVMs);
         }
 
+        [Authorize(Roles = "Manager")]
         public IActionResult Create()
         {
             return View();
@@ -90,6 +92,7 @@ namespace TeamYellow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Create(AddPlanDto addPlanDto)
         {
             if (!ModelState.IsValid)
@@ -109,6 +112,7 @@ namespace TeamYellow.Controllers
             }
         }
 
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Edit(int id)
         {
             var plan = await _planService.GetPlanById(id);
@@ -138,6 +142,7 @@ namespace TeamYellow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Edit(UpdatePlanDto updatePlanDto)
         {
             if (!ModelState.IsValid)
@@ -163,6 +168,7 @@ namespace TeamYellow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Delete(int id)
         {
             try
