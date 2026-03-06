@@ -1,3 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TeamYellow.DTOs;
+using TeamYellow.Models;
+using TeamYellow.Services;
+using TeamYellow.ViewModels;
+
 namespace TeamYellow.Controllers;
 
 [Authorize]
