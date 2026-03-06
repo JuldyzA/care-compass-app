@@ -22,6 +22,7 @@ public class CounsellorRepository : ICounsellorRepository
     public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId)
     {
         CounsellorDashboardDto? dto = await _context.Counsellors
+            .AsNoTracking()
             .Where(c => c.UserId == userId)
             .Include(c => c.Subscriptions.OrderByDescending(s => s.UpdatedAt).Take(1))
                 .ThenInclude(s => s.Plan)
