@@ -32,6 +32,12 @@ public class PayPalService : IPayPalService
         var clientId = _configuration["ApiKeys:PayPal:ClientId"];
         var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
 
+        if (string.IsNullOrEmpty(clientId))
+            throw new InvalidOperationException("PayPal ClientId is not configured. Set ApiKeys:PayPal:ClientId in secrets.json.");
+
+        if (string.IsNullOrEmpty(clientSecret))
+            throw new InvalidOperationException("PayPal ClientSecret is not configured. Set ApiKeys:PayPal:ClientSecret in secrets.json.");
+
         var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
         request.Headers.Authorization = new AuthenticationHeaderValue(
             "Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}")));
@@ -53,7 +59,6 @@ public class PayPalService : IPayPalService
     public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl)
     {
         var accessToken = await GetAccessToken();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         var orderRequest = new
         {
@@ -76,9 +81,11 @@ public class PayPalService : IPayPalService
             }
         };
 
-        var response = await _client.PostAsync("/v2/checkout/orders",
-            new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json"));
+        var request = new HttpRequestMessage(HttpMethod.Post, "/v2/checkout/orders");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        request.Content = new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json");
 
+        var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -94,13 +101,12 @@ public class PayPalService : IPayPalService
     public async Task<string> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await _client.PostAsync(
-            $"/v2/checkout/orders/{token}/capture",
-            new StringContent("{}", Encoding.UTF8, "application/json")
-        );
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
+        var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();

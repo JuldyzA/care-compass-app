@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.DTOs;
+using TeamYellow.Models;
 using TeamYellow.Services;
 using TeamYellow.ViewModels;
 
@@ -16,22 +17,7 @@ namespace TeamYellow.Controllers
         public async Task<IActionResult> Index()
         {
             var plans = await _planService.GetActivePlans();
-            var planVMs = plans.Select(p => new PlanVM
-            {
-                PlanId = p.PlanId,
-                PlanName = p.PlanName,
-                PlanDescription = p.PlanDescription,
-                Price = p.Price,
-                BillingType = p.BillingType,
-                IsActive = p.IsActive,
-                PlanFeatures = [.. p.PlanFeatures.Select(f => new PlanFeatureVM
-                {
-                    FeatureName = f.FeatureName,
-                    FeatureDescription = f.FeatureDescription
-                })]
-            }).ToList();
-
-            return View(planVMs);
+            return View(plans.Select(MapToPlanVM).ToList());
         }
 
         [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
@@ -44,44 +30,14 @@ namespace TeamYellow.Controllers
                 return NotFound();
             }
 
-            var planVM = new PlanVM
-            {
-                PlanId = plan.PlanId,
-                PlanName = plan.PlanName,
-                PlanDescription = plan.PlanDescription,
-                Price = plan.Price,
-                BillingType = plan.BillingType,
-                IsActive = plan.IsActive,
-                PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
-                {
-                    FeatureName = f.FeatureName,
-                    FeatureDescription = f.FeatureDescription
-                })]
-            };
-
-            return View(planVM);
+            return View(MapToPlanVM(plan));
         }
 
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Manage()
         {
             var plans = await _planService.GetAllPlans();
-            var planVMs = plans.Select(p => new PlanVM
-            {
-                PlanId = p.PlanId,
-                PlanName = p.PlanName,
-                PlanDescription = p.PlanDescription,
-                Price = p.Price,
-                BillingType = p.BillingType,
-                IsActive = p.IsActive,
-                PlanFeatures = [.. p.PlanFeatures.Select(f => new PlanFeatureVM
-                {
-                    FeatureName = f.FeatureName,
-                    FeatureDescription = f.FeatureDescription
-                })]
-            }).ToList();
-
-            return View(planVMs);
+            return View(plans.Select(MapToPlanVM).ToList());
         }
 
         [Authorize(Roles = "Manager")]
@@ -187,5 +143,20 @@ namespace TeamYellow.Controllers
                 return RedirectToAction(nameof(Manage));
             }
         }
+
+        private static PlanVM MapToPlanVM(Plan plan) => new()
+        {
+            PlanId = plan.PlanId,
+            PlanName = plan.PlanName,
+            PlanDescription = plan.PlanDescription,
+            Price = plan.Price,
+            BillingType = plan.BillingType,
+            IsActive = plan.IsActive,
+            PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
+            {
+                FeatureName = f.FeatureName,
+                FeatureDescription = f.FeatureDescription
+            })]
+        };
     }
 }

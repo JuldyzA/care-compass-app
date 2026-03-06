@@ -24,6 +24,7 @@ public class SubscriptionController(
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Subscribe(int planId)
     {
         var plan = await _planRepository.GetPlanById(planId);

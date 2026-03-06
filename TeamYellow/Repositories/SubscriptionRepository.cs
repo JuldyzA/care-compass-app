@@ -12,7 +12,7 @@ namespace TeamYellow.Repositories
         public async Task<Subscription> CreateSubscription(AddSubscriptionDto addSubscriptionDto)
         {
             var cycleStart = DateTime.UtcNow;
-            var cycleEnd = addSubscriptionDto.BillingType == "Annual"
+            var cycleEnd = addSubscriptionDto.BillingType == "Yearly"
                 ? cycleStart.AddYears(1)
                 : cycleStart.AddMonths(1);
 
