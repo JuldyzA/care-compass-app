@@ -121,6 +121,5 @@ src/.vs/config/applicationhost.config
 .notes.md
 
 # DB files
-*.db
 *.db-shm
 *.db-wal
