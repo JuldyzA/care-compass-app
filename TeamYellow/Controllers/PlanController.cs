@@ -121,42 +121,41 @@ namespace TeamYellow.Controllers
                 return View(updatePlanDto);
             }
         }
+namespace TeamYellow.Controllers;
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Delete(int id)
+public class PlanController : Controller
+{
+    private readonly ApplicationDbContext _context;
+
+    public PlanController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var plans = (await _context.Plans
+            .Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            .Where(p => p.IsActive)
+            .ToListAsync())
+            .OrderBy(p => p.Price)
+            .ToList();
+
+        return View(plans);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Checkout(int id)
+    {
+        var plan = await _context.Plans
+            .Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            .FirstOrDefaultAsync(p => p.PlanId == id && p.IsActive);
+
+        if (plan == null)
         {
-            try
-            {
-                var deleted = await _planService.DeletePlan(id);
-
-                if (!deleted)
-                {
-                    return NotFound();
-                }
-
-                return RedirectToAction(nameof(Manage));
-            }
-            catch (Exception)
-            {
-                return RedirectToAction(nameof(Manage));
-            }
+            return NotFound();
         }
 
-        private static PlanVM MapToPlanVM(Plan plan) => new()
-        {
-            PlanId = plan.PlanId,
-            PlanName = plan.PlanName,
-            PlanDescription = plan.PlanDescription,
-            Price = plan.Price,
-            BillingType = plan.BillingType,
-            IsActive = plan.IsActive,
-            PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
-            {
-                FeatureName = f.FeatureName,
-                FeatureDescription = f.FeatureDescription
-            })]
-        };
+        return View(plan);
     }
 }
