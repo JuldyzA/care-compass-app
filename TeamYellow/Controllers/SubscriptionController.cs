@@ -30,6 +30,37 @@ public class SubscriptionController(
         var plan = await _planRepository.GetPlanById(planId);
         if (plan == null) return NotFound();
 
+        if (plan.Price == 0)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+            if (counsellor == null)
+                return RedirectToAction("Index", "Home", new { error = "Counsellor profile not found." });
+
+            var subscription = await _subscriptionRepository.CreateSubscription(new AddSubscriptionDto
+            {
+                CounsellorId = counsellor.CounsellorId,
+                PlanId = planId,
+                BillingType = plan.BillingType
+            });
+
+            await _transactionRepository.CreateTransaction(new AddTransactionDto
+            {
+                SubscriptionId = subscription.SubscriptionId,
+                PayerName = user.UserName ?? "Unknown",
+                Amount = 0,
+                Currency = "CAD",
+                Provider = "Free",
+                ProviderOrderId = $"FREE-{counsellor.CounsellorId}-{DateTime.UtcNow:yyyyMMddHHmmss}"
+            });
+
+            ViewData["Title"] = "Subscription Activated";
+            ViewData["Message"] = "You have successfully subscribed to the Free plan.";
+            return View("Success");
+        }
+
         var returnUrl = Url.Action("Success", "Subscription", new { planId }, Request.Scheme);
         var cancelUrl = Url.Action("Cancel", "Subscription", null, Request.Scheme);
 

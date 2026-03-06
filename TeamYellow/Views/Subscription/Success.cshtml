@@ -1,13 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "Payment Successful";
+    ViewData["Title"] = ViewData["Title"] ?? "Payment Successful";
+    var message = ViewData["Message"] as string ?? "Thank you for your subscription. Your plan is now active.";
 }
 
 <div class="container mt-5 text-center">
     <div class="display-1 text-success mb-4">
         &#10003;
     </div>
-    <h1 class="mb-3">Payment Successful!</h1>
-    <p class="lead mb-5">Thank you for your subscription. Your plan is now active.</p>
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p class="lead mb-5">@message</p>
     
     <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
         Go to Dashboard
