@@ -64,9 +64,12 @@ public class SubscriptionController(
         var returnUrl = Url.Action("Success", "Subscription", new { planId }, Request.Scheme);
         var cancelUrl = Url.Action("Cancel", "Subscription", null, Request.Scheme);
 
+        if (returnUrl is null || cancelUrl is null)
+            return BadRequest("Unable to generate PayPal redirect URLs.");
+
         try
         {
-            var approvalUrl = await _payPalService.CreateOrder(plan.Price, "CAD", returnUrl!, cancelUrl!);
+            var approvalUrl = await _payPalService.CreateOrder(plan.Price, "CAD", returnUrl, cancelUrl);
             return Redirect(approvalUrl);
         }
         catch (Exception)
