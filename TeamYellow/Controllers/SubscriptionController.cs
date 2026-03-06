@@ -80,6 +80,9 @@ public class SubscriptionController(
 
     public async Task<IActionResult> Success(string token, int planId)
     {
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Index", "Home", new { error = "Payment token is missing. Please try again." });
+
         try
         {
             var captureId = await _payPalService.CaptureOrder(token);
