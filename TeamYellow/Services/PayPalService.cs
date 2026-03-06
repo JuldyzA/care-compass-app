@@ -60,7 +60,7 @@ public class PayPalService : IPayPalService
         return _cachedToken;
     }
 
-    public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl)
+    public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
     {
         var accessToken = await GetAccessToken();
 
@@ -71,6 +71,7 @@ public class PayPalService : IPayPalService
             {
                 new
                 {
+                    custom_id = customId,
                     amount = new
                     {
                         currency_code = currency,
@@ -102,7 +103,7 @@ public class PayPalService : IPayPalService
         return approveLink ?? throw new Exception("PayPal approval link not found");
     }
 
-    public async Task<string> CaptureOrder(string token)
+    public async Task<(string CaptureId, string CustomId)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();
 
@@ -117,12 +118,12 @@ public class PayPalService : IPayPalService
         var json = JsonNode.Parse(content);
 
         var status = json?["status"]?.ToString();
-        var id = json?["id"]?.ToString(); // Capture ID or Order ID depending on response structure
+        var id = json?["id"]?.ToString();
+        var customId = json?["purchase_units"]?[0]?["custom_id"]?.ToString()
+            ?? throw new Exception("PayPal response missing custom_id");
 
         if (status == "COMPLETED")
-        {
-            return id ?? token;
-        }
+            return (id ?? token, customId);
 
         throw new Exception($"Payment capture failed. Status: {status}");
     }

@@ -11,7 +11,7 @@ namespace TeamYellow.Repositories
 
         public async Task<List<Plan>> GetActivePlans()
         {
-            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
                 .Where(p => p.IsActive)
                 .ToListAsync();
 
@@ -20,7 +20,7 @@ namespace TeamYellow.Repositories
 
         public async Task<List<Plan>> GetAllPlans()
         {
-            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
                 .ToListAsync();
 
             return [.. plans.OrderBy(p => p.Price)];
@@ -28,7 +28,7 @@ namespace TeamYellow.Repositories
 
         public async Task<Plan?> GetPlanById(int id)
         {
-            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.sortOrder))
+            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
                 .FirstOrDefaultAsync(p => p.PlanId == id);
         }
 
@@ -49,7 +49,7 @@ namespace TeamYellow.Repositories
             {
                 FeatureName = f.FeatureName,
                 FeatureDescription = f.FeatureDescription,
-                sortOrder = index + 1
+                SortOrder = index + 1
             })];
 
             await _context.SaveChangesAsync();
@@ -81,7 +81,7 @@ namespace TeamYellow.Repositories
                 {
                     FeatureName = f.FeatureName,
                     FeatureDescription = f.FeatureDescription,
-                    sortOrder = index + 1
+                    SortOrder = index + 1
                 })]
             };
 

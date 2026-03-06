@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Models;
@@ -25,5 +26,11 @@ public class TransactionRepository(ApplicationDbContext context) : ITransactionR
         _context.PaymentTransactions.Add(transaction);
         await _context.SaveChangesAsync();
         return transaction;
+    }
+
+    public async Task<bool> ExistsByProviderOrderId(string providerOrderId)
+    {
+        return await _context.PaymentTransactions
+            .AnyAsync(pt => pt.ProviderOrderId == providerOrderId);
     }
 }
