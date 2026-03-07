@@ -7,9 +7,12 @@
 }
 <br />
 <h2>User Roles for @userName</h2>
-<br /> @if (!string.IsNullOrEmpty(message))
+<br />
+@if (!string.IsNullOrEmpty(message))
 {
-    <div class="alert alert-info" style="max-width:600px;">@message</div>
+    <div class="alert @(ViewBag.IsError == true ? "alert-danger" : "alert-info")" style="max-width:600px;">
+        @message
+    </div>
 }
 
 <table class="table table-striped table-bordered table-hover"

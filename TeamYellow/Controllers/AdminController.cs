@@ -44,11 +44,12 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays all available roles assigned to user in the system.
         /// </summary>
-        public async Task<IActionResult> UserRoleDetail(string userName, string message = "")
+        public async Task<IActionResult> UserRoleDetail(string userName, string message = "", bool isError = false)
         {
             var roles = await _userRoleRepository.GetUserRolesAsync(userName);
             ViewBag.Message = message;
             ViewBag.UserName = userName;
+            ViewBag.IsError = isError;
             
             return View(roles);
         }
@@ -128,6 +129,15 @@ namespace TeamYellow.Controllers
         {
             if (ModelState.IsValid)
             {
+                string? currentEmail = User.Identity?.Name;
+
+                if (string.Equals(userRoleVM.RoleName, "Administrator", StringComparison.OrdinalIgnoreCase) && 
+                    string.Equals(userRoleVM.Email, currentEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    string message = "You cannot remove the Administrator role from your own account.";
+                    return RedirectToAction(nameof(UserRoleDetail), new { userName = userRoleVM.Email, message, isError = true });
+                }
+
                 var result = await _userRoleRepository.RemoveUserRoleAsync(userRoleVM.Email, userRoleVM.RoleName);
 
                 if (result)
