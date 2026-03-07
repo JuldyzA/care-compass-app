@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using TeamYellow.Repositories;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TeamYellow.Models;
+using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
@@ -14,18 +15,24 @@ namespace TeamYellow.Controllers
         private readonly DiscountRepository DiscountRepository;
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManagerController"/> class.
+        /// </summary>
+        /// <param name="counsellorRepository">The repository for counsellor data.</param>
+        /// <param name="planRepository">The repository for plan data.</param>
+        /// <param name="discountRepository">The repository for discount data.</param>
         public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository, DiscountRepository discountRepository)
         {
             CounsellorRepository = counsellorRepository;
             PlanRepository = planRepository;
             DiscountRepository = discountRepository;
-
         }
 
         /// <summary>
         /// Displays a summary of all counsellor payment transactions for the manager dashboard.
         /// Aggregates transaction statistics and details for each counsellor.
         /// </summary>
+        /// <returns>The dashboard view with aggregated data.</returns>
         public IActionResult Index()
         {
             var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
@@ -36,11 +43,8 @@ namespace TeamYellow.Controllers
             var stats = new DashboardStatsVM
             {
                 TotalTransactions = dashboardData.Count,
-
                 TotalRevenue = dashboardData.Sum(x => x.Amount),
-
                 FailedPayments = dashboardData.Count(x => x.SOP == "Failed"),
-
                 SuccessfulPayments = dashboardData.Count(x => x.SOP == "Paid")
             };
             var pageVM = new ManagerDashboardPageVM
@@ -71,7 +75,6 @@ namespace TeamYellow.Controllers
                 CounsellorId = counsellor.CounsellorId,
                 PractitionerLicenceId = counsellor.PractitionerLicenceId,
                 CounsellorName = counsellor.DisplayName,
-
                 Email = counsellor.User?.Email ?? "No email",
                 Amount = payments.Sum(p => p?.Amount ?? 0),
                 PaymentTransactionId = firstPayment?.PaymentTransactionId ?? 0,
@@ -120,6 +123,8 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays the edit form for a specific plan, allowing the manager to modify plan details.
         /// </summary>
+        /// <param name="id">The unique identifier of the plan to edit.</param>
+        /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
         public IActionResult PlanEdit(int id)
         {
             var plan = PlanRepository.GetById(id);
@@ -142,7 +147,6 @@ namespace TeamYellow.Controllers
             return View(vm);
         }
 
-
         /// <summary>
         /// Processes the submission of the plan edit form and updates the plan details.
         /// </summary>
@@ -151,7 +155,6 @@ namespace TeamYellow.Controllers
         [HttpPost]
         public IActionResult PlanEdit(PlanVM vm)
         {
-
             if (!ModelState.IsValid)
             {
                 return View(vm);
@@ -173,6 +176,90 @@ namespace TeamYellow.Controllers
             return RedirectToAction(nameof(Plans));
         }
 
-  
+        /// <summary>
+        /// Displays a list of all available discounts with their associated plans.
+        /// </summary>
+        /// <returns>The discounts view with a list of discounts and plans.</returns>
+        public IActionResult Discounts()
+        {
+            var vm = new DiscountVM
+            {
+                Discounts = DiscountRepository.GetAllDiscountsWithPlans()
+            };
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// Displays the form to create a new discount.
+        /// </summary>
+        /// <returns>The create discount view.</returns>
+        [HttpGet]
+        public IActionResult CreateDiscount()
+        {
+            var vm = new DiscountVM();
+            return View(vm);
+        }
+
+        /// <summary>
+        /// Processes the submission of the create discount form and adds a new discount.
+        /// </summary>
+        /// <param name="vm">The view model containing discount information.</param>
+        /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
+        [HttpPost]
+        public IActionResult CreateDiscount(DiscountVM vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var discount = new Discount
+            {
+                DiscountCode = vm.DiscountCode,
+                DiscountType = vm.DiscountType,
+                Value = vm.Value,
+                StartDateTime = vm.StartDateTime,
+                EndDateTime = vm.EndDateTime,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            DiscountRepository.Add(discount);
+
+            return RedirectToAction("Discounts");
+        }
+
+        /// <summary>
+        /// Displays the form to apply a discount to one or more plans.
+        /// </summary>
+        /// <returns>The apply discount view with available discounts and plans.</returns>
+        [HttpGet]
+        public IActionResult ApplyDiscount()
+        {
+            var vm = new DiscountVM
+            {
+                Discounts = DiscountRepository.GetAll(),
+                Plans = PlanRepository.GetAll()
+            };
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// Processes the submission of the apply discount form and associates the selected discount with the selected plans.
+        /// </summary>
+        /// <param name="vm">The view model containing selected plan IDs and discount ID.</param>
+        /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
+        [HttpPost]
+        public IActionResult ApplyDiscount(DiscountVM vm)
+        {
+            if (vm.PlanIds == null || !vm.PlanIds.Any())
+                return RedirectToAction("ApplyDiscount");
+
+            foreach (var planId in vm.PlanIds)
+            {
+                DiscountRepository.AddDiscountToPlan(planId, vm.DiscountId);
+            }
+
+            return RedirectToAction("Discounts");
+        }
     }
 }
