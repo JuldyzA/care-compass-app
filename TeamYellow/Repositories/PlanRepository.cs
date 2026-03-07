@@ -4,7 +4,7 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
-    public class PlanRepository : IRepository<Plan>
+    public class PlanRepository 
     {
         private readonly ApplicationDbContext Context;
 
@@ -12,49 +12,37 @@ namespace TeamYellow.Repositories
         {
             Context = context;
         }
+
+        /// <summary>
+        /// Retrieves all plans from the database.
+        /// </summary>
         public IEnumerable<Plan> GetAll()
         {
             return Context.Plans.ToList();
         }
 
+        /// <summary>
+        /// Retrieves a plan by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the plan.</param>
+        /// <returns>The plan if found; otherwise, null.</returns>
         public Plan? GetById(int id)
         {
             return Context.Plans.Find(id);
         }
 
-
-        string IRepository<Plan>.Add(Plan entity)
-        {
-            Context.Plans.Add(entity);
-            Context.SaveChanges();
-            return entity.PlanId.ToString();
-        }
-
-        bool IRepository<Plan>.Any(int id)
-        {
-            return Context.Plans.Any(p => p.PlanId == id);
-        }
-
-        string IRepository<Plan>.Delete(int id)
-        {
-            var plan = Context.Plans.Find(id);
-            if (plan == null)
-            {
-                return string.Empty;
-            }
-            Context.Plans.Remove(plan);
-            Context.SaveChanges();
-            return plan.PlanId.ToString();
-        }
-
-
-        public string Update(Plan entity)
+        /// <summary>
+        /// Updates an existing plan in the database.
+        /// </summary>
+        /// <param name="entity">The plan entity with updated values.</param>
+        /// <returns>True if the update was successful; otherwise, false.</returns>
+        public bool Update(Plan entity)
         {
             var existingPlan = Context.Plans.Find(entity.PlanId);
 
             if (existingPlan == null)
             {
-                return string.Empty;
+                return false;
             }
 
             existingPlan.PlanName = entity.PlanName;
@@ -65,7 +53,7 @@ namespace TeamYellow.Repositories
 
             Context.SaveChanges();
 
-            return existingPlan.PlanId.ToString();
+            return true;
         }
     }
 }

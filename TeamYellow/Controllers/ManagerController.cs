@@ -11,15 +11,21 @@ namespace TeamYellow.Controllers
     {
         private readonly CounsellorRepository CounsellorRepository;
         private readonly PlanRepository PlanRepository;
+        private readonly DiscountRepository DiscountRepository;
 
 
-        public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository)
+        public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository, DiscountRepository discountRepository)
         {
             CounsellorRepository = counsellorRepository;
             PlanRepository = planRepository;
+            DiscountRepository = discountRepository;
 
         }
 
+        /// <summary>
+        /// Displays a summary of all counsellor payment transactions for the manager dashboard.
+        /// Aggregates transaction statistics and details for each counsellor.
+        /// </summary>
         public IActionResult Index()
         {
             var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
@@ -46,7 +52,11 @@ namespace TeamYellow.Controllers
             return View(pageVM);
         }
 
-
+        /// <summary>
+        /// Aggregates payment transaction data for a given counsellor to be displayed on the manager dashboard.
+        /// </summary>
+        /// <param name="counsellor">The counsellor whose data is being aggregated.</param>
+        /// <returns>A view model containing dashboard data for the counsellor.</returns>
         private ManagerDashboardVM GetManagerDashboardData(Counsellor counsellor)
         {
             var payments = counsellor.Subscriptions?
@@ -74,19 +84,12 @@ namespace TeamYellow.Controllers
             };
         }
 
-
-        // private Counsellor MapToCounsellor(ManagerDashboardVM vm)
-        // {
-        //     return new Counsellor
-        //     {
-        //         CounsellorId = vm.CounsellorId,
-        //         PractitionerLicenceId = vm.PractitionerLicenceId.ToString(),
-        //         DisplayName = vm.CounsellorName,
-        //   
-        //     };
-        // }
-
-        public IActionResult Details(int id)
+        /// <summary>
+        /// Displays detailed payment transaction information for a specific counsellor.
+        /// </summary>
+        /// <param name="id">The payment transaction ID.</param>
+        /// <returns>The details view for the specified transaction, or NotFound if not found.</returns>
+        public IActionResult TransactionDetails(int id)
         {
             var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
             var detailsData = counsellors
@@ -100,14 +103,24 @@ namespace TeamYellow.Controllers
             return View(detailsData);
         }
 
-
+        /// <summary>
+        /// Displays a list of all available plans.
+        /// </summary>
+        /// <returns>The plans view with a list of plans.</returns>
         public IActionResult Plans()
         {
-            var plans = PlanRepository.GetAll().ToList();
-            return View(plans);
+            var vm = new PlanVM
+            {
+                Plans = PlanRepository.GetAll()
+            };
+
+            return View(vm);
         }
 
-        public IActionResult Edit(int id)
+        /// <summary>
+        /// Displays the edit form for a specific plan, allowing the manager to modify plan details.
+        /// </summary>
+        public IActionResult PlanEdit(int id)
         {
             var plan = PlanRepository.GetById(id);
 
@@ -115,26 +128,51 @@ namespace TeamYellow.Controllers
             {
                 return NotFound();
             }
+            ViewBag.BillingTypes = new List<string> { "Free Trial","Monthly", "Yearly" };
 
-            return View(plan);
+            var vm = new PlanVM
+            {
+                PlanId = plan.PlanId,
+                PlanName = plan.PlanName,
+                PlanDescription = plan.PlanDescription,
+                Price = plan.Price,
+                BillingType = plan.BillingType,
+                IsActive = plan.IsActive
+            };
+            return View(vm);
         }
 
+
+        /// <summary>
+        /// Processes the submission of the plan edit form and updates the plan details.
+        /// </summary>
+        /// <param name="vm">The view model containing updated plan information.</param>
+        /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
         [HttpPost]
-        public IActionResult Edit(Plan entity)
+        public IActionResult PlanEdit(PlanVM vm)
         {
+
             if (!ModelState.IsValid)
             {
-                return View(entity);
+                return View(vm);
             }
+            var plan = PlanRepository.GetById(vm.PlanId);
 
-            var result = PlanRepository.Update(entity);
-
-            if (string.IsNullOrEmpty(result))
+            if (plan == null)
             {
                 return NotFound();
             }
+            //map VM -> Model
+            plan.PlanName = vm.PlanName;
+            plan.PlanDescription = vm.PlanDescription;
+            plan.Price = vm.Price;
+            plan.BillingType = vm.BillingType;
+            plan.IsActive = vm.IsActive;
+            PlanRepository.Update(plan);
 
-            return RedirectToAction("Plans");
+            return RedirectToAction(nameof(Plans));
         }
+
+  
     }
 }

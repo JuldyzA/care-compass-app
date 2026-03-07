@@ -35,6 +35,7 @@ builder.Services.AddTransient<PaymentTransactionSeeder>();
 //Repository
 builder.Services.AddScoped<CounsellorRepository>();
 builder.Services.AddScoped<PlanRepository>();
+builder.Services.AddScoped<DiscountRepository>();
 
 var app = builder.Build();
 

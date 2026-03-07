@@ -1,6 +1,6 @@
 ﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using System.Security.Claims
-@model TeamYellow.Models.Plan
+@model TeamYellow.ViewModels.PlanVM
 
 <div class="container-fluid">
     <div class="row">
@@ -19,7 +19,7 @@
             <!-- Edit Plan Card -->
             <div class="card p-4">
 
-                <form asp-action="Edit" method="post">
+                <form asp-action="PlanEdit" method="post">
 
                     <input type="hidden" asp-for="PlanId" />
 
@@ -40,7 +40,10 @@
 
                     <div class="mb-3">
                         <label class="form-label">Billing Type</label>
-                        <input asp-for="BillingType" class="form-control" />
+                        <select asp-for="BillingType"
+                                asp-items="@(new SelectList(ViewBag.BillingTypes))"
+                                class="form-select">
+                        </select>
                     </div>
 
                     <div class="form-check mb-3">

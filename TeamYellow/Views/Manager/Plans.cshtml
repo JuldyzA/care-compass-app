@@ -1,6 +1,6 @@
 ﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using System.Security.Claims
-@model IEnumerable<TeamYellow.Models.Plan>
+@model TeamYellow.ViewModels.PlanVM
 
 <div class="container-fluid">
     <div class="row">
@@ -37,22 +37,25 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var plan in Model)
+                        @foreach (var plan in Model.Plans)
                         {
                             <tr>
                                 <td>@plan.PlanName</td>
                                 <td>@plan.PlanDescription</td>
-                                <td>@plan.Price</td>
+                                <td>@plan.Price.ToString("0.00")</td>
                                 <td>@plan.BillingType</td>
                                 <td>@(plan.IsActive ? "Active" : "Inactive")</td>
                                 <td>@plan.CreatedAt.ToString("yyyy-MM-dd")</td>
                                 <td>
+                                    @if(plan.BillingType != "Free")
+                                    {
                                     <a class="btn btn-sm btn-primary"
                                        asp-controller="Manager"
-                                       asp-action="Edit"
+                                       asp-action="PlanEdit"
                                        asp-route-id="@plan.PlanId">
                                         Edit
-                                    </a>
+                                    </a>                                     
+                                    }
                                 </td>
                             </tr>
                         }
