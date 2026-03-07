@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
+using TeamYellow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
+builder.Services.AddTransient<IEmailService, BrevoEmailService>();
+builder.Services.AddTransient<HttpClient>();
 
 var app = builder.Build();
 
