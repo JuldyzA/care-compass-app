@@ -120,7 +120,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        _logger.LogWarning($"Login succeeded but userId lookup failed for email={Input.Email}");
+                        _logger.LogWarning("Login succeeded but userId lookup failed for email={Email}", Input.Email);
                     }
 
                     _logger.LogInformation("User logged in.");
