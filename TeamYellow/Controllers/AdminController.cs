@@ -35,9 +35,9 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Get all available users in the system.
         /// </summary>
-        public IActionResult UserRoleIndex()
+        public async Task<IActionResult> UserRoleIndex()
         {
-            var users = _userRepository.GetAllUsers();
+            var users = await _userRepository.GetAllUsersAsync();
             return View(users);
         }
 
@@ -56,10 +56,11 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays the form for assigning a role to a user.
         /// </summary>
-        public IActionResult UserRoleCreate(string? email)
+        [HttpGet]
+        public async Task<IActionResult> UserRoleCreate(string? email)
         {
-            ViewBag.RoleSelectList = _roleRepository.GetRoleSelectList();
-            ViewBag.UserSelectList = _userRepository.GetUserSelectList(email);
+            ViewBag.RoleSelectList = await _roleRepository.GetRoleSelectListAsync();
+            ViewBag.UserSelectList = await _userRepository.GetUserSelectListAsync(email);
 
             return View();
         }
@@ -91,8 +92,8 @@ namespace TeamYellow.Controllers
                 }
             }
 
-            ViewBag.RoleSelectList = _roleRepository.GetRoleSelectList();
-            ViewBag.UserSelectList = _userRepository.GetUserSelectList(userRoleVM.Email);
+            ViewBag.RoleSelectList = await _roleRepository.GetRoleSelectListAsync();
+            ViewBag.UserSelectList = await _userRepository.GetUserSelectListAsync(userRoleVM.Email);
 
             return View(userRoleVM);
         }
@@ -100,14 +101,12 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a confirmation page before removing a role from a user.
         /// </summary>
+        [HttpGet]
         public IActionResult UserRoleDelete(string email, string roleName)
         {
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(roleName))
             {
-                ModelState.AddModelError("",
-                                         "Email and Role Name " +
-                                         "are required.");
-
+                TempData["ErrorMessage"] = "Email and Role Name are required.";
                 return RedirectToAction(nameof(UserRoleIndex));
             }
 
@@ -152,9 +151,9 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays all available roles in the system.
         /// </summary>
-        public IActionResult RoleIndex(string message = "")
+        public async Task<IActionResult> RoleIndex(string message = "")
         {
-            IEnumerable<RoleVM> roles = _roleRepository.GetAllRolesVM();
+            IEnumerable<RoleVM> roles = await _roleRepository.GetAllRolesVMAsync();
             ViewBag.Message = message;
 
             return View(roles);
@@ -174,11 +173,11 @@ namespace TeamYellow.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RoleCreate(RoleVM roleVM)
+        public async Task<IActionResult> RoleCreate(RoleVM roleVM)
         {
             if (ModelState.IsValid)
             {
-                bool isSuccess = _roleRepository.CreateRole(roleVM.RoleName);
+                bool isSuccess = await _roleRepository.CreateRoleAsync(roleVM.RoleName);
 
                 if (isSuccess)
                 {
@@ -194,7 +193,6 @@ namespace TeamYellow.Controllers
                                      " may already exist.";
 
                     ModelState.AddModelError("", message);
-                    _logger.LogError(message);
                 }
             }
             return View(roleVM);
@@ -203,7 +201,8 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a confirmation page before removing a role.
         /// </summary>
-        public IActionResult RoleDelete(string roleName)
+        [HttpGet]
+        public async Task<IActionResult> RoleDelete(string roleName)
         {
             if (string.IsNullOrEmpty(roleName))
             {
@@ -212,13 +211,13 @@ namespace TeamYellow.Controllers
                 return RedirectToAction(nameof(RoleIndex), new { message });
             }
 
-            RoleVM? role = _roleRepository.GetRoleVM(roleName);
+            RoleVM? role = await _roleRepository.GetRoleVMAsync(roleName);
 
             if (role == null)
             {
                 string message = $"Role '{roleName}' not found";
                 _logger.LogWarning(message);
-                return RedirectToAction(nameof(RoleIndex), new { message = message });
+                return RedirectToAction(nameof(RoleIndex), new { message });
             }
             return View(role);
         }
@@ -229,18 +228,18 @@ namespace TeamYellow.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RoleDelete(RoleVM roleVM)
+        public async Task<IActionResult> RoleDelete(RoleVM roleVM)
         {
             if (ModelState.IsValid)
             {
-                bool isSuccess = _roleRepository.DeleteRole(roleVM.RoleName);
+                bool isSuccess = await _roleRepository.DeleteRoleAsync(roleVM.RoleName);
 
                 if (isSuccess)
                 {
                     string message = "Successfully removed " +
                                      roleVM.RoleName +
                                      " from Roles.";
-                    return RedirectToAction(nameof(RoleIndex), new { message = message });
+                    return RedirectToAction(nameof(RoleIndex), new { message });
                 }
                 else
                 {
@@ -249,7 +248,6 @@ namespace TeamYellow.Controllers
                                      " may have users attached.";
 
                     ModelState.AddModelError("", message);
-                    _logger.LogError(message);
                 }
             }
             return View(roleVM);
@@ -258,9 +256,9 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Get all the user logs for Admin
         /// </summary>
-        public IActionResult UserLogAll()
+        public async Task<IActionResult> UserLogAll()
         {
-            var userLogVM = _userLogRepository.GetAll();
+            var userLogVM = await _userLogRepository.GetAllAsync();
 
             return View(userLogVM);
         }

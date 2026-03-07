@@ -9,10 +9,12 @@ namespace TeamYellow.Repositories
     public class UserRoleRepository
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<UserRoleRepository> _logger;
 
-        public UserRoleRepository(UserManager<IdentityUser> userManager)
+        public UserRoleRepository(UserManager<IdentityUser> userManager, ILogger<UserRoleRepository> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -23,10 +25,17 @@ namespace TeamYellow.Repositories
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
+                _logger.LogWarning("User with email '{Email}' was not found.", email);
                 return false;
             }
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Failed to add role '{RoleName}' to user '{Email}'.", roleName, email);
+            }
+
             return result.Succeeded;
         }
 
@@ -38,10 +47,17 @@ namespace TeamYellow.Repositories
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
+                _logger.LogWarning("User with email '{Email}' was not found.", email);
                 return false;
             }
 
             var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Failed to remove role '{RoleName}' from user '{Email}'.", roleName, email);
+            }
+
             return result.Succeeded;
         }
 
@@ -54,6 +70,7 @@ namespace TeamYellow.Repositories
 
             if (user == null)
             {
+                _logger.LogWarning("User with email '{Email}' was not found.", email);
                 return Enumerable.Empty<UserRoleVM>();
             }
 

@@ -30,10 +30,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                UserLog? active = _userLogRepository.GetActiveLog(userId);
+                UserLog active = await _userLogRepository.GetActiveLogAsync(userId);
                 if (active != null)
                 {
-                    bool ended = _userLogRepository.EndLog(active.LogId);
+                    await _userLogRepository.EndLogAsync(active.LogId);
                 }
             }
 

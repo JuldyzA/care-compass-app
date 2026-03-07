@@ -115,8 +115,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
                     if (!string.IsNullOrWhiteSpace(userId))
                     {
-                        _userLogRepository.CloseDanglingIfAny(userId);
-                        _userLogRepository.StartLog(userId);
+                        await _userLogRepository.CloseDanglingLogsIfAnyAsync(userId);
+                        await _userLogRepository.StartLogAsync(userId);
                     }
                     else
                     {

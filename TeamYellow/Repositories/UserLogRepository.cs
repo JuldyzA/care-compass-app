@@ -23,9 +23,9 @@ namespace TeamYellow.Repositories
         /// Returns all user logs as view models, sorted by most recent first.
         /// Uses AsNoTracking() because this is read-only for display.
         /// </summary>
-        public IEnumerable<UserLogVM> GetAll()
+        public async Task<IEnumerable<UserLogVM>> GetAllAsync()
         {
-            return _context.UserLogs
+            return await _context.UserLogs
                            .AsNoTracking()
                            .OrderByDescending(ul => ul.LogInTime)
                            .ThenByDescending(ul => ul.LogId)
@@ -36,27 +36,28 @@ namespace TeamYellow.Repositories
                                LogOutTime = ul.LogOutTime,
                                Abandoned = ul.Abandoned
                            })
-                           .ToList();
+                           .ToListAsync();
         }
 
         /// <summary>
         /// Returns the most recent "active" (not yet logged out) session for a user, if any.
         /// Active means LogOutTime is null.
         /// </summary>
-        public UserLog? GetActiveLog(string? userId)
+        public async Task<UserLog?> GetActiveLogAsync(string? userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
 
-            return _context.UserLogs
+            return await _context.UserLogs
+                           .AsNoTracking()
                            .OrderByDescending(ul => ul.LogInTime)
                            .ThenByDescending(ul => ul.LogId)
-                           .FirstOrDefault(ul => ul.UserId == userId && ul.LogOutTime == null);
+                           .FirstOrDefaultAsync(ul => ul.UserId == userId && ul.LogOutTime == null);
         }
 
         /// <summary>
         /// Starts a new session log row for the user with LogInTime = UtcNow.
         /// </summary>
-        public UserLog StartLog(string userId)
+        public async Task<bool> StartLogAsync(string userId)
         {
             UserLog userLog = new UserLog
             {
@@ -68,32 +69,33 @@ namespace TeamYellow.Repositories
             try
             {
                 _context.UserLogs.Add(userLog);
-                _context.SaveChanges();
-                _logger.LogInformation($"UserLog added successfully for userId={userId}");
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("UserLog added successfully for userId={UserId}", userId);
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to add UserLog for userId={userId}: {ex.Message}");
+                _logger.LogError(ex, "Unable to add UserLog for userId={UserId}", userId);
+                return false;
             }
-            return userLog;
         }
 
         /// <summary>
         /// Ends a session log by setting LogOutTime = UtcNow and Abandoned = false.
         /// </summary>
-        public bool EndLog(int logId)
+        public async Task<bool> EndLogAsync(int logId)
         {
-            UserLog? userLog = _context.UserLogs.FirstOrDefault(ul => ul.LogId == logId);
+            UserLog? userLog = await _context.UserLogs.FirstOrDefaultAsync(ul => ul.LogId == logId);
 
             if (userLog == null)
             {
-                _logger.LogWarning($"No UserLog found for id {logId}");
+                _logger.LogWarning("No UserLog found for id {LogId}", logId);
                 return false;
             }
 
             if (userLog.LogOutTime.HasValue)
             {
-                _logger.LogInformation($"UserLog {logId} already closed at {userLog.LogOutTime.Value:u}");
+                _logger.LogInformation("UserLog {LogId} already closed at {LogOutTime}", logId, userLog.LogOutTime.Value);
                 return false;
             }
 
@@ -102,52 +104,57 @@ namespace TeamYellow.Repositories
 
             try
             {
-                _context.SaveChanges();
-                _logger.LogInformation($"UserLog {logId} closed successfully for userId={userLog.UserId}.");
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("UserLog {LogId} closed successfully for userId={UserId}.", logId, userLog.UserId);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error closing UserLog {logId}: {ex.Message}");
+                _logger.LogError(ex, "Error closing UserLog {LogId}", logId);
                 return false;
             }
         }
 
         /// <summary>
         /// Abandoned-session policy helper:
-        /// If there is any "dangling" (open) session for this user (LogOutTime == null),
-        /// close the most recent one as abandoned by setting:
+        /// If there are any open sessions for this user (LogOutTime == null),
+        /// close all of them as abandoned by setting:
         /// - Abandoned = true
-        /// - LogOutTime = UtcNow
+        /// - LogOutTime = closedAt (DateTime.UtcNow)
         /// </summary>
-        public bool CloseDanglingIfAny(string? userId)
+        public async Task<bool> CloseDanglingLogsIfAnyAsync(string? userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return false;
 
-            var dangling = _context.UserLogs
+            var danglingLogs = await _context.UserLogs
                                    .Where(ul => (ul.UserId == userId) && (ul.LogOutTime == null))
                                    .OrderByDescending(ul => ul.LogInTime)
                                    .ThenByDescending(ul => ul.LogId)
-                                   .FirstOrDefault();
+                                   .ToListAsync();
 
-            if (dangling == null)
+            if (!danglingLogs.Any())
             {
-                _logger.LogWarning($"No dangling logs for userId={userId}");
+                _logger.LogInformation("No dangling logs for userId={UserId}", userId);
                 return false;
             }
 
-            dangling.Abandoned = true;
-            dangling.LogOutTime = DateTime.UtcNow;
+            var closedAt = DateTime.UtcNow;
+
+            foreach (var log in danglingLogs)
+            {
+                log.Abandoned = true;
+                log.LogOutTime = closedAt;
+            }
 
             try
             {
-                _context.SaveChanges();
-                _logger.LogInformation($"Closed dangling log {dangling.LogId} for userId={userId}");
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Closed {Count} dangling log(s) for userId={UserId}", danglingLogs.Count, userId);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error closing dangling logs for userId={userId}: {ex.Message}");
+                _logger.LogError(ex, "Error closing dangling logs for userId={UserId}", userId);
                 return false;
             }
         }
