@@ -80,7 +80,7 @@ namespace TeamYellow.Repositories
                 _context.Roles.Add(new IdentityRole
                 {
                     Name = roleName,
-                    NormalizedName = roleName.ToUpper()
+                    NormalizedName = roleName.ToUpperInvariant()
                 });
 
                 await _context.SaveChangesAsync();

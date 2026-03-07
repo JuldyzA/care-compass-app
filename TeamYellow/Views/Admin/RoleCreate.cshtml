@@ -1,4 +1,5 @@
 ﻿@model TeamYellow.ViewModels.RoleVM
+
 @{
     ViewData["Title"] = "Create Role";
 }
@@ -29,3 +30,9 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
