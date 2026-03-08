@@ -109,6 +109,7 @@ public class PayPalService : IPayPalService
 
         var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        request.Headers.Add("Prefer", "return=representation");
         request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
         var response = await _client.SendAsync(request);
@@ -118,12 +119,17 @@ public class PayPalService : IPayPalService
         var json = JsonNode.Parse(content);
 
         var status = json?["status"]?.ToString();
-        var id = json?["id"]?.ToString();
+
+        var captureId = json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["id"]?.ToString()
+            ?? json?["id"]?.ToString()
+            ?? token;
+
         var customId = json?["purchase_units"]?[0]?["custom_id"]?.ToString()
+            ?? json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
             ?? throw new Exception("PayPal response missing custom_id");
 
         if (status == "COMPLETED")
-            return (id ?? token, customId);
+            return (captureId, customId);
 
         throw new Exception($"Payment capture failed. Status: {status}");
     }

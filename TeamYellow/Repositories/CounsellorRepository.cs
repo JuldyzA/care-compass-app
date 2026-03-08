@@ -13,4 +13,16 @@ public class CounsellorRepository(ApplicationDbContext context) : ICounsellorRep
         return await _context.Counsellors
         .FirstOrDefaultAsync(c => c.UserId == userId);
     }
+
+    public async Task<Counsellor> CreateAsync(Counsellor counsellor)
+    {
+        _context.Counsellors.Add(counsellor);
+        await _context.SaveChangesAsync();
+        return counsellor;
+    }
+
+    public async Task<bool> LicenceIdExistsAsync(string licenceId)
+    {
+        return await _context.Counsellors.AnyAsync(c => c.PractitionerLicenceId == licenceId);
+    }
 }

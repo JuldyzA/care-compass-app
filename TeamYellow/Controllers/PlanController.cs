@@ -1,32 +1,83 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.DTOs;
 using TeamYellow.Models;
+using TeamYellow.Repositories;
 using TeamYellow.Services;
 using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers;
 
 [Authorize]
-public class PlanController(IPlanService planService) : Controller
+public class PlanController : Controller
 {
-    private readonly IPlanService _planService = planService;
+    private readonly IPlanService _planService;
+    private readonly ICounsellorRepository _counsellorRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public PlanController(
+        IPlanService planService,
+        ICounsellorRepository counsellorRepository,
+        ISubscriptionRepository subscriptionRepository,
+        UserManager<IdentityUser> userManager)
+    {
+        _planService = planService;
+        _counsellorRepository = counsellorRepository;
+        _subscriptionRepository = subscriptionRepository;
+        _userManager = userManager;
+    }
 
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
         var plans = await _planService.GetActivePlans();
+
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Paid_Counselor"))
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+                if (counsellor != null)
+                {
+                    var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
+                    ViewData["CurrentPlanId"] = subscription?.PlanId;
+                }
+            }
+        }
+
         return View(plans.Select(MapToPlanVM).ToList());
     }
 
-    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
     public async Task<IActionResult> Checkout(int id)
     {
         var plan = await _planService.GetPlanById(id);
 
         if (plan == null || !plan.IsActive)
-        {
             return NotFound();
+
+        if (User.IsInRole("Free_Counselor") && plan.Price == 0)
+            return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+
+        if (User.IsInRole("Paid_Counselor"))
+        {
+            if (plan.Price == 0)
+                return RedirectToAction(nameof(Index), new { error = "You cannot downgrade to the Free plan from here." });
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+                if (counsellor != null)
+                {
+                    var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
+                    if (subscription?.PlanId == id)
+                        return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+                }
+            }
         }
 
         return View(MapToPlanVM(plan));
@@ -158,4 +209,3 @@ public class PlanController(IPlanService planService) : Controller
             })]
     };
 }
-
