@@ -31,8 +31,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient<PayPalService>();
-builder.Services.AddScoped<IPayPalService, PayPalService>();
+builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
