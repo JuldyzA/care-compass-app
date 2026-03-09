@@ -1,6 +1,6 @@
 ﻿// Configuration
 // Screen width breakpoint for auto-collapse (Bootstrap lg breakpoint)
-const BREAKPOINT = 992;
+const BREAKPOINT = 1200;
 
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
