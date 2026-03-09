@@ -59,4 +59,10 @@ public class CounsellorDashboardDto
     public bool IsPlanActive { get; set; } = false;
 
     public DateTime PlanCreatedAt { get; set; }
+
+    public int[] MonthlyClientCounts { get; set; } = new int[12];
+
+    public double ClientGrowthFromLastMonth { get; set; }
+
+    public int[] ActiveClientCount { get; set; } = new int[2];
 }

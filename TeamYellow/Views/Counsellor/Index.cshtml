@@ -61,10 +61,10 @@
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
                     <div>
                         <div class="text-secondary">New Patient This Month</div>
-                        <div class="h1 mb-0">52</div>
+                        <div class="h1 mb-0">@Model.MonthlyClientCounts[11]</div>
                     </div>
-                    <div class="text-success">
-                        +33%
+                    <div class="@(Model.ClientGrowthFromLastMonth >= 0 ? "text-success" : "text-danger")">
+                        @Model.ClientGrowthFromLastMonth%
                     </div>
                 </div>
                 <div id="monthlyNewClientChart"></div>
@@ -73,228 +73,228 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
+    @section Scripts {
+        <script>
 
-        const now = new Date();
-        const currentMonthFull = now.toLocaleString('default', { month: 'long' });
+            const now = new Date();
+            const currentMonthFull = now.toLocaleString('default', { month: 'long' });
 
-        const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
-              const date = new Date();
-              date.setMonth(now.getMonth() + i);
-              return date.toLocaleString('default', { month: 'long' });
-        });
+            const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date();
+                  date.setMonth(now.getMonth() + i + 1);
+                  return date.toLocaleString('default', { month: 'long' });
+            });
 
 
-        // Sessions This Month Option
-        let monthlySessionsOptions = {
-            chart: {
-                type: 'area',
-                height: 100,
-                sparkline: {
+            // Sessions This Month Option
+            let monthlySessionsOptions = {
+                chart: {
+                    type: 'area',
+                    height: 100,
+                    sparkline: {
+                        enabled: true
+                    },
+                },
+
+                grid: {
+                    padding: {
+                        top: -100,
+                        bottom: -10
+                    }
+                },
+
+                series: [{
+                    name: 'Sessions',
+                    data: [18,32,20,28,26,30,74,18,32,20,28,26]
+                }],
+
+                xaxis: {
+                    categories: monthsStartingFromNow
+                },
+
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.1
+                    }
+                },
+
+                tooltip: {
                     enabled: true
                 },
-            },
 
-            grid: {
-                padding: {
-                    top: -100,
-                    bottom: -10
-                }
-            },
+                colors: ['#206bc4'],
+            };
 
-            series: [{
-                name: 'Sessions',
-                data: [18,32,20,28,26,30,74,18,32,20,28,26]
-            }],
+            // Monthly Completed Sessions Option
+            let monthlyCompletedSessionsOptions = {
+                chart: {
+                    type: 'area',
+                    height: 100,
+                    sparkline: {
+                        enabled: true
+                    },
+                },
 
-            xaxis: {
-                categories: monthsStartingFromNow
-            },
+                grid: {
+                    padding: {
+                        top: -100,
+                        bottom: -10
+                    }
+                },
 
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
+                series: [{
+                    name: 'Completed Sessions',
+                    data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
+                }],
 
-            fill: {
-                type: "gradient",
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.4,
-                    opacityTo: 0.1
-                }
-            },
+                xaxis: {
+                    categories: monthsStartingFromNow
+                },
 
-            tooltip: {
-                enabled: true
-            },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
 
-            colors: ['#206bc4'],
-        };
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.1
+                    }
+                },
 
-        // Monthly Completed Sessions Option
-        let monthlyCompletedSessionsOptions = {
-            chart: {
-                type: 'area',
-                height: 100,
-                sparkline: {
+                tooltip: {
                     enabled: true
                 },
-            },
 
-            grid: {
-                padding: {
-                    top: -100,
-                    bottom: -10
-                }
-            },
+                colors: ['#1da1f2']
+            };
 
-            series: [{
-                name: 'Completed Sessions',
-                data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
-            }],
+            // Monthly Cancelled Session Option
+            let monthlyCancelledSessionOptions = {
+                chart: {
+                    type: 'area',
+                    height: 100,
+                    sparkline: {
+                        enabled: true
+                    },
+                },
 
-            xaxis: {
-                categories: monthsStartingFromNow
-            },
+                grid: {
+                    padding: {
+                        top: -100,
+                        bottom: -10
+                    }
+                },
 
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
+                series: [{
+                    name: 'Cancelled Session',
+                    data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
+                }],
 
-            fill: {
-                type: "gradient",
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.4,
-                    opacityTo: 0.1
-                }
-            },
+                xaxis: {
+                    categories: monthsStartingFromNow
+                },
 
-            tooltip: {
-                enabled: true
-            },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
 
-            colors: ['#1da1f2']
-        };
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.1
+                    }
+                },
 
-        // Monthly Cancelled Session Option
-        let monthlyCancelledSessionOptions = {
-            chart: {
-                type: 'area',
-                height: 100,
-                sparkline: {
+                tooltip: {
                     enabled: true
                 },
-            },
 
-            grid: {
-                padding: {
-                    top: -100,
-                    bottom: -10
-                }
-            },
+                colors: ['#667eea']
+            };
 
-            series: [{
-                name: 'Cancelled Session',
-                data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
-            }],
+            // Monthly New Client Option
+            let monthlyNewClientOptions = {
+                chart: {
+                    type: 'area',
+                    height: 100,
+                    sparkline: {
+                        enabled: true
+                    },
+                },
 
-            xaxis: {
-                categories: monthsStartingFromNow
-            },
+                grid: {
+                    padding: {
+                        top: -100,
+                        bottom: -10
+                    }
+                },
 
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
+                series: [{  
+                    name: 'New Clients',
+                    data: @Html.Raw(Json.Serialize(Model.MonthlyClientCounts))
+                }],
 
-            fill: {
-                type: "gradient",
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.4,
-                    opacityTo: 0.1
-                }
-            },
+                xaxis: {
+                    categories: monthsStartingFromNow
+                },
+                    
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
 
-            tooltip: {
-                enabled: true
-            },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.1
+                    }
+                },
 
-            colors: ['#667eea']
-        };
-
-        // Monthly New Client Option
-        let monthlyNewClientOptions = {
-            chart: {
-                type: 'area',
-                height: 100,
-                sparkline: {
+                tooltip: {
                     enabled: true
                 },
-            },
 
-            grid: {
-                padding: {
-                    top: -100,
-                    bottom: -10
-                }
-            },
+                colors: ['#4299e1']
+            };
 
-            series: [{  
-                name: 'New Clients',
-                data: [64, 22, 91, 5, 47, 83, 19, 72, 38, 54, 11, 95]
-            }],
+            let monthlySessionsChart = new ApexCharts(
+                document.querySelector("#monthlySessionsChart"),
+                monthlySessionsOptions
+            );
+            let monthlyCompletedSessionsChart = new ApexCharts(
+                document.querySelector("#monthlyCompletedSessionsChart"),
+                monthlyCompletedSessionsOptions
+            );
+            let monthlyCancelledSessionChart = new ApexCharts(
+                document.querySelector("#monthlyCancelledSessionChart"),
+                monthlyCancelledSessionOptions
+            );
+            let monthlyNewClientChart = new ApexCharts(
+                document.querySelector("#monthlyNewClientChart"),
+                monthlyNewClientOptions
+            );
 
-            xaxis: {
-                categories: monthsStartingFromNow
-            },
+            monthlySessionsChart.render();
+            monthlyCompletedSessionsChart.render();
+            monthlyCancelledSessionChart.render();
+            monthlyNewClientChart.render();
 
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
-
-            fill: {
-                type: "gradient",
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.4,
-                    opacityTo: 0.1
-                }
-            },
-
-            tooltip: {
-                enabled: true
-            },
-
-            colors: ['#4299e1']
-        };
-
-        let monthlySessionsChart = new ApexCharts(
-            document.querySelector("#monthlySessionsChart"),
-            monthlySessionsOptions
-        );
-        let monthlyCompletedSessionsChart = new ApexCharts(
-            document.querySelector("#monthlyCompletedSessionsChart"),
-            monthlyCompletedSessionsOptions
-        );
-        let monthlyCancelledSessionChart = new ApexCharts(
-            document.querySelector("#monthlyCancelledSessionChart"),
-            monthlyCancelledSessionOptions
-        );
-        let monthlyNewClientChart = new ApexCharts(
-            document.querySelector("#monthlyNewClientChart"),
-            monthlyNewClientOptions
-        );
-
-        monthlySessionsChart.render();
-        monthlyCompletedSessionsChart.render();
-        monthlyCancelledSessionChart.render();
-        monthlyNewClientChart.render();
-
-    </script>
-}
+        </script>
+    }

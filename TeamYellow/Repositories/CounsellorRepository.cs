@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 using TeamYellow.Models;
 
 namespace TeamYellow.Repositories;
@@ -21,11 +22,13 @@ public class CounsellorRepository : ICounsellorRepository
 
     public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId)
     {
-        CounsellorDashboardDto? dto = await _context.Counsellors
+        var data = await _context.Counsellors
             .AsNoTracking()
             .Where(c => c.UserId == userId)
-            .Include(c => c.Subscriptions.OrderByDescending(s => s.UpdatedAt).Take(1))
+            .Include(c => c.Subscriptions
+                .Where(s => s.Status == SubscriptionStatus.Active))
                 .ThenInclude(s => s.Plan)
+            .Include(c => c.Clients)
             .Join(_context.UserProfiles,
                 c => c.UserId,
                 u => u.UserId,
@@ -33,68 +36,18 @@ public class CounsellorRepository : ICounsellorRepository
                 {
                     Counsellor = counsellor,
                     UserProfile = userProfile,
-                    LatestSubscription = counsellor.Subscriptions.FirstOrDefault()
+                    LatestSubscription = counsellor.Subscriptions
+                        .OrderByDescending(s => s.UpdatedAt)
+                        .FirstOrDefault()
                 })
-            .Select(data => new CounsellorDashboardDto
-            {
-                // UserProfile data
-                UserProfileId = data.UserProfile.UserProfileId,
-                FirstName = data.UserProfile.FirstName,
-                LastName = data.UserProfile.LastName,
-                Phone = data.UserProfile.Phone,
-                ProfileCreateAt = data.UserProfile.CreatedAt,
-                ProfilePhotoUrl = data.UserProfile.ProfilePhotoUrl,
-                UnitNumber = data.UserProfile.UnitNumber,
-                Street = data.UserProfile.Street,
-                City = data.UserProfile.City,
-                Province = data.UserProfile.Province,
-                PostalCode = data.UserProfile.PostalCode,
-
-                // Counsellor data
-                CounsellerId = data.Counsellor.CounsellorId,
-                PractitionerLicenceId = data.Counsellor.PractitionerLicenceId,
-                DisplayName = data.Counsellor.DisplayName,
-                IsCounsellorActive = data.Counsellor.IsActive,
-
-                // Subscription data
-                SubscriptionId = data.LatestSubscription != null 
-                    ? data.LatestSubscription.SubscriptionId 
-                    : 0,
-                Status = data.LatestSubscription != null 
-                    ? data.LatestSubscription.Status 
-                    : SubscriptionStatus.Expired,
-                CycleStart = data.LatestSubscription != null 
-                    ? data.LatestSubscription.CycleStart 
-                    : DateTime.MinValue,
-                CycleEnd = data.LatestSubscription != null 
-                    ? data.LatestSubscription.CycleEnd 
-                    : DateTime.MinValue,
-                UpdatedAt = data.LatestSubscription != null 
-                    ? data.LatestSubscription.UpdatedAt 
-                    : DateTime.MinValue,
-
-                // Plan data
-                PlanId = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.PlanId
-                    : 0,
-                PlanName = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.PlanName
-                    : "No Plan",
-                PlanDescription = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.PlanDescription
-                    : string.Empty,
-                Price = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.Price
-                    : 0m,
-                BillingType = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.BillingType
-                    : string.Empty,
-                IsPlanActive = data.LatestSubscription != null && data.LatestSubscription.Plan != null
-                    ? data.LatestSubscription.Plan.IsActive
-                    : false
-            })
             .FirstOrDefaultAsync();
 
-        return dto;
+        if (data != null)
+        {
+            CounsellorDashboardDto dto = CounsellorDashboardHelper.MapToDashboardDto(data.Counsellor, data.UserProfile, data.LatestSubscription);
+            return dto;
+        }
+
+        return null;
     }
 }
