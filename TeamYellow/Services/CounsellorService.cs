@@ -10,11 +10,11 @@ namespace TeamYellow.Services;
 
 public class CounsellorService
 {
-    private readonly ICounsellorRepository _repository;
+    private readonly CounsellorRepository _repository;
     private readonly UserManager<IdentityUser> _userManager;
 
     public CounsellorService(
-        ICounsellorRepository repository,
+        CounsellorRepository repository,
         UserManager<IdentityUser> userManager)
     {
         _repository = repository;

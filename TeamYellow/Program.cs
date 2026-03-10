@@ -27,7 +27,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<CounsellorService>();
 
 // Repositories
-builder.Services.AddScoped<ICounsellorRepository, CounsellorRepository>();
+builder.Services.AddScoped<CounsellorRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();

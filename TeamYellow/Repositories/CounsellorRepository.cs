@@ -6,12 +6,7 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories;
 
-public interface ICounsellorRepository
-{
-    Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId);
-}
-
-public class CounsellorRepository : ICounsellorRepository
+public class CounsellorRepository
 {
     private readonly ApplicationDbContext _context;
 
