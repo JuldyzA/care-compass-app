@@ -6,11 +6,11 @@ namespace TeamYellow.Repositories
 {
     public class DiscountRepository
     {
-        private readonly ApplicationDbContext Context;
+        private readonly ApplicationDbContext _context;
 
         public DiscountRepository(ApplicationDbContext context)
         {
-            Context = context;
+            _context = context;
         }
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace TeamYellow.Repositories
         /// <returns>An IEnumerable of all Discount entities.</returns>
         public IEnumerable<Discount> GetAll()
         {
-            return Context.Discounts.ToList();
+            return _context.Discounts.ToList();
         }
 
         /// <summary>
@@ -28,8 +28,8 @@ namespace TeamYellow.Repositories
         /// <param name="discount">The Discount entity to add.</param>
         public void Add(Discount discount)
         {
-            Context.Discounts.Add(discount);
-            Context.SaveChanges();
+            _context.Discounts.Add(discount);
+            _context.SaveChanges();
         }
 
         /// <summary>
@@ -39,11 +39,11 @@ namespace TeamYellow.Repositories
         /// <param name="discountId">The ID of the discount.</param>
         public void AddDiscountToPlan(int planId, int discountId)
         {
-            var plan = Context.Plans.Find(planId);
-            var discount = Context.Discounts.Find(discountId);
+            var plan = _context.Plans.Find(planId);
+            var discount = _context.Discounts.Find(discountId);
             if (plan == null || discount == null)
                 return;
-            var exists = Context.PlanDiscounts
+            var exists = _context.PlanDiscounts
                     .Any(pd => pd.Plan.PlanId == planId && pd.Discount.DiscountId == discountId);
 
             if (exists)
@@ -53,8 +53,8 @@ namespace TeamYellow.Repositories
                 Plan = plan,
                 Discount = discount
             };
-            Context.PlanDiscounts.Add(planDiscount);
-            Context.SaveChanges();
+            _context.PlanDiscounts.Add(planDiscount);
+            _context.SaveChanges();
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace TeamYellow.Repositories
         /// <returns>An IEnumerable of Discount entities with related PlanDiscounts and Plans.</returns>
         public IEnumerable<Discount> GetAllDiscountsWithPlans()
         {
-            return Context.Discounts
+            return _context.Discounts
                 .Include(d => d.PlanDiscounts)
                 .ThenInclude(pd => pd.Plan)
                 .ToList();

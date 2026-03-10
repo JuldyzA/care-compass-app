@@ -33,9 +33,10 @@ namespace TeamYellow.Controllers
         /// Aggregates transaction statistics and details for each counsellor.
         /// </summary>
         /// <returns>The dashboard view with aggregated data.</returns>
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
+            var counsellors = await CounsellorRepository.GetAllAsync();
+
             var dashboardData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .ToList();
@@ -92,9 +93,9 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <param name="id">The payment transaction ID.</param>
         /// <returns>The details view for the specified transaction, or NotFound if not found.</returns>
-        public IActionResult TransactionDetails(int id)
+        public async Task<IActionResult> TransactionDetails(int id)
         {
-            var counsellors = CounsellorRepository.GetCounsellorsWithPayments();
+            var counsellors = await CounsellorRepository.GetCounsellorsWithPaymentsAsync();
             var detailsData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .FirstOrDefault(d => d.PaymentTransactionId == id);
@@ -107,14 +108,15 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays a list of all available plans.
+        /// Displays a list of all available plans asynchronously.
         /// </summary>
         /// <returns>The plans view with a list of plans.</returns>
-        public IActionResult Plans()
+        public async Task<IActionResult> Plans()
         {
+            var plans = await Task.Run(() => PlanRepository.GetAll());
             var vm = new PlanVM
             {
-                Plans = PlanRepository.GetAll()
+                Plans = plans
             };
 
             return View(vm);
@@ -125,15 +127,15 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <param name="id">The unique identifier of the plan to edit.</param>
         /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
-        public IActionResult PlanEdit(int id)
+        public async Task<IActionResult> PlanEdit(int id)
         {
-            var plan = PlanRepository.GetById(id);
+            var plan = await Task.Run(() => PlanRepository.GetById(id));
 
             if (plan == null)
             {
                 return NotFound();
             }
-            ViewBag.BillingTypes = new List<string> { "Free Trial","Monthly", "Yearly" };
+            ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
 
             var vm = new PlanVM
             {
@@ -148,18 +150,18 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Processes the submission of the plan edit form and updates the plan details.
+        /// Processes the submission of the plan edit form and updates the plan details asynchronously.
         /// </summary>
         /// <param name="vm">The view model containing updated plan information.</param>
         /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
         [HttpPost]
-        public IActionResult PlanEdit(PlanVM vm)
+        public async Task<IActionResult> PlanEdit(PlanVM vm)
         {
             if (!ModelState.IsValid)
             {
                 return View(vm);
             }
-            var plan = PlanRepository.GetById(vm.PlanId);
+            var plan = await Task.Run(() => PlanRepository.GetById(vm.PlanId));
 
             if (plan == null)
             {
@@ -171,7 +173,7 @@ namespace TeamYellow.Controllers
             plan.Price = vm.Price;
             plan.BillingType = vm.BillingType;
             plan.IsActive = vm.IsActive;
-            PlanRepository.Update(plan);
+            await Task.Run(() => PlanRepository.Update(plan));
 
             return RedirectToAction(nameof(Plans));
         }
@@ -180,11 +182,11 @@ namespace TeamYellow.Controllers
         /// Displays a list of all available discounts with their associated plans.
         /// </summary>
         /// <returns>The discounts view with a list of discounts and plans.</returns>
-        public IActionResult Discounts()
+        public async Task<IActionResult> Discounts()
         {
             var vm = new DiscountVM
             {
-                Discounts = DiscountRepository.GetAllDiscountsWithPlans()
+                Discounts = await Task.Run(() => DiscountRepository.GetAllDiscountsWithPlans())
             };
 
             return View(vm);
@@ -228,19 +230,22 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the form to apply a discount to one or more plans.
+        /// Displays the form to apply a discount to one or more plans asynchronously.
         /// </summary>
         /// <returns>The apply discount view with available discounts and plans.</returns>
         [HttpGet]
-        public IActionResult ApplyDiscount()
+        public async Task<IActionResult> ApplyDiscountAsync()
         {
+            var discounts = await Task.Run(() => DiscountRepository.GetAll());
+            var plans = await PlanRepository.GetAll();
+
             var vm = new DiscountVM
             {
-                Discounts = DiscountRepository.GetAll(),
-                Plans = PlanRepository.GetAll()
+                Discounts = discounts,
+                Plans = plans
             };
 
-            return View(vm);
+            return View("ApplyDiscount", vm);
         }
 
         /// <summary>

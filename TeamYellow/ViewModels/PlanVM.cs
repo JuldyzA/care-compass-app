@@ -24,5 +24,6 @@ namespace TeamYellow.ViewModels
         public bool IsActive { get; set; }
 
         public IEnumerable<Plan> Plans { get; set; } = new List<Plan>();
+        public List<PlanFeatureVM> PlanFeatures { get; set; } = [];
     }
 }
