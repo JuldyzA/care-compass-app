@@ -447,7 +447,7 @@ body {
     }
 }
 
-/*Make the sidebar looks endliess on screen <= 375px*/
+/*Make the sidebar looks endless on screen <= 375px*/
 @media (max-width: 375px) {
     .sidebar {
         height: 100%;
