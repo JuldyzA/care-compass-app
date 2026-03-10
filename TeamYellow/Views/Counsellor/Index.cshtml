@@ -90,6 +90,23 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-8">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="sessionHeatMap"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-2" id="sessionPieChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
 
@@ -439,19 +456,127 @@
                         },
                     },
                 },
-            },
-
-            // responsive: [
-            //     {
-            //         breakpoint: 480,
-            //         options: {
-            //             chart: { width: 300 },
-            //             legend: { position: "bottom" },
-            //         },
-            //     },
-            // ],
+            }
         };
 
+        // Session heat map
+        const sessionHeatMapOptions = {
+            series: [
+                generatePatientData("Sunday"),
+                generatePatientData("Saturday"),
+                generatePatientData("Friday"),
+                generatePatientData("Thursday"),
+                generatePatientData("Wednesday"),
+                generatePatientData("Tuesday"),
+                generatePatientData("Monday"),
+            ],
+
+            chart: {
+                height: 230,
+                type: "heatmap",
+                toolbar: { show: false },
+                animations: { enabled: false },
+            },
+
+            dataLabels: {
+                enabled: false,
+            },
+
+            colors: ["#4AD0FF"],
+            plotOptions: {
+                heatmap: {
+                    enableShades: false,
+                    radius: 2,
+                    useFillColorAsStroke: false,
+                    colorScale: {
+                        ranges: [
+                            {
+                                from: 0,
+                                to: 0,
+                                color: "#ebedf0",
+                                name: "0",
+                            },
+                            {
+                                from: 1,
+                                to: 3,
+                                color: "#B2EDFF",
+                                name: "low",
+                            },
+                            {
+                                from: 4,
+                                to: 7,
+                                color: "#7ADFFF",
+                                name: "medium",
+                            },
+                            {
+                                from: 8,
+                                to: 11,
+                                color: "#4AD0FF",
+                                name: "high",
+                            },
+                            {
+                                from: 12,
+                                to: 100,
+                                color: "#0099CC",
+                                name: "very high",
+                            },
+                        ],
+                    },
+                },
+            },
+
+            stroke: {
+                width: 2,
+                colors: ["#fff"],
+            },
+
+            title: {
+                text: "Patient Sessions Heatmap",
+                align: "left",
+                style: { fontSize: "14px", color: "#666" },
+            },
+
+            xaxis: {
+                type: "category",
+                position: "top",
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                labels: {
+                    show: true,
+                    rotate: 0,
+                    style: { fontSize: "10px" },
+                    formatter: (val) => (val.includes("W1") ? val.split(" ")[0] : ""),
+                },
+            },
+
+            yaxis: {
+                labels: {
+                    show: true,
+                    style: { fontSize: "10px" },
+                },
+            },
+
+            grid: {
+                padding: {
+                    right: 10,
+                    left: 10,
+                },
+            },
+
+            legend: {
+                show: false,
+            },
+
+            tooltip: {
+                x: {
+                    show: true,
+                    formatter: (val) => val,
+                },
+                y: {
+                    formatter: (val) => `${val} sessions`,
+                },
+            },
+        };
 
         const monthlySessionsChart = new ApexCharts(
             document.querySelector("#monthlySessionsChart"),
@@ -477,6 +602,10 @@
             document.querySelector("#sessionPieChart"),
             sessionPieChartOptions
         );
+        const sessionHeatMap = new ApexCharts(
+            document.querySelector("#sessionHeatMap"),
+            sessionHeatMapOptions
+        );
 
         monthlySessionsChart.render();
         monthlyCompletedSessionsChart.render();
@@ -484,6 +613,27 @@
         monthlyNewClientChart.render();
         mainSummaryChart.render();
         sessionPieChart.render();
+        sessionHeatMap.render();
+
+        function generatePatientData(dayName) {
+            const months = monthsStartingFromNow;
+            let data = [];
+
+            months.forEach(function (month) {
+                // Generate 4 weeks for each month
+                for (let week = 1; week <= 4; week++) {
+                    data.push({
+                        x: `${month} W${week}`,
+                        y: Math.floor(Math.random() * 16),
+                    });
+                }
+            });
+
+            return {
+                name: dayName,
+                data: data,
+            };
+        }
 
     </script>
 }
