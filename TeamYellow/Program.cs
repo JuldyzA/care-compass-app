@@ -2,11 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
-<<<<<<< feature/AdminFlow
 using TeamYellow.Repositories;
-=======
 using TeamYellow.Services;
->>>>>>> develop
 
 var builder = WebApplication.CreateBuilder(args);
 
