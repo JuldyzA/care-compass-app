@@ -2,7 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
+<<<<<<< feature/AdminFlow
+using TeamYellow.Repositories;
+=======
 using TeamYellow.Services;
+>>>>>>> develop
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +25,12 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+
+// Register services with DI
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<UserRoleRepository>();
+builder.Services.AddScoped<UserLogRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
