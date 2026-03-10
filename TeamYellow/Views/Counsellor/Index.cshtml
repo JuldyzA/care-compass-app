@@ -81,6 +81,13 @@
             </div>
         </div>
     </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="sessionPieChart"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -385,6 +392,67 @@
             ]
         };
 
+        // Session Summary Pie
+        const sessionPieChartOptions = {
+            title: {
+                text: "Patient Session Overview",
+                align: "left", 
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+                margin: 10, 
+            },
+
+            series: [43, 22, 8, 5],
+
+            labels: [
+                "Completed Sessions",
+                "Cancelled Sessions",
+                "No Show",
+                "Rescheduled",
+            ],
+
+            chart: {
+                type: "donut",
+                height: 450,
+            },
+
+            colors: ["#2ECC71", "#E74C3C", "#F1C40F", "#3498DB"],
+
+            plotOptions: {
+                pie: {
+                    donut: {
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: "Total Sessions",
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce(
+                                        (a, b) => a + b,
+                                        0,
+                                    );
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+
+            // responsive: [
+            //     {
+            //         breakpoint: 480,
+            //         options: {
+            //             chart: { width: 300 },
+            //             legend: { position: "bottom" },
+            //         },
+            //     },
+            // ],
+        };
+
+
         const monthlySessionsChart = new ApexCharts(
             document.querySelector("#monthlySessionsChart"),
             monthlySessionsOptions
@@ -405,12 +473,17 @@
             document.querySelector("#mainSummaryChart"), 
             mainSummaryChartOptions
         );
+        const sessionPieChart = new ApexCharts(
+            document.querySelector("#sessionPieChart"),
+            sessionPieChartOptions
+        );
 
         monthlySessionsChart.render();
         monthlyCompletedSessionsChart.render();
         monthlyCancelledSessionChart.render();
         monthlyNewClientChart.render();
         mainSummaryChart.render();
+        sessionPieChart.render();
 
     </script>
 }
