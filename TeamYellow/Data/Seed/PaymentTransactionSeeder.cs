@@ -33,7 +33,7 @@ public class PaymentTransactionSeeder : IDataSeeder
             .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor4@test.ca");
 
-        if (counsellor1 == null || counsellor2 == null || counsellor3 == null)
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)
         {
             Console.WriteLine("One or more counsellors not found for PaymentTransaction seeding.");
             return;
