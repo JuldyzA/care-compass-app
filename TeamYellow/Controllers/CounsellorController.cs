@@ -22,7 +22,14 @@ namespace TeamYellow.Controllers
             CounsellorDashboardVM? dashboardVM = await _service.GetCounsellorDashboardAsync(User);
 
             //TODO: Handle null case (e.g. redirect to error page or show message)
+            
             //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
+
+            //TODO: Handle case when the user status is not valid (Blur the screen)
+            if (dashboardVM == null)
+            {
+                dashboardVM = new CounsellorDashboardVM();
+            }
 
             ViewData["DefaultUserProfilePicture"] = _configuration["DefaultSettings:DefaultUserProfilePicture"];
 
