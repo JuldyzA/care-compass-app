@@ -101,7 +101,7 @@
     <div class="col-sm-6 col-md-6 col-lg-4">
         <div class="card">
             <div class="card-body p-0">
-                <div class="m-2" id="sessionPieChart"></div>
+                <div class="m-3" id="patientStatusPieChart"></div>
             </div>
         </div>
     </div>
@@ -577,6 +577,44 @@
                 },
             },
         };
+        
+        // Patient status pie chart
+        var patientStatusPieChartOptions = {
+            title: {
+                text: "Patient Status Distribution",
+                align: "left",
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+                margin: 10,
+            },
+
+            series: @Html.Raw(Json.Serialize(Model.ActiveClientCount)),
+
+            chart: {
+                width: 450,
+                type: "pie",
+            },
+
+            labels: ["Active Patients", "Inactive Patients"],
+            colors: ["#00E396", "#FF4560"],
+            responsive: [
+                {
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            width: 200,
+                        },
+                        legend: {
+                            position: "bottom",
+                        },
+                    },
+                },
+            ],
+        };
+
 
         const monthlySessionsChart = new ApexCharts(
             document.querySelector("#monthlySessionsChart"),
@@ -606,6 +644,10 @@
             document.querySelector("#sessionHeatMap"),
             sessionHeatMapOptions
         );
+        const patientStatusPieChart = new ApexCharts(
+            document.querySelector("#patientStatusPieChart"),
+            patientStatusPieChartOptions
+        );
 
         monthlySessionsChart.render();
         monthlyCompletedSessionsChart.render();
@@ -614,6 +656,7 @@
         mainSummaryChart.render();
         sessionPieChart.render();
         sessionHeatMap.render();
+        patientStatusPieChart.render();
 
         function generatePatientData(dayName) {
             const months = monthsStartingFromNow;
