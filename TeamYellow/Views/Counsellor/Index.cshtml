@@ -6,6 +6,158 @@
     ViewData["DisplayName"] = Model.DisplayName;
 }
 
+<style>
+    /* ========================================
+       Sessions Table Styles
+       ======================================== */
+
+    /* Avatar styles */
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-initial {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: white;
+    }
+
+    /* Table header improvements */
+    #sessionsTable thead th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem 0.75rem;
+    }
+
+    #sessionsTable tbody td {
+        padding: 0.875rem 0.75rem;
+        vertical-align: middle;
+    }
+
+    /* Sortable column hover effect */
+    .sortable:hover {
+        background-color: #f1f5f9 !important;
+    }
+
+    .sortable i {
+        font-size: 0.75rem;
+        margin-left: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    /* Search input styling */
+    #sessionSearchInput:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    .input-group-text {
+        background-color: white;
+    }
+
+    /* Row hover effect */
+    #sessionsTable tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        #sessionsTable tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+    /* Badge adjustments */
+    #sessionsTable .badge {
+        font-weight: 500;
+        padding: 0.35em 0.75em;
+        font-size: 0.8125rem;
+    }
+
+    /* Action buttons */
+    #sessionsTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* Pagination styling */
+    .pagination-sm .page-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        margin: 0 2px;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        transition: all 0.2s ease;
+    }
+
+        .pagination-sm .page-link:hover {
+            background-color: #f1f5f9;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+    .pagination-sm .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .pagination-sm .page-item.disabled .page-link {
+        color: #cbd5e1;
+        pointer-events: none;
+        background-color: transparent;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .card-header .d-flex
+
+    {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-header .input-group {
+        width: 100% !important;
+    }
+
+    #sessionsTable thead th {
+        font-size: 0.75rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    #sessionsTable tbody td {
+        font-size: 0.875rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+
+    .avatar-initial {
+        font-size: 0.75rem;
+    }
+
+    #sessionsTable .btn-sm {
+        padding: 0.125rem 0.375rem;
+    }
+
+    }
+</style>
+
 <div class="row">
     <div class="col-sm-6 col-md-6 col-lg-3">
         <div class="card">
@@ -110,8 +262,237 @@
 <div class="row">
     <div class="col-sm-12 col-md-12 col-lg-8">
         <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Upcoming Sessions</h5>
+                <div class="d-flex gap-2">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="sessionSearchInput" class="form-control border-start-0" placeholder="Search sessions...">
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="sessionFilterBtn">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </div>
             <div class="card-body p-0">
-                <div class="m-3" id="sessionHeatMap"></div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="sessionsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable" data-column="patient">
+                                    Patient Name 
+                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                </th>
+                                <th class="sortable" data-column="datetime">
+                                    Date & Time 
+                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                </th>
+                                <th class="sortable" data-column="type">
+                                    Type 
+                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                </th>
+                                <th class="sortable" data-column="status">
+                                    Status 
+                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                </th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsTableBody">
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-primary">GJ</span>
+                                        </div>
+                                        <span class="fw-medium">Grace Johnson</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 12, 2026</div>
+                                    <small class="text-muted">10:00 AM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Individual</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-info">EC</span>
+                                        </div>
+                                        <span class="fw-medium">Emily Clark</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 12, 2026</div>
+                                    <small class="text-muted">2:00 PM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Couples</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-warning">IP</span>
+                                        </div>
+                                        <span class="fw-medium">Isabella Perez</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 13, 2026</div>
+                                    <small class="text-muted">9:00 AM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Individual</span></td>
+                                <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-danger">CL</span>
+                                        </div>
+                                        <span class="fw-medium">Chloe Lee</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 13, 2026</div>
+                                    <small class="text-muted">11:30 AM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Family</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-secondary">MC</span>
+                                        </div>
+                                        <span class="fw-medium">Michael Chen</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 14, 2026</div>
+                                    <small class="text-muted">3:00 PM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Individual</span></td>
+                                <td><span class="badge bg-info">Rescheduled</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-success">SM</span>
+                                        </div>
+                                        <span class="fw-medium">Sarah Martinez</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 15, 2026</div>
+                                    <small class="text-muted">1:00 PM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Individual</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-primary">DW</span>
+                                        </div>
+                                        <span class="fw-medium">David Wilson</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 15, 2026</div>
+                                    <small class="text-muted">4:30 PM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Couples</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-info">LT</span>
+                                        </div>
+                                        <span class="fw-medium">Lisa Taylor</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Mar 16, 2026</div>
+                                    <small class="text-muted">10:30 AM</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">Individual</span></td>
+                                <td><span class="badge bg-danger">Cancelled</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div class="text-muted small">
+                        Showing <span id="showingStart">1</span> to <span id="showingEnd">5</span> of <span id="totalEntries">8</span> entries
+                    </div>
+                    <nav aria-label="Sessions pagination">
+                        <ul class="pagination pagination-sm mb-0" id="sessionsPagination">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
@@ -737,6 +1118,166 @@
                 data: data,
             };
         }
+
+        // ===== Sessions Table Functionality =====
+        
+        // Search functionality
+        const sessionSearchInput = document.getElementById('sessionSearchInput');
+        const sessionsTableBody = document.getElementById('sessionsTableBody');
+        const tableRows = Array.from(sessionsTableBody.getElementsByTagName('tr'));
+        
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let filteredRows = [...tableRows];
+
+        sessionSearchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            filteredRows = tableRows.filter(row => {
+                const text = row.textContent.toLowerCase();
+                const match = text.includes(searchTerm);
+                return match;
+            });
+            
+            currentPage = 1;
+            updateTable();
+        });
+
+        // Sorting functionality
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function() {
+                const column = this.dataset.column;
+                const icon = this.querySelector('i');
+                const isAscending = icon.classList.contains('bi-chevron-expand') || 
+                                   icon.classList.contains('bi-chevron-down');
+                
+                // Reset all icons
+                document.querySelectorAll('.sortable i').forEach(i => {
+                    i.className = 'bi bi-chevron-expand text-muted';
+                });
+                
+                // Set current icon
+                icon.className = isAscending ? 'bi bi-chevron-up text-primary' : 'bi bi-chevron-down text-primary';
+                
+                // Sort rows
+                filteredRows.sort((a, b) => {
+                    let aVal, bVal;
+                    const aIndex = tableRows.indexOf(a);
+                    const bIndex = tableRows.indexOf(b);
+                    
+                    switch(column) {
+                        case 'patient':
+                            aVal = tableRows[aIndex].querySelector('.fw-medium').textContent;
+                            bVal = tableRows[bIndex].querySelector('.fw-medium').textContent;
+                            break;
+                        case 'datetime':
+                            aVal = tableRows[aIndex].querySelectorAll('td')[1].textContent;
+                            bVal = tableRows[bIndex].querySelectorAll('td')[1].textContent;
+                            break;
+                        case 'type':
+                            aVal = tableRows[aIndex].querySelectorAll('td')[2].textContent;
+                            bVal = tableRows[bIndex].querySelectorAll('td')[2].textContent;
+                            break;
+                        case 'status':
+                            aVal = tableRows[aIndex].querySelectorAll('td')[3].textContent;
+                            bVal = tableRows[bIndex].querySelectorAll('td')[3].textContent;
+                            break;
+                    }
+                    
+                    if (isAscending) {
+                        return aVal.localeCompare(bVal);
+                    } else {
+                        return bVal.localeCompare(aVal);
+                    }
+                });
+                
+                updateTable();
+            });
+        });
+
+        // Pagination
+        function updateTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            
+            // Hide all rows
+            tableRows.forEach(row => row.style.display = 'none');
+            
+            // Show filtered and paginated rows
+            filteredRows.slice(start, end).forEach(row => row.style.display = '');
+            
+            // Update pagination info
+            document.getElementById('showingStart').textContent = filteredRows.length > 0 ? start + 1 : 0;
+            document.getElementById('showingEnd').textContent = Math.min(end, filteredRows.length);
+            document.getElementById('totalEntries').textContent = filteredRows.length;
+            
+            // Update pagination buttons
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+            const pagination = document.getElementById('sessionsPagination');
+            
+            pagination.innerHTML = `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="prev" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+            
+            // Show max 5 page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                pagination.innerHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+            }
+            
+            pagination.innerHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="next" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+            
+            // Add click handlers
+            pagination.querySelectorAll('.page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    
+                    if (page === 'prev' && currentPage > 1) {
+                        currentPage--;
+                    } else if (page === 'next' && currentPage < totalPages) {
+                        currentPage++;
+                    } else if (page !== 'prev' && page !== 'next') {
+                        currentPage = parseInt(page);
+                    }
+                    
+                    updateTable();
+                });
+            });
+        }
+
+        // Filter button (placeholder functionality)
+        document.getElementById('sessionFilterBtn').addEventListener('click', function() {
+            alert('Filter functionality to be implemented');
+        });
+
+        // Initialize table
+        updateTable();
 
     </script>
 }
