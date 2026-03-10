@@ -7,7 +7,7 @@
 }
 
 <div class="row">
-    <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="col-sm-6 col-md-6 col-lg-3">
         <div class="card">
             <div class="card-body p-0">
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="col-sm-6 col-md-6 col-lg-3">
         <div class="card">
             <div class="card-body p-0">
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
@@ -39,7 +39,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="col-sm-6 col-md-6 col-lg-3">
         <div class="card">
             <div class="card-body p-0">
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="col-sm-6 col-md-6 col-lg-3">
         <div class="card">
             <div class="card-body p-0">
                 <div class="d-flex align-items-center p-4 pt-2 pb-0 justify-content-between">
@@ -73,228 +73,344 @@
     </div>
 </div>
 
-    @section Scripts {
-        <script>
+<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-8">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="mainSummaryChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-            const now = new Date();
-            const currentMonthFull = now.toLocaleString('default', { month: 'long' });
+@section Scripts {
+    <script>
 
-            const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date();
-                  date.setMonth(now.getMonth() + i + 1);
-                  return date.toLocaleString('default', { month: 'long' });
-            });
+        const now = new Date();
+        const currentMonthFull = now.toLocaleString('default', { month: 'long' });
+
+        const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
+                const date = new Date();
+                date.setMonth(now.getMonth() + i + 1);
+                return date.toLocaleString('default', { month: 'long' });
+        });
 
 
-            // Sessions This Month Option
-            let monthlySessionsOptions = {
-                chart: {
-                    type: 'area',
-                    height: 100,
-                    sparkline: {
-                        enabled: true
-                    },
-                },
-
-                grid: {
-                    padding: {
-                        top: -100,
-                        bottom: -10
-                    }
-                },
-
-                series: [{
-                    name: 'Sessions',
-                    data: [18,32,20,28,26,30,74,18,32,20,28,26]
-                }],
-
-                xaxis: {
-                    categories: monthsStartingFromNow
-                },
-
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
-
-                fill: {
-                    type: "gradient",
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.4,
-                        opacityTo: 0.1
-                    }
-                },
-
-                tooltip: {
+        // Sessions This Month Option
+        const monthlySessionsOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
                     enabled: true
                 },
+            },
 
-                colors: ['#206bc4'],
-            };
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
 
-            // Monthly Completed Sessions Option
-            let monthlyCompletedSessionsOptions = {
-                chart: {
-                    type: 'area',
-                    height: 100,
-                    sparkline: {
-                        enabled: true
-                    },
-                },
+            series: [{
+                name: 'Sessions',
+                data: [18,32,20,28,26,30,74,18,32,20,28,26]
+            }],
 
-                grid: {
-                    padding: {
-                        top: -100,
-                        bottom: -10
-                    }
-                },
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
 
-                series: [{
-                    name: 'Completed Sessions',
-                    data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
-                }],
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
 
-                xaxis: {
-                    categories: monthsStartingFromNow
-                },
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
 
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
+            tooltip: {
+                enabled: true
+            },
 
-                fill: {
-                    type: "gradient",
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.4,
-                        opacityTo: 0.1
-                    }
-                },
+            colors: ['#206bc4'],
+        };
 
-                tooltip: {
+        // Monthly Completed Sessions Option
+        const monthlyCompletedSessionsOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
                     enabled: true
                 },
+            },
 
-                colors: ['#1da1f2']
-            };
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
 
-            // Monthly Cancelled Session Option
-            let monthlyCancelledSessionOptions = {
-                chart: {
-                    type: 'area',
-                    height: 100,
-                    sparkline: {
-                        enabled: true
-                    },
-                },
+            series: [{
+                name: 'Completed Sessions',
+                data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
+            }],
 
-                grid: {
-                    padding: {
-                        top: -100,
-                        bottom: -10
-                    }
-                },
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
 
-                series: [{
-                    name: 'Cancelled Session',
-                    data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
-                }],
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
 
-                xaxis: {
-                    categories: monthsStartingFromNow
-                },
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
 
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
+            tooltip: {
+                enabled: true
+            },
 
-                fill: {
-                    type: "gradient",
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.4,
-                        opacityTo: 0.1
-                    }
-                },
+            colors: ['#1da1f2']
+        };
 
-                tooltip: {
+        // Monthly Cancelled Session Option
+        const monthlyCancelledSessionOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
                     enabled: true
                 },
+            },
 
-                colors: ['#667eea']
-            };
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
 
-            // Monthly New Client Option
-            let monthlyNewClientOptions = {
-                chart: {
-                    type: 'area',
-                    height: 100,
-                    sparkline: {
-                        enabled: true
-                    },
-                },
+            series: [{
+                name: 'Cancelled Session',
+                data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
+            }],
 
-                grid: {
-                    padding: {
-                        top: -100,
-                        bottom: -10
-                    }
-                },
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
 
-                series: [{  
-                    name: 'New Clients',
-                    data: @Html.Raw(Json.Serialize(Model.MonthlyClientCounts))
-                }],
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
 
-                xaxis: {
-                    categories: monthsStartingFromNow
-                },
-                    
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
 
-                fill: {
-                    type: "gradient",
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.4,
-                        opacityTo: 0.1
-                    }
-                },
+            tooltip: {
+                enabled: true
+            },
 
-                tooltip: {
+            colors: ['#667eea']
+        };
+
+        // Monthly New Client Option
+        const monthlyNewClientOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
                     enabled: true
                 },
+            },
 
-                colors: ['#4299e1']
-            };
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
 
-            let monthlySessionsChart = new ApexCharts(
-                document.querySelector("#monthlySessionsChart"),
-                monthlySessionsOptions
-            );
-            let monthlyCompletedSessionsChart = new ApexCharts(
-                document.querySelector("#monthlyCompletedSessionsChart"),
-                monthlyCompletedSessionsOptions
-            );
-            let monthlyCancelledSessionChart = new ApexCharts(
-                document.querySelector("#monthlyCancelledSessionChart"),
-                monthlyCancelledSessionOptions
-            );
-            let monthlyNewClientChart = new ApexCharts(
-                document.querySelector("#monthlyNewClientChart"),
-                monthlyNewClientOptions
-            );
+            series: [{
+                name: 'New Clients',
+                data: @Html.Raw(Json.Serialize(Model.MonthlyClientCounts))
+            }],
 
-            monthlySessionsChart.render();
-            monthlyCompletedSessionsChart.render();
-            monthlyCancelledSessionChart.render();
-            monthlyNewClientChart.render();
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
 
-        </script>
-    }
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#4299e1']
+        };
+
+        // Main Chart
+        const mainSummaryChartOptions = {
+            series: [
+                { name: "Grace Johnson", data: [40, 47, 55, 55, 59, 64, 70, 78, 84, 90, 98], color: "#00E396" },
+                { name: "Emily Clark", data: [37, 47, 48, 61, 59, 66, 75, 74, 84, 92, 89], color: "#2E93fA" },
+                { name: "Isabella Perez", data: [57, 59, 53, 54, 42, 40, 37, 28, 33, 29, 25], color: "#FEB019" },
+                { name: "Chloe Lee", data: [86, 65, 63, 58, 52, 43, 44, 32, 30, 25, 23], color: "#FF4560" },
+                { name: "Clinic Average", type: "area", data: [50, 52, 53, 57, 57, 59, 61, 63, 65, 69, 70], color: "#a1a8b0" },
+            ],
+            chart: {
+                height: 500,
+                type: "line",
+                zoom: { enabled: true },
+                toolbar: { 
+                    show: true,
+                    offsetY: -5 
+                },
+            },
+            stroke: {
+                width: [4, 4, 4, 4, 2],
+                curve: "smooth",
+                dashArray: [0, 0, 0, 0, 5],
+            },
+            legend: { 
+                position: "top", 
+                horizontalAlign: "left", 
+                fontSize: '14px',
+                fontWeight: 600,
+                offsetY: 0,
+                offsetX: -10,
+                itemMargin: {
+                    horizontal: 5,
+                    vertical: 0
+                }
+            },
+            grid: {
+                padding: {
+                    top: 25,      
+                    left: 20,
+                    right: 20
+                }
+            },
+            annotations: {
+                yaxis: [
+                    { y: 85, borderColor: "#00E396", borderWidth: 2, label: { text: "Discharge Readiness", style: { color: "#fff", background: "#00E396" } } },
+                    { y: 30, borderColor: "#FF4560", borderWidth: 2, label: { text: "Urgent Review Req.", style: { color: "#fff", background: "#FF4560" } } },
+                ],
+                xaxis: [
+                    { x: new Date("2024-03-01").getTime(), strokeDashArray: 3, label: { text: "Phase 2 Start", style: { background: "#775DD0", color: "#fff" } } },
+                ],
+            },
+            fill: {
+                type: ["solid", "solid", "solid", "solid", "gradient"],
+                gradient: { opacityFrom: 0.3, opacityTo: 0.1 },
+            },
+            labels: ["2024-01-10", "2024-01-20", "2024-02-01", "2024-02-15", "2024-02-22", "2024-03-01", "2024-03-05", "2024-03-10", "2024-03-15", "2024-03-25", "2024-04-01"],
+            xaxis: { type: "datetime" },
+            yaxis: {
+                max: 100,
+                title: {
+                    text: "Wellness Score %",
+                    rotate: -90,
+                    offsetX: 10, 
+                    style: { fontSize: "16px", fontWeight: 900, color: "#263238" },
+                },
+                labels: {
+                    style: { fontSize: "12px", fontWeight: 600, colors: ["#475569"] },
+                },
+            },
+            tooltip: { shared: true, theme: "dark" },
+            responsive: [
+                {
+                    breakpoint: 768, 
+                    options: {
+                        chart: {
+                            height: 450 
+                        },
+                        legend: {
+                            position: "bottom", 
+                            offsetX: 0,
+                            offsetY: 7
+                        },
+                        grid: {
+                            padding: {
+                                top: 5,
+                                right: 5,  
+                                bottom: 5, 
+                                left: 0   
+                            }
+                        },
+                        tooltip: { show: false },
+                        yaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+        const monthlySessionsChart = new ApexCharts(
+            document.querySelector("#monthlySessionsChart"),
+            monthlySessionsOptions
+        );
+        const monthlyCompletedSessionsChart = new ApexCharts(
+            document.querySelector("#monthlyCompletedSessionsChart"),
+            monthlyCompletedSessionsOptions
+        );
+        const monthlyCancelledSessionChart = new ApexCharts(
+            document.querySelector("#monthlyCancelledSessionChart"),
+            monthlyCancelledSessionOptions
+        );
+        const monthlyNewClientChart = new ApexCharts(
+            document.querySelector("#monthlyNewClientChart"),
+            monthlyNewClientOptions
+        );
+        const mainSummaryChart = new ApexCharts(
+            document.querySelector("#mainSummaryChart"), 
+            mainSummaryChartOptions
+        );
+
+        monthlySessionsChart.render();
+        monthlyCompletedSessionsChart.render();
+        monthlyCancelledSessionChart.render();
+        monthlyNewClientChart.render();
+        mainSummaryChart.render();
+
+    </script>
+}
