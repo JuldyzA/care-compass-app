@@ -35,7 +35,7 @@ namespace TeamYellow.Controllers
         /// <returns>The dashboard view with aggregated data.</returns>
         public async Task<IActionResult> Index()
         {
-            var counsellors = await CounsellorRepository.GetAllAsync();
+            var counsellors = await CounsellorRepository.GetCounsellorsWithPaymentsAsync();
 
             var dashboardData = counsellors
                 .Select(c => GetManagerDashboardData(c))
