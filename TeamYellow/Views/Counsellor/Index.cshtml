@@ -600,7 +600,12 @@
                 gradient: { opacityFrom: 0.3, opacityTo: 0.1 },
             },
             labels: ["2024-01-10", "2024-01-20", "2024-02-01", "2024-02-15", "2024-02-22", "2024-03-01", "2024-03-05", "2024-03-10", "2024-03-15", "2024-03-25", "2024-04-01"],
-            xaxis: { type: "datetime" },
+            xaxis: { 
+                type: "datetime",
+                labels: {
+                    style: { fontSize: "12px" }
+                }
+            },
             yaxis: {
                 max: 100,
                 title: {
@@ -616,26 +621,87 @@
             tooltip: { shared: true, theme: "dark" },
             responsive: [
                 {
-                    breakpoint: 768, 
+                    breakpoint: 992,
                     options: {
                         chart: {
-                            height: 450 
+                            height: 400,
+                            toolbar: { show: false } 
                         },
                         legend: {
-                            position: "bottom", 
-                            offsetX: 0,
-                            offsetY: 7
+                            show: false 
+                        },
+                        grid: {
+                            padding: {
+                                top: 10,
+                                right: 10,
+                                bottom: 10,
+                                left: 5
+                            }
+                        },
+                        yaxis: {
+                            title: {
+                                text: "Wellness %",
+                                style: { fontSize: "14px" }
+                            },
+                            labels: {
+                                style: { fontSize: "11px" }
+                            }
+                        },
+                        xaxis: {
+                            labels: {
+                                style: { fontSize: "10px" }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 350,
+                            toolbar: { show: false } 
+                        },
+                        legend: {
+                            show: false 
                         },
                         grid: {
                             padding: {
                                 top: 5,
-                                right: 5,  
-                                bottom: 5, 
-                                left: 0   
+                                right: 5,
+                                bottom: 5,
+                                left: 0
                             }
                         },
-                        tooltip: { show: false },
+                        tooltip: { enabled: false },
                         yaxis: {
+                            title: { text: "" },
+                            labels: { show: false } 
+                        },
+                        xaxis: {
+                            labels: {
+                                show: true,
+                                style: { fontSize: "9px" },
+                                rotate: -45
+                            }
+                        },
+                        annotations: {
+                            yaxis: [],
+                            xaxis: []
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 300,
+                            toolbar: { show: false }
+                        },
+                        legend: { show: false },
+                        stroke: {
+                            width: [2, 2, 2, 2, 1]
+                        },
+                        xaxis: {
                             labels: {
                                 show: false 
                             }
@@ -692,10 +758,71 @@
                         },
                     },
                 },
-            }
+            },
+
+            legend: {
+                show: true,
+                position: "bottom",
+                fontSize: "14px"
+            },
+
+            dataLabels: {
+                enabled: true,
+                formatter: function (val, opts) {
+                    return opts.w.config.series[opts.seriesIndex]
+                }
+            },
+
+            responsive: [
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 320
+                        },
+                        title: {
+                            style: {
+                                fontSize: "16px"
+                            }
+                        },
+                        legend: {
+                            show: false
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    labels: {
+                                        show: true,
+                                        total: {
+                                            show: true,
+                                            fontSize: "18px"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 280
+                        },
+                        title: {
+                            style: {
+                                fontSize: "14px"
+                            }
+                        }
+                    }
+                }
+            ]
         };
 
-        // Session heat map
+        // Session heat map 
         const sessionHeatMapOptions = {
             series: [
                 generatePatientData("Sunday"),
@@ -719,6 +846,7 @@
             },
 
             colors: ["#4AD0FF"],
+            
             plotOptions: {
                 heatmap: {
                     enableShades: false,
@@ -812,6 +940,69 @@
                     formatter: (val) => `${val} sessions`,
                 },
             },
+
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            height: 200
+                        },
+                        title: {
+                            style: { fontSize: "13px" }
+                        },
+                        xaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        },
+                        yaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 180
+                        },
+                        title: {
+                            style: { fontSize: "12px" }
+                        },
+                        xaxis: {
+                            labels: { show: false }
+                        },
+                        yaxis: {
+                            labels: { show: false }
+                        },
+                        grid: {
+                            padding: {
+                                right: 5,
+                                left: 5,
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 150
+                        },
+                        title: {
+                            style: { fontSize: "11px" }
+                        },
+                        plotOptions: {
+                            heatmap: {
+                                radius: 1
+                            }
+                        }
+                    }
+                }
+            ]
         };
         
         // Patient status pie chart
@@ -836,24 +1027,74 @@
 
             labels: ["Active Patients", "Inactive Patients"],
             colors: ["#00E396", "#FF4560"],
+
+            legend: {
+                show: true,
+                position: "bottom",
+                fontSize: "14px"
+            },
+
+            dataLabels: {
+                enabled: true,
+                formatter: function (val, opts) {
+                    return opts.w.config.series[opts.seriesIndex]
+                }
+            },
+
             responsive: [
                 {
-                    breakpoint: 480,
+                    breakpoint: 992,
                     options: {
                         chart: {
-                            width: 200,
+                            width: "100%",
+                            height: 320
+                        },
+                        title: {
+                            style: {
+                                fontSize: "16px"
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            width: "100%",
+                            height: 300
+                        },
+                        title: {
+                            style: {
+                                fontSize: "14px"
+                            }
                         },
                         legend: {
-                            position: "bottom",
+                            show: false 
                         },
-                    },
+                        dataLabels: {
+                            enabled: false 
+                        }
+                    }
                 },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            width: "100%",
+                            height: 260
+                        },
+                        title: {
+                            style: {
+                                fontSize: "13px"
+                            }
+                        }
+                    }
+                }
             ],
         };
 
         // Plan usage gauge
         const planUsageGaugeOptions = {
-            // Hard-coded: 14 days left of 30 (approx 46%)
             series: [46.6],
             chart: {
                 height: 350,
@@ -880,14 +1121,83 @@
                     },
                 },
             },
-                            fill: {
-          type: 'solid',
-          colors: ['#3b82f6'] // Use '#22c55e' for Green.
-        },
+            fill: {
+                type: 'solid',
+                colors: ['#3b82f6']
+            },
             stroke: {
                 dashArray: 4,
             },
             labels: ["Time Remaining"],
+
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            height: 300
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "14px",
+                                        offsetY: 100
+                                    },
+                                    value: {
+                                        fontSize: "20px",
+                                        offsetY: 65
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 280
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "13px",
+                                        offsetY: 90
+                                    },
+                                    value: {
+                                        fontSize: "18px",
+                                        offsetY: 60
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 250
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "12px",
+                                        offsetY: 80
+                                    },
+                                    value: {
+                                        fontSize: "16px",
+                                        offsetY: 55
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
         };
 
         const monthlySessionsChart = new ApexCharts(
@@ -1066,7 +1376,6 @@
                 </li>
             `;
             
-            // Show max 5 page numbers
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + 4);
             
@@ -1090,7 +1399,6 @@
                 </li>
             `;
             
-            // Add click handlers
             pagination.querySelectorAll('.page-link').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1109,12 +1417,10 @@
             });
         }
 
-        // Filter button (placeholder functionality)
         document.getElementById('sessionFilterBtn').addEventListener('click', function() {
             alert('Filter functionality to be implemented');
         });
 
-        // Initialize table
         updateTable();
 
     </script>
