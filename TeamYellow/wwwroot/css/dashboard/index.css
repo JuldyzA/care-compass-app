@@ -36,6 +36,7 @@
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+
 }
 
 .dashboard-grid-left {
@@ -319,11 +320,10 @@
        Footer
        ======================================== */
 
-
 .footer-banner {
-    position: absolute;
+    position: fixed;
     bottom: 0;
-    left: 0;
+    left: var(--sidebar-width);
     right: 0;
     padding: 0.75rem 2rem;
     text-align: center;
@@ -332,11 +332,37 @@
     color: #212529;
     z-index: 1000;
     box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+    transition: left 0.3s ease;
 }
 
-    .footer-banner p {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #212529;
+.sidebar.collapsed ~ .main-content .footer-banner {
+    left: var(--sidebar-collapsed-width);
+}
+
+.footer-banner p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #212529;
+}
+
+@media (max-width: 767.98px) {
+    .footer-banner {
+        left: var(--sidebar-collapsed-width);
+        padding: 0.75rem 1rem;
     }
+    
+    .footer-banner p {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .footer-banner {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .footer-banner p {
+        font-size: 0.8rem;
+    }
+}
