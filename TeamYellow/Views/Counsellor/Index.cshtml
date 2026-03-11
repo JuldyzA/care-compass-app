@@ -344,6 +344,10 @@
     </div>
 </div>
 
+<div class="footer-banner">
+    <p>Your plan is ending in @Model.RemainingSubscriptionDays days</p>
+</div>
+
 @section Scripts {
     <script>
 
@@ -715,7 +719,7 @@
         const sessionPieChartOptions = {
             title: {
                 text: "Patient Session Overview",
-                align: "left", 
+                align: "center",
                 style: {
                     fontSize: "20px",
                     fontWeight: "bold",
@@ -897,8 +901,12 @@
 
             title: {
                 text: "Patient Sessions Heatmap",
-                align: "left",
-                style: { fontSize: "14px", color: "#666" },
+                align: "center",
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
             },
 
             xaxis: {
@@ -1010,7 +1018,7 @@
         var patientStatusPieChartOptions = {
             title: {
                 text: "Patient Status Distribution",
-                align: "left",
+                align: "center",
                 style: {
                     fontSize: "20px",
                     fontWeight: "bold",
@@ -1023,11 +1031,32 @@
 
             chart: {
                 width: '100%', 
-                type: "pie",
+                type: "donut",
+                height: 380,
             },
 
             labels: ["Active Patients", "Inactive Patients"],
-            colors: ["#00E396", "#FF4560"],
+            colors: ["#2ECC71", "#E74C3C"],
+
+            plotOptions: {
+                pie: {
+                    donut: {
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: "Total Patients",
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce(
+                                        (a, b) => a + b,
+                                        0,
+                                    );
+                                },
+                            },
+                        },
+                    },
+                },
+            },
 
             legend: {
                 show: true,
@@ -1074,6 +1103,19 @@
                         },
                         dataLabels: {
                             enabled: false 
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    labels: {
+                                        show: true,
+                                        total: {
+                                            show: true,
+                                            fontSize: "18px"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1101,6 +1143,16 @@
         // Plan usage gauge
         const planUsageGaugeOptions = {
             series: [remainder * 100.0 / total],
+            title: {
+                text: "Plan Usage",
+                align: "center",
+                offsetY: 30,
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+            },
             chart: {
                 height: 350,
                 type: "radialBar",
