@@ -77,42 +77,20 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-8">
+<div class="dashboard-grid">
+    <div class="dashboard-grid-left">
         <div class="card">
             <div class="card-body p-0">
                 <div class="m-3" id="mainSummaryChart"></div>
             </div>
         </div>
-    </div>
-    <div class="col-sm-6 col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="m-3" id="sessionPieChart"></div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-8">
         <div class="card">
             <div class="card-body p-0">
                 <div class="m-3" id="sessionHeatMap"></div>
             </div>
         </div>
-    </div>
-    <div class="col-sm-6 col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="m-3" id="patientStatusPieChart"></div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Upcoming Sessions</h5>
@@ -134,20 +112,16 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="sortable" data-column="patient">
-                                    Patient Name 
-                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                    Patient Name <i class="bi bi-chevron-expand text-muted"></i>
                                 </th>
                                 <th class="sortable" data-column="datetime">
-                                    Date & Time 
-                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                    Date & Time <i class="bi bi-chevron-expand text-muted"></i>
                                 </th>
                                 <th class="sortable" data-column="type">
-                                    Type 
-                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                    Type <i class="bi bi-chevron-expand text-muted"></i>
                                 </th>
                                 <th class="sortable" data-column="status">
-                                    Status 
-                                    <i class="bi bi-chevron-expand text-muted"></i>
+                                    Status <i class="bi bi-chevron-expand text-muted"></i>
                                 </th>
                                 <th class="text-end">Actions</th>
                             </tr>
@@ -348,7 +322,20 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-6 col-lg-4">
+
+    <div class="dashboard-grid-right">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="sessionPieChart"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="patientStatusPieChart"></div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body p-0">
                 <div id="planUsageGauge"></div>
