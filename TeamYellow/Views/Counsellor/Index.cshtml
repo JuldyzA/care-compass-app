@@ -736,7 +736,7 @@
             chart: {
                 type: "donut",
                 height: 380,
-                width: '100%'  // CHANGE: Set to 100% for proper centering
+                width: '100%'  
             },
 
             colors: ["#2ECC71", "#E74C3C", "#F1C40F", "#3498DB"],
@@ -1019,7 +1019,7 @@
                 margin: 10,
             },
 
-            series: @Html.Raw(Json.Serialize(Model.ActiveClientCount)),
+            series: [ @Model.ActiveClientCount, @Model.InActiveClientCount ],
 
             chart: {
                 width: '100%', 
@@ -1094,9 +1094,13 @@
             ],
         };
 
+
+        const total = @Model.TotalSubscriptionDays;
+        const remainder = @Model.RemainingSubscriptionDays;
+
         // Plan usage gauge
         const planUsageGaugeOptions = {
-            series: [46.6],
+            series: [remainder * 100.0 / total],
             chart: {
                 height: 350,
                 type: "radialBar",
@@ -1116,7 +1120,7 @@
                             offsetY: 76,
                             fontSize: "22px",
                             formatter: function (val) {
-                                return "14 Days";
+                                return remainder + " Days";
                             },
                         },
                     },
@@ -1275,7 +1279,6 @@
                     planUsageGauge.updateOptions({}, true, true);
                 }
                 
-                // Heatmap special handling - needs fresh data regeneration
                 if (typeof sessionHeatMap !== 'undefined') {
                     const newSeries = [
                         generatePatientData("Sunday"),

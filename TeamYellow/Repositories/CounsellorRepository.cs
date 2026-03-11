@@ -17,29 +17,30 @@ public class CounsellorRepository
 
     public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId)
     {
-        var data = await _context.Counsellors
+        var data = await (
+            from c in _context.Counsellors
+            where c.UserId == userId
+            join up in _context.UserProfiles on c.UserId equals up.UserId
+            select new
+            {
+                Counsellor = c,
+                UserProfile = up,
+                // Questionable Cartesian product/cross join
+                LatestSubscription = c.Subscriptions
+                    .Where(s => s.Status == SubscriptionStatus.Active)
+                    .OrderByDescending(s => s.UpdatedAt)
+                    .FirstOrDefault(),
+                // Might querying N + 1 time
+                Clients = c.Clients
+                    .Where(cl => cl.CounsellorId == c.CounsellorId)
+                    .ToList()
+            })
             .AsNoTracking()
-            .Where(c => c.UserId == userId)
-            .Include(c => c.Subscriptions
-                .Where(s => s.Status == SubscriptionStatus.Active))
-                .ThenInclude(s => s.Plan)
-            .Include(c => c.Clients)
-            .Join(_context.UserProfiles,
-                c => c.UserId,
-                u => u.UserId,
-                (counsellor, userProfile) => new
-                {
-                    Counsellor = counsellor,
-                    UserProfile = userProfile,
-                    LatestSubscription = counsellor.Subscriptions
-                        .OrderByDescending(s => s.UpdatedAt)
-                        .FirstOrDefault()
-                })
             .FirstOrDefaultAsync();
 
         if (data != null)
         {
-            CounsellorDashboardDto dto = CounsellorDashboardHelper.MapToDashboardDto(data.Counsellor, data.UserProfile, data.LatestSubscription);
+            CounsellorDashboardDto dto = CounsellorDashboardHelper.MapToDashboardDto(data.Counsellor, data.UserProfile, data.LatestSubscription, data.Clients);
             return dto;
         }
 

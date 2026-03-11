@@ -9,9 +9,10 @@ public static class CounsellorDashboardHelper
     public static CounsellorDashboardDto MapToDashboardDto(
         Counsellor counsellor,
         UserProfile profile,
-        Subscription? sub)
-    {
-        var (monthlyCounts, growth, status) = CalculateMonthlyCounts(counsellor.Clients);
+        Subscription? sub,
+        List<Client> client
+    ) {
+        var (monthlyCounts, activeCount, inActiveCount) = CalculateMonthlyCounts(client);
 
         var dto = new CounsellorDashboardDto
         {
@@ -41,18 +42,10 @@ public static class CounsellorDashboardHelper
             CycleEnd = sub?.CycleEnd ?? DateTime.MinValue,
             UpdatedAt = sub?.UpdatedAt ?? DateTime.MinValue,
 
-            // Plan data
-            PlanId = sub?.Plan?.PlanId ?? 0,
-            PlanName = sub?.Plan?.PlanName ?? "No Plan",
-            PlanDescription = sub?.Plan?.PlanDescription ?? string.Empty,
-            Price = sub?.Plan?.Price ?? 0m,
-            BillingType = sub?.Plan?.BillingType ?? string.Empty,
-            IsPlanActive = sub?.Plan?.IsActive ?? false,
-
-            // Post Query BookKeeping
+            // Post Query data processing
             MonthlyClientCounts = monthlyCounts,
-            ClientGrowthFromLastMonth = growth,
-            ActiveClientCount = status
+            ActiveClientCount = activeCount,
+            InActiveClientCount = inActiveCount
         };
 
         return dto;
@@ -87,20 +80,16 @@ public static class CounsellorDashboardHelper
             CycleStart = dto.CycleStart,
             CycleEnd = dto.CycleEnd,
             UpdatedAt = dto.UpdatedAt,
-            PlanId = dto.PlanId,
-            PlanName = dto.PlanName,
-            PlanDescription = dto.PlanDescription,
-            Price = dto.Price,
-            BillingType = dto.BillingType,
-            IsPlanActive = dto.IsPlanActive,
-            PlanCreatedAt = dto.PlanCreatedAt,
             MonthlyClientCounts = dto.MonthlyClientCounts,
-            ClientGrowthFromLastMonth = dto.ClientGrowthFromLastMonth,
-            ActiveClientCount = dto.ActiveClientCount
+            ClientGrowthFromLastMonth = CalculateGrowth(dto.MonthlyClientCounts[10], dto.MonthlyClientCounts[11]),
+            ActiveClientCount = dto.ActiveClientCount,
+            InActiveClientCount = dto.InActiveClientCount,
+            TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - dto.CycleStart).TotalDays : 0,
+            RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - DateTime.Today).TotalDays : 0
         };
     }
 
-    private static (int[] monthlyCounts, double growthPercent, int[] statusSplit) CalculateMonthlyCounts(IEnumerable<Client> clients)
+    private static (int[] monthlyCounts, int activeCount, int inActiveCount) CalculateMonthlyCounts(IEnumerable<Client> clients)
     {
         int[] monthlyCounts = new int[12];
         int activeCount = 0;
@@ -124,15 +113,15 @@ public static class CounsellorDashboardHelper
             }
         }
 
-        // Calculate Growth
-        int lastMonth = monthlyCounts[10];
-        int currentMonth = monthlyCounts[11];
-        double growth = lastMonth == 0
-            ? (currentMonth > 0 ? 100.0 : 0.0)
-            : Math.Round(((double)(currentMonth - lastMonth) / lastMonth) * 100, 2);
+        return (monthlyCounts, activeCount, totalCount - activeCount);
+    }
 
-        int[] status = new int[] { activeCount, totalCount - activeCount };
-
-        return (monthlyCounts, growth, status);
+    private static double CalculateGrowth(int lastMonth, int currentMonth)
+    {
+        if (lastMonth == 0)
+        {
+            return currentMonth > 0 ? 100.0 : 0.0;
+        }
+        return Math.Round(((double)(currentMonth - lastMonth) / lastMonth) * 100, 2);
     }
 }

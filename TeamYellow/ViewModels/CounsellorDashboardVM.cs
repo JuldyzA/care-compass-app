@@ -50,23 +50,15 @@ public class CounsellorDashboardVM
 
     public DateTime UpdatedAt { get; set; }
 
-    public int PlanId { get; set; }
-
-    public string PlanName { get; set; } = string.Empty;
-
-    public string PlanDescription { get; set; } = string.Empty;
-
-    public decimal Price { get; set; }
-
-    public string BillingType { get; set; } = string.Empty;
-
-    public bool IsPlanActive { get; set; } = false;
-
-    public DateTime PlanCreatedAt { get; set; }
-
     public int[] MonthlyClientCounts { get; set; } = new int[12];
 
     public double ClientGrowthFromLastMonth { get; set; }
 
-    public int[] ActiveClientCount { get; set; } = new int[2];
+    public int ActiveClientCount { get; set; }
+
+    public int InActiveClientCount { get; set; }
+
+    public int TotalSubscriptionDays { get; set; }
+
+    public int RemainingSubscriptionDays { get; set; }
 }
