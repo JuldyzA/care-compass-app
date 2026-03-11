@@ -348,6 +348,11 @@
     <p>Your plan is ending in @Model.RemainingSubscriptionDays days</p>
 </div>
 
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTopBtn" aria-label="Back to top" title="Back to top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 @section Scripts {
     <script>
 
@@ -1552,6 +1557,26 @@
         });
 
         updateTable();
+
+        // ===== Back to Top Button Functionality =====
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
+        // Show/hide button based on scroll position
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+        
+        // Scroll to top smoothly when clicked
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
 
     </script>
 }
