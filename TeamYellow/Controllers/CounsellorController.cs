@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.Services;
 using TeamYellow.ViewModels;
@@ -10,13 +11,22 @@ namespace TeamYellow.Controllers
     {
         private readonly CounsellorService _service;
         private readonly IConfiguration _configuration;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ILogger<CounsellorController> _logger;
 
-        public CounsellorController(CounsellorService service, IConfiguration configuration)
-        {
+        public CounsellorController (
+            CounsellorService service, 
+            IConfiguration configuration, 
+            SignInManager<IdentityUser> signInManager, 
+            ILogger<CounsellorController> logger
+        ) {
             _service = service;
             _configuration = configuration;
+            _signInManager = signInManager;
+            _logger = logger;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             CounsellorDashboardVM? dashboardVM = await _service.GetCounsellorDashboardAsync(User);
@@ -34,6 +44,17 @@ namespace TeamYellow.Controllers
             ViewData["DefaultUserProfilePicture"] = _configuration["DefaultSettings:DefaultUserProfilePicture"];
 
             return View(dashboardVM);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out.");
+            // Break the session?
+            //HttpContext.Session.Clear();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

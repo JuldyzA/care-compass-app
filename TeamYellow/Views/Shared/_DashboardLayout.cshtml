@@ -63,7 +63,8 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                @* Should I use the area logout instead? *@
+                                <form method="post" asp-controller="Counsellor" asp-action="Logout">
                                     <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
                                 </form>
                             </li>
@@ -166,7 +167,8 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                        @* Should I use the area logout instead? *@
+                                        <form method="post" asp-controller="Counsellor" asp-action="Logout">
                                             <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
                                         </form>
                                     </li>

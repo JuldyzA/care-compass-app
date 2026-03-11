@@ -15,6 +15,11 @@ namespace TeamYellow.Controllers
 
         public IActionResult Index()
         {
+            if (User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor") || User.IsInRole("Registered_Visitor"))
+            {
+                return RedirectToAction("Index", "Counsellor");
+            }
+
             return View();
         }
 

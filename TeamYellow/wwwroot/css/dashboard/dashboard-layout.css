@@ -60,7 +60,7 @@ body {
     transition: var(--transition);
     z-index: 1040;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-y: auto;
 }
 
 .sidebar.collapsed {
@@ -249,21 +249,19 @@ body {
 .sidebar-user-section .dropdown-menu {
     background-color: var(--sidebar-bg);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     overflow: hidden;
+    max-width: 220px;
 
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transform: translateY(-8px) scale(0.98);
-    transform-origin: top center;
+    transform-origin: top left;
     transition: opacity 0.2s ease-in, transform 0.2s ease-in, visibility 0s linear 0.2s;
 }
 
 .sidebar-user-section .dropdown-menu.show {
-    z-index: 1000;
-    min-width: 220px;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;

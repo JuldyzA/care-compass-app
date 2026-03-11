@@ -140,3 +140,36 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('beforeunload', () => {
     window.removeEventListener('resize', handleResize);
 });
+
+// Configure sidebar dropdown to appear to the right
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebarDropdownToggle = document.getElementById('userMenuDropdown');
+    
+    if (sidebarDropdownToggle) {
+        // Initialize Bootstrap dropdown with custom Popper configuration
+        const dropdown = new bootstrap.Dropdown(sidebarDropdownToggle, {
+            popperConfig: function(defaultConfig) {
+                return {
+                    ...defaultConfig,
+                    placement: 'right-start',
+                    strategy: 'fixed',
+                    modifiers: [
+                        {
+                            name: 'offset',
+                            options: {
+                                offset: [0, 8], // 8px gap from sidebar
+                            },
+                        },
+                        {
+                            name: 'preventOverflow',
+                            options: {
+                                boundary: 'viewport',
+                                padding: 8,
+                            },
+                        },
+                    ],
+                };
+            }
+        });
+    }
+});
