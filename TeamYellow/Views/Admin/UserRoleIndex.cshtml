@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TeamYellow.ViewModels.UserVM>
+
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<h1>User Management</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (!string.IsNullOrEmpty(ViewBag.Message))
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+<p>
+    <a asp-action="UserRoleCreate" class="btn btn-primary">Assign Role</a>
+</p>
+
+<table class="table table-striped table-bordered table-hover"
+       style="width:500px;">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Email)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    <a asp-action="UserRoleDetail" asp-route-userName="@user.Email"
+                       class="btn btn-sm btn-primary">
+                        View Roles
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -25,9 +25,15 @@ builder.Services.AddControllersWithViews();
 
 // Services
 builder.Services.AddScoped<CounsellorService>();
+builder.Services.AddTransient<IEmailService, BrevoEmailService>();
+builder.Services.AddTransient<HttpClient>();
 
 // Repositories
 builder.Services.AddScoped<CounsellorRepository>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<UserRoleRepository>();
+builder.Services.AddScoped<UserLogRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();

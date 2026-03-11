@@ -13,11 +13,25 @@ namespace TeamYellow.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Displays the page depending on the role of the user
+        /// </summary>
         public IActionResult Index()
         {
-            if (User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor") || User.IsInRole("Registered_Visitor"))
+            if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "Counsellor");
+                if (User.IsInRole("Administrator"))
+                {
+                    return RedirectToAction("UserRoleIndex", "Admin");
+                }
+                else if (User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor") || User.IsInRole("Registered_Visitor"))
+                {
+                    return RedirectToAction("Index", "Counsellor");
+                }
+
+                //TODO: Uncomment and update code for other roles' Index views
+                /*if (User.IsInRole("Manager"))
+                    return RedirectToAction("Index", "Manager");*/
             }
 
             return View();

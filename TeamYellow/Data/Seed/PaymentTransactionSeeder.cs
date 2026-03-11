@@ -29,8 +29,11 @@ public class PaymentTransactionSeeder : IDataSeeder
         var counsellor3 = await _db.Counsellors
             .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor3@test.ca");
+        var counsellor4 = await _db.Counsellors
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor4@test.ca");
 
-        if (counsellor1 == null || counsellor2 == null || counsellor3 == null)
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)
         {
             Console.WriteLine("One or more counsellors not found for PaymentTransaction seeding.");
             return;
@@ -73,6 +76,18 @@ public class PaymentTransactionSeeder : IDataSeeder
                 Status = PaymentTransactionStatus.Captured,
                 PaidAt = now,
                 SubscriptionId = 3,
+                DiscountId = null
+            },
+            new PaymentTransaction
+            {
+                PayerName = "Emma Morrison",
+                Amount = 0m,
+                Currency = "CAD",
+                Provider = "PayPal",
+                ProviderOrderId = "FREE-ORDER-1004",
+                Status = PaymentTransactionStatus.Captured,
+                PaidAt = now,
+                SubscriptionId = 4,
                 DiscountId = null
             }
         };

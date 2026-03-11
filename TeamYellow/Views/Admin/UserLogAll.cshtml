@@ -1,0 +1,28 @@
+﻿@model IEnumerable<TeamYellow.ViewModels.UserLogVM>
+@{
+    ViewData["Title"] = "User Logs";
+}
+
+<h1>User Logs</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Email)</th>
+            <th>@Html.DisplayNameFor(model => model.LogInTime)</th>
+            <th>@Html.DisplayNameFor(model => model.LogOutTime)</th>
+            <th>@Html.DisplayNameFor(model => model.Abandoned)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Email</td>
+                <td>@log.LogInTime.ToLocalTime()</td>
+                <td>@(log.LogOutTime?.ToLocalTime().ToString() ?? "-")</td>
+                <td>@(log.Abandoned ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

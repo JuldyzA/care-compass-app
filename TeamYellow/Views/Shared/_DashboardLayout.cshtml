@@ -47,10 +47,15 @@
                                 </div>
                                 <div class="user-details">
                                     <div class="user-name">@userName</div>
-                                    <div class="user-role">Counsellor</div>
+                                    <div class="user-role">
+                                        @(User.IsInRole("Administrator") ? "Administrator" :
+                                        User.IsInRole("Manager") ? "Manager" :
+                                        (User.IsInRole("Paid_Counselor") ||
+                                            User.IsInRole("Free_Counselor")) ? "Counsellor" : "User")
+                                    </div>
                                 </div>
                                 <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
-                            </div>
+                    </div>
                         </button>
                         <ul class="dropdown-menu w-100" aria-labelledby="userMenuDropdown">
                             <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
@@ -69,8 +74,8 @@
                                 </form>
                             </li>
                         </ul>
-                    </div>
                 </div>
+            </div>
             }
 
             <nav class="sidebar-nav" aria-label="Dashboard navigation">
@@ -151,10 +156,15 @@
                                         </div>
                                         <div class="header-user-details">
                                             <div class="header-user-name">@userName</div>
-                                            <div class="header-user-role">Counsellor</div>
+                                            <div class="header-user-role">    
+                                                @(User.IsInRole("Administrator") ? "Administrator" :
+                                                User.IsInRole("Manager") ? "Manager" :
+                                                (User.IsInRole("Paid_Counselor") ||
+                                                    User.IsInRole("Free_Counselor")) ? "Counsellor" : "User")
+                                            </div>
                                         </div>
                                         <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
-                                    </div>
+                </div>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
                                     <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
@@ -170,7 +180,7 @@
                                         @* Should I use the area logout instead? *@
                                         <form method="post" asp-controller="Counsellor" asp-action="Logout">
                                             <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
-                                        </form>
+                </form>
                                     </li>
                                 </ul>
                             </div>
