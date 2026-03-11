@@ -43,7 +43,6 @@
                             <div class="user-info">
                                 <div class="user-avatar" aria-hidden="true">
                                     <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? ViewData["DefaultUserProfilePicture"])" alt="User Profile Picture" />
-                                    @* <i class="bi bi-person-circle fs-3"></i> *@
                                 </div>
                                 <div class="user-details">
                                     <div class="user-name">@userName</div>
@@ -68,8 +67,7 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                @* Should I use the area logout instead? *@
-                                <form method="post" asp-controller="Counsellor" asp-action="Logout">
+                                <form method="post" asp-area="Identity" asp-page="/Account/Logout" method="post">
                                     <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
                                 </form>
                             </li>
@@ -164,7 +162,7 @@
                                             </div>
                                         </div>
                                         <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
-                </div>
+                                    </div>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
                                     <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
@@ -177,10 +175,9 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        @* Should I use the area logout instead? *@
-                                        <form method="post" asp-controller="Counsellor" asp-action="Logout">
+                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
                                             <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
-                </form>
+                                        </form>
                                     </li>
                                 </ul>
                             </div>
