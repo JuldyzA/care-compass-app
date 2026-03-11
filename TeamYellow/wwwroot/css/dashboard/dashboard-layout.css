@@ -445,13 +445,12 @@ body {
     }
 }
 
-/*Make the sidebar looks endless on screen <= 375px*/
-@media (max-width: 375px) {
+@media (max-width: 767.98px) {
     .sidebar {
         height: 100%;
         min-height: 100vh;
         max-height: none;
-        overflow-y: scroll;
+        overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
 
