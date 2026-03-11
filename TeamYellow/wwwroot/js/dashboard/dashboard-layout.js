@@ -6,10 +6,37 @@ const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
 const toggleIcon = sidebarToggle.querySelector('i');
 
+// Track if user has manually toggled the sidebar
+let manualToggle = false;
+let initialLoad = true; // Track initial page load
+
+/**
+ * Trigger ApexCharts resize event
+ */
+function resizeApexCharts() {
+    // Skip on initial load to avoid double render
+    if (initialLoad) {
+        initialLoad = false;
+        return;
+    }
+    
+    // Dispatch custom event immediately
+    window.dispatchEvent(new Event('sidebar-toggled'));
+    
+    // Also dispatch after transition completes (300ms CSS transition)
+    setTimeout(() => {
+        window.dispatchEvent(new Event('sidebar-toggled'));
+    }, 350);
+}
+
 /**
  * Update sidebar collapsed state and icon
  */
-function updateSidebarState(shouldCollapse) {
+function updateSidebarState(shouldCollapse, isManual = false) {
+    if (isManual) {
+        manualToggle = true;
+    }
+
     if (shouldCollapse) {
         sidebar.classList.add('collapsed');
         sidebarToggle.setAttribute('aria-expanded', 'false');
@@ -23,17 +50,25 @@ function updateSidebarState(shouldCollapse) {
         toggleIcon.classList.remove('bi-chevron-right');
         toggleIcon.classList.add('bi-chevron-left');
     }
+    
+    // Trigger chart resize after sidebar state changes
+    resizeApexCharts();
 }
 
 /**
  * Handle responsive sidebar behavior based on screen size
  */
 function handleResponsiveSidebar() {
+    // Don't auto-collapse/expand if user has manually toggled
+    if (manualToggle) {
+        return;
+    }
+
     const isSmallScreen = window.innerWidth < BREAKPOINT;
     
     // Small screens: collapse
     // Large screens: expand (default)
-    updateSidebarState(isSmallScreen);
+    updateSidebarState(isSmallScreen, false);
 }
 
 /**
@@ -41,7 +76,7 @@ function handleResponsiveSidebar() {
  */
 sidebarToggle.addEventListener('click', () => {
     const willBeCollapsed = !sidebar.classList.contains('collapsed');
-    updateSidebarState(willBeCollapsed);
+    updateSidebarState(willBeCollapsed, true);
 });
 
 /**
@@ -58,6 +93,7 @@ function handleResize() {
 // Window resize listener
 window.addEventListener('resize', handleResize);
 
+// Initial setup
 handleResponsiveSidebar();
 
 /**

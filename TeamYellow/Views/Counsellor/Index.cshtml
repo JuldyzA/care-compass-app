@@ -736,6 +736,7 @@
             chart: {
                 type: "donut",
                 height: 380,
+                width: '100%'  // CHANGE: Set to 100% for proper centering
             },
 
             colors: ["#2ECC71", "#E74C3C", "#F1C40F", "#3498DB"],
@@ -1021,7 +1022,7 @@
             series: @Html.Raw(Json.Serialize(Model.ActiveClientCount)),
 
             chart: {
-                width: 450,
+                width: '100%', 
                 type: "pie",
             },
 
@@ -1246,6 +1247,80 @@
         sessionHeatMap.render();
         patientStatusPieChart.render();
         planUsageGauge.render();
+
+        // Listen for sidebar toggle events and resize charts
+        let sidebarToggleTimeout;
+        window.addEventListener('sidebar-toggled', function() {
+            clearTimeout(sidebarToggleTimeout);
+            sidebarToggleTimeout = setTimeout(() => {
+                // Resize all charts using updateOptions
+                if (typeof sessionPieChart !== 'undefined') {
+                    sessionPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof patientStatusPieChart !== 'undefined') {
+                    patientStatusPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof mainSummaryChart !== 'undefined') {
+                    mainSummaryChart.updateOptions({}, true, true);
+                }
+                if (typeof planUsageGauge !== 'undefined') {
+                    planUsageGauge.updateOptions({}, true, true);
+                }
+                
+                // Heatmap special handling - needs fresh data regeneration
+                if (typeof sessionHeatMap !== 'undefined') {
+                    const newSeries = [
+                        generatePatientData("Sunday"),
+                        generatePatientData("Saturday"),
+                        generatePatientData("Friday"),
+                        generatePatientData("Thursday"),
+                        generatePatientData("Wednesday"),
+                        generatePatientData("Tuesday"),
+                        generatePatientData("Monday"),
+                    ];
+                    sessionHeatMap.updateSeries(newSeries, true);
+                }
+            }, 100);
+        });
+
+        // Also handle window resize events
+        let chartResizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(chartResizeTimeout);
+            chartResizeTimeout = setTimeout(() => {
+                if (typeof sessionPieChart !== 'undefined') {
+                    sessionPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof sessionHeatMap !== 'undefined') {
+                    sessionHeatMap.updateOptions({}, true, true);
+                }
+                if (typeof patientStatusPieChart !== 'undefined') {
+                    patientStatusPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof mainSummaryChart !== 'undefined') {
+                    mainSummaryChart.updateOptions({}, true, true);
+                }
+                if (typeof planUsageGauge !== 'undefined') {
+                    planUsageGauge.updateOptions({}, true, true);
+                }
+            }, 200);
+        });
 
         function generatePatientData(dayName) {
             const months = monthsStartingFromNow;
