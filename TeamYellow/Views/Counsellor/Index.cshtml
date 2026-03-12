@@ -4,6 +4,13 @@
     Layout = "_DashboardLayout";
     ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
     ViewData["DisplayName"] = Model.DisplayName;
+    
+    int total = @Model.TotalSubscriptionDays;
+    int remainder = @Model.RemainingSubscriptionDays;
+    double percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
+    bool isHealthy = percentageRemaining > 20;
+    string gaugeColor = isHealthy ? "#2ECC71" : "#E74C3C";
+    string textColorClass = isHealthy ? "text-success" : "text-danger";
 }
 
 @section Styles {
@@ -345,7 +352,10 @@
 </div>
 
 <div class="footer-banner">
-    <p>Your plan is ending in @Model.RemainingSubscriptionDays days</p>
+    <p class="@textColorClass">
+        <i class="bi bi-@(isHealthy ? "check-circle-fill" : "exclamation-triangle-fill") me-2"></i>
+        Your plan is ending in @Model.RemainingSubscriptionDays days
+    </p>
 </div>
 
 <!-- Back to Top Button -->
@@ -364,6 +374,8 @@
                 date.setMonth(now.getMonth() + i + 1);
                 return date.toLocaleString('default', { month: 'long' });
         });
+
+        const monthlyData = [@Html.Raw(Json.Serialize(Model.MonthlyClientCounts))][0];
 
         // Sessions This Month Option
         const monthlySessionsOptions = {
@@ -525,7 +537,7 @@
 
             series: [{
                 name: 'New Clients',
-                data: @Html.Raw(Json.Serialize(Model.MonthlyClientCounts))
+                data: monthlyData
             }],
 
             xaxis: {
@@ -1037,7 +1049,7 @@
             chart: {
                 width: '100%', 
                 type: "donut",
-                height: 380,
+                height: 350,
             },
 
             labels: ["Active Patients", "Inactive Patients"],
@@ -1141,13 +1153,12 @@
             ],
         };
 
-
-        const total = @Model.TotalSubscriptionDays;
-        const remainder = @Model.RemainingSubscriptionDays;
+        const gaugeColor = '@gaugeColor';
+        const percentageRemaining =  Number('@percentageRemaining');
 
         // Plan usage gauge
         const planUsageGaugeOptions = {
-            series: [remainder * 100.0 / total],
+            series: [percentageRemaining],
             title: {
                 text: "Plan Usage",
                 align: "center",
@@ -1159,7 +1170,7 @@
                 },
             },
             chart: {
-                height: 350,
+                height: 380,
                 type: "radialBar",
                 offsetY: -10,
             },
@@ -1176,8 +1187,9 @@
                         value: {
                             offsetY: 76,
                             fontSize: "22px",
+                            color: gaugeColor,
                             formatter: function (val) {
-                                return remainder + " Days";
+                                return '@remainder' + " Days";
                             },
                         },
                     },
@@ -1185,7 +1197,7 @@
             },
             fill: {
                 type: 'solid',
-                colors: ['#3b82f6']
+                colors: [gaugeColor]
             },
             stroke: {
                 dashArray: 4,
@@ -1563,7 +1575,7 @@
         
         // Show/hide button based on scroll position
         window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
+            if (window.scrollY > 300) {
                 backToTopBtn.classList.add('show');
             } else {
                 backToTopBtn.classList.remove('show');
