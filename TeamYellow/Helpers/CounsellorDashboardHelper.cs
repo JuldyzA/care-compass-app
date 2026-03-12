@@ -1,4 +1,5 @@
-﻿using TeamYellow.DTOs;
+﻿using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using TeamYellow.DTOs;
 using TeamYellow.Models;
 using TeamYellow.ViewModels;
 
@@ -51,9 +52,12 @@ public static class CounsellorDashboardHelper
         return dto;
     }
 
-    public static CounsellorDashboardVM? MapToVm(CounsellorDashboardDto? dto, string? userId, string? email)
+    public static CounsellorDashboardVM MapToVm(CounsellorDashboardDto? dto, string? userId, string? email)
     {
-        if (dto == null || userId == null || email == null) return null;
+        if (dto == null || userId == null || email == null)
+        {
+            return new CounsellorDashboardVM();
+        }
 
         return new CounsellorDashboardVM
         {
@@ -86,6 +90,15 @@ public static class CounsellorDashboardHelper
             InActiveClientCount = dto.InActiveClientCount,
             TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - dto.CycleStart).TotalDays : 0,
             RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - DateTime.Today).TotalDays : 0
+        };
+    }
+
+    public static ClientTableVm MapToVm(ClientTableDto dto)
+    {
+        return new ClientTableVm
+        {
+            Clients = dto.Clients,
+            Page = dto.Page
         };
     }
 

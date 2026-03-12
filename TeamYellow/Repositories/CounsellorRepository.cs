@@ -3,6 +3,7 @@ using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
 using TeamYellow.Models;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories;
 
@@ -45,5 +46,39 @@ public class CounsellorRepository
         }
 
         return null;
+    }
+
+    public async Task<ClientTableDto> GetClientsAsync(string? userId, int page, int pageSize)
+    {
+         IQueryable<ClientDto> query = _context.Clients
+            .Where(c => c.Counsellor.UserId == userId)
+            .AsNoTracking()
+            .Select(c => new ClientDto
+            {
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                Email = c.Email,
+                Phone = c.Phone,
+                Status = c.Status,
+                CreatedAt = c.CreatedAt
+            });
+
+        int total = await query.CountAsync();
+
+        List<ClientDto> clientsDtos = await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        ClientTableDto dto = new ClientTableDto
+        {
+            Clients = clientsDtos,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total
+        };
+
+        return dto;
     }
 }

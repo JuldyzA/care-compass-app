@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.Services;
 using TeamYellow.ViewModels;
@@ -39,6 +38,14 @@ namespace TeamYellow.Controllers
             ViewData["DefaultUserProfilePicture"] = _configuration["DefaultSettings:DefaultUserProfilePicture"];
 
             return View(dashboardVM);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5)
+        {
+            ClientTableVm clientTableVm = await _service.GetClientsAsync(User, page, pageSize);
+
+            return PartialView("_ClientTable", clientTableVm);
         }
     }
 }
