@@ -8,11 +8,13 @@ public class ClientVM
 
     public string LastName { get; set; } = null!;
 
+    public string Initials { get; set; } = null!;
+
     public string Email { get; set; } = null!;
 
     public string Phone { get; set; } = null!;
 
-    public ClientStatus Status { get; set; }
+    public bool Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

@@ -1188,165 +1188,10 @@
             };
         }
 
-        // ===== Sessions Table Functionality =====
-        
-        // Search functionality
-        const sessionSearchInput = document.getElementById('sessionSearchInput');
-        const sessionsTableBody = document.getElementById('sessionsTableBody');
-        const tableRows = Array.from(sessionsTableBody.getElementsByTagName('tr'));
-        
-        let currentPage = 1;
-        const rowsPerPage = 5;
-        let filteredRows = [...tableRows];
-
-        sessionSearchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            filteredRows = tableRows.filter(row => {
-                const text = row.textContent.toLowerCase();
-                const match = text.includes(searchTerm);
-                return match;
-            });
-            
-            currentPage = 1;
-            updateTable();
-        });
-
-        // Sorting functionality
-        document.querySelectorAll('.sortable').forEach(header => {
-            header.style.cursor = 'pointer';
-            header.addEventListener('click', function() {
-                const column = this.dataset.column;
-                const icon = this.querySelector('i');
-                const isAscending = icon.classList.contains('bi-chevron-expand') || 
-                                   icon.classList.contains('bi-chevron-down');
-                
-                // Reset all icons
-                document.querySelectorAll('.sortable i').forEach(i => {
-                    i.className = 'bi bi-chevron-expand text-muted';
-                });
-                
-                // Set current icon
-                icon.className = isAscending ? 'bi bi-chevron-up text-primary' : 'bi bi-chevron-down text-primary';
-                
-                // Sort rows
-                filteredRows.sort((a, b) => {
-                    let aVal, bVal;
-                    const aIndex = tableRows.indexOf(a);
-                    const bIndex = tableRows.indexOf(b);
-                    
-                    switch(column) {
-                        case 'patient':
-                            aVal = tableRows[aIndex].querySelector('.fw-medium').textContent;
-                            bVal = tableRows[bIndex].querySelector('.fw-medium').textContent;
-                            break;
-                        case 'datetime':
-                            aVal = tableRows[aIndex].querySelectorAll('td')[1].textContent;
-                            bVal = tableRows[bIndex].querySelectorAll('td')[1].textContent;
-                            break;
-                        case 'type':
-                            aVal = tableRows[aIndex].querySelectorAll('td')[2].textContent;
-                            bVal = tableRows[bIndex].querySelectorAll('td')[2].textContent;
-                            break;
-                        case 'status':
-                            aVal = tableRows[aIndex].querySelectorAll('td')[3].textContent;
-                            bVal = tableRows[bIndex].querySelectorAll('td')[3].textContent;
-                            break;
-                    }
-                    
-                    if (isAscending) {
-                        return aVal.localeCompare(bVal);
-                    } else {
-                        return bVal.localeCompare(aVal);
-                    }
-                });
-                
-                updateTable();
-            });
-        });
-
-        // Pagination
-        function updateTable() {
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            
-            // Hide all rows
-            tableRows.forEach(row => row.style.display = 'none');
-            
-            // Show filtered and paginated rows
-            filteredRows.slice(start, end).forEach(row => row.style.display = '');
-            
-            // Update pagination info
-            document.getElementById('showingStart').textContent = filteredRows.length > 0 ? start + 1 : 0;
-            document.getElementById('showingEnd').textContent = Math.min(end, filteredRows.length);
-            document.getElementById('totalEntries').textContent = filteredRows.length;
-            
-            // Update pagination buttons
-            updatePagination();
-        }
-
-        function updatePagination() {
-            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-            const pagination = document.getElementById('sessionsPagination');
-            
-            pagination.innerHTML = `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" data-page="prev" aria-label="Previous">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-            `;
-            
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, startPage + 4);
-            
-            if (endPage - startPage < 4) {
-                startPage = Math.max(1, endPage - 4);
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                pagination.innerHTML += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                        <a class="page-link" href="#" data-page="${i}">${i}</a>
-                    </li>
-                `;
-            }
-            
-            pagination.innerHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" data-page="next" aria-label="Next">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            `;
-            
-            pagination.querySelectorAll('.page-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.dataset.page;
-                    
-                    if (page === 'prev' && currentPage > 1) {
-                        currentPage--;
-                    } else if (page === 'next' && currentPage < totalPages) {
-                        currentPage++;
-                    } else if (page !== 'prev' && page !== 'next') {
-                        currentPage = parseInt(page);
-                    }
-                    
-                    updateTable();
-                });
-            });
-        }
-
-        document.getElementById('sessionFilterBtn').addEventListener('click', function() {
-            alert('Filter functionality to be implemented');
-        });
-
-        updateTable();
 
         // ===== Back to Top Button Functionality =====
         const backToTopBtn = document.getElementById('backToTopBtn');
-        
+
         // Show/hide button based on scroll position
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
@@ -1355,7 +1200,7 @@
                 backToTopBtn.classList.remove('show');
             }
         });
-        
+
         // Scroll to top smoothly when clicked
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({
@@ -1363,6 +1208,5 @@
                 behavior: 'smooth'
             });
         });
-
     </script>
 }

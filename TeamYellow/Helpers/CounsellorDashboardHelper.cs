@@ -95,10 +95,25 @@ public static class CounsellorDashboardHelper
 
     public static ClientTableVm MapToVm(ClientTableDto dto)
     {
+        List<ClientVM> clientVMs = dto.Clients.Select(c =>
+            new ClientVM
+            {
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                Initials = $"{c.FirstName?[0]}{c.LastName?[0]}",
+                Email = c.Email,
+                Phone = c.Phone,
+                Status = c.Status == ClientStatus.Active ? true : false,
+                CreatedAt = c.CreatedAt
+            }).ToList();
+
         return new ClientTableVm
         {
-            Clients = dto.Clients,
-            Page = dto.Page
+            Page = dto.Page,
+            StartEntry = (dto.Page - 1) * dto.PageSize + 1,
+            EndEntry = dto.Page * dto.PageSize,
+            TotalCount = dto.TotalCount,
+            Clients = clientVMs
         };
     }
 
