@@ -21,6 +21,12 @@ public class CounsellorService
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Retrieves the dashboard data for a specific counsellor, including active subscription status.
+    /// </summary>
+    /// <param name="user">The ClaimsPrincipal representing the currently logged-in user.</param>
+    /// <returns>A view model containing mapped dashboard statistics and user status.</returns>
+
     public async Task<CounsellorDashboardVM> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
@@ -35,6 +41,14 @@ public class CounsellorService
 
         return vm;
     }
+
+    /// <summary>
+    /// Fetches a validated and paginated list of clients for the current user.
+    /// </summary>
+    /// <param name="user">The current user's claims.</param>
+    /// <param name="page">The requested page number.</param>
+    /// <param name="pageSize">The number of records to return, capped at 100.</param>
+    /// <returns>A view model containing the paginated client data.</returns>
 
     public async Task<ClientTableVm> GetClientsAsync(ClaimsPrincipal user, int page, int pageSize)
     {

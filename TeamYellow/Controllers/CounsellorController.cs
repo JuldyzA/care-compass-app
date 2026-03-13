@@ -19,6 +19,10 @@ namespace TeamYellow.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Displays the counsellor dashboard, loading profile statistics and setting default profile picture path.
+        /// </summary>
+        /// <returns>A view with the populated counsellor dashboard view model.</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -33,6 +37,13 @@ namespace TeamYellow.Controllers
             return View(dashboardVM);
         }
 
+
+        /// <summary>
+        /// Retrieves a paginated list of clients for the counsellor and returns a partial view.
+        /// </summary>
+        /// <param name="page">The current page number (defaults to 1).</param>
+        /// <param name="pageSize">The number of records per page (defaults to 5).</param>
+        /// <returns>A partial view containing the client table data.</returns>
         [HttpGet]
         public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5)
         {
