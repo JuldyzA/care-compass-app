@@ -77,7 +77,7 @@
                         <div class="h1 mb-0">@Model.MonthlyClientCounts[11]</div>
                     </div>
                     <div class="@(Model.ClientGrowthFromLastMonth >= 0 ? "text-success" : "text-danger")">
-                        @Model.ClientGrowthFromLastMonth%
+                        @Model.ClientGrowthFromLastMonth<span>%</span>
                     </div>
                 </div>
                 <div id="monthlyNewClientChart"></div>

@@ -74,11 +74,24 @@ public static class CounsellorDashboardHelper
                 CreatedAt = c.CreatedAt
             }).ToList();
 
+        int startEntry;
+        int endEntry;
+        if (dto.TotalCount == 0)
+        {
+            startEntry = 0;
+            endEntry = 0;
+        }
+        else
+        {
+            startEntry = (dto.Page - 1) * dto.PageSize + 1;
+            endEntry = Math.Min(dto.TotalCount, dto.Page * dto.PageSize);
+        }
+
         return new ClientTableVm
         {
             Page = dto.Page,
-            StartEntry = (dto.Page - 1) * dto.PageSize + 1,
-            EndEntry = dto.Page * dto.PageSize,
+            StartEntry = startEntry,
+            EndEntry = endEntry,
             TotalCount = dto.TotalCount,
             Clients = clientVMs
         };
