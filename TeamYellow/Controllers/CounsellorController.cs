@@ -5,7 +5,7 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Paid_Counselor, Free_Counselor, Registered_Visitor")]
     public class CounsellorController : Controller
     {
         private readonly CounsellorService _service;
@@ -13,8 +13,7 @@ namespace TeamYellow.Controllers
 
         public CounsellorController (
             CounsellorService service, 
-            IConfiguration configuration,
-            ILogger<CounsellorController> logger
+            IConfiguration configuration
         ) {
             _service = service;
             _configuration = configuration;
@@ -28,10 +27,6 @@ namespace TeamYellow.Controllers
             //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
 
             //TODO: Handle case when the user status is not valid (Blur the screen)
-            if (dashboardVM == null)
-            {
-                dashboardVM = new CounsellorDashboardVM();
-            }
 
             ViewData["DefaultUserProfilePicture"] = _configuration["DefaultSettings:DefaultUserProfilePicture"];
 

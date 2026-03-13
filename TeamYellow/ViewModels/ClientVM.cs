@@ -1,6 +1,4 @@
-﻿using TeamYellow.Models;
-
-namespace TeamYellow.ViewModels;
+﻿namespace TeamYellow.ViewModels;
 
 public class ClientVM
 {

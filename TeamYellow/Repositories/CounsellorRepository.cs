@@ -1,10 +1,8 @@
-﻿using Humanizer;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
 using TeamYellow.Models;
-using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories;
 

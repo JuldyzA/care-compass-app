@@ -1,6 +1,4 @@
-﻿using TeamYellow.DTOs;
-
-namespace TeamYellow.ViewModels;
+﻿namespace TeamYellow.ViewModels;
 
 public class ClientTableVm
 {
