@@ -55,8 +55,8 @@ public static class CounsellorDashboardHelper
             ClientGrowthFromLastMonth = CalculateGrowth(dto.MonthlyClientCounts[10], dto.MonthlyClientCounts[11]),
             ActiveClientCount = dto.ActiveClientCount,
             InActiveClientCount = dto.InActiveClientCount,
-            TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - dto.CycleStart).TotalDays : 0,
-            RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd - DateTime.Today).TotalDays : 0
+            TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - dto.CycleStart.Date).TotalDays : 0,
+            RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - DateTime.UtcNow.Date).TotalDays : 0
         };
     }
 
