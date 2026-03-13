@@ -42,7 +42,9 @@
                         <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <div class="user-info">
                                 <div class="user-avatar" aria-hidden="true">
-                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? ViewData["DefaultUserProfilePicture"])" alt="User Profile Picture" />
+                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ??
+                                        ViewData["DefaultUserProfilePicture"] ??
+                                        Url.Content("~/images/placeholder-profile.jpg"))" alt="User Profile Picture" />
                                 </div>
                                 <div class="user-details">
                                     <div class="user-name">@userName</div>
@@ -156,7 +158,9 @@
                                 <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                                     <div class="header-user-info">
                                         <div class="header-user-avatar" aria-hidden="true">
-                                            <img class="header-user-profile-picture" src="@(ViewData["UserProfilePicture"] ?? ViewData["DefaultUserProfilePicture"])" alt="User Profile Picture" />
+                                            <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ??
+                                                ViewData["DefaultUserProfilePicture"] ??
+                                                Url.Content("~/images/placeholder-profile.jpg"))" alt="User Profile Picture" />
                                         </div>
                                         <div class="header-user-details">
                                             <div class="header-user-name">@userName</div>
