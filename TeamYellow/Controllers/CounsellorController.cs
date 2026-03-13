@@ -36,6 +36,21 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5)
         {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            const int maxPageSize = 100;
+            if (pageSize < 1)
+            {
+                pageSize = 1;
+            }
+            else if (pageSize > maxPageSize)
+            {
+                pageSize = maxPageSize;
+            }
+
             ClientTableVm clientTableVm = await _service.GetClientsAsync(User, page, pageSize);
 
             return PartialView("_ClientTable", clientTableVm);
