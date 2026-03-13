@@ -28,6 +28,9 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UserRoleRepository>();
 builder.Services.AddScoped<UserLogRepository>();
+builder.Services.AddScoped<CounsellorRepository>();
+builder.Services.AddScoped<PlanRepository>();
+builder.Services.AddScoped<DiscountRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
