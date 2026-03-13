@@ -43,7 +43,10 @@ public class CounsellorRepository
             return dto;
         }
 
-        return new CounsellorDashboardDto();
+        return new CounsellorDashboardDto
+        {
+            DisplayName = string.Empty
+        };
     }
 
     public async Task<ClientTableDto> GetClientsAsync(string? userId, int page, int pageSize)

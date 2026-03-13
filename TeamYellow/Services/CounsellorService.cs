@@ -33,7 +33,7 @@ public class CounsellorService
             dto.IsSubscriptionActive = dto.CycleEnd > DateTime.UtcNow && dto.Status == SubscriptionStatus.Active;
         }
 
-        CounsellorDashboardVM vm = CounsellorDashboardHelper.MapToVm(dto, userId, user.Identity?.Name);
+        CounsellorDashboardVM vm = CounsellorDashboardHelper.MapToVm(dto, userId);
 
         return vm;
     }

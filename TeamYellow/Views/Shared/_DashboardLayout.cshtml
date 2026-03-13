@@ -17,7 +17,7 @@
     <!-- Custom Dashboard CSS -->
     <link href="~/css/dashboard/dashboard-layout.css" rel="stylesheet" />
 
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />   
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -67,7 +67,7 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form method="post" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                                <form method="post" asp-area="Identity" asp-page="/Account/Logout">
                                     <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
                                 </form>
                             </li>
