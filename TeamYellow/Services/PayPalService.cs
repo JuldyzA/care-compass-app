@@ -5,6 +5,11 @@ using System.Text.Json.Nodes;
 
 namespace TeamYellow.Services;
 
+/// <summary>
+/// Service that communicates with the PayPal REST API to create and capture payment orders.
+/// Supports both Sandbox and Live environments, configurable via <c>ApiKeys:PayPal:Mode</c>.
+/// Access tokens are cached and refreshed automatically when they expire.
+/// </summary>
 public class PayPalService : IPayPalService
 {
     private readonly HttpClient _client;
@@ -13,6 +18,15 @@ public class PayPalService : IPayPalService
     private static string? _cachedToken;
     private static DateTime _tokenExpiry = DateTime.MinValue;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="PayPalService"/>.
+    /// Sets the <see cref="HttpClient"/> base address based on the configured PayPal mode.
+    /// </summary>
+    /// <param name="client">The <see cref="HttpClient"/> used to call the PayPal API.</param>
+    /// <param name="configuration">
+    /// The application configuration. Reads <c>ApiKeys:PayPal:Mode</c> (defaults to <c>Sandbox</c>)
+    /// to determine the PayPal API base URL.
+    /// </param>
     public PayPalService(HttpClient client, IConfiguration configuration)
     {
         _client = client;
@@ -28,6 +42,16 @@ public class PayPalService : IPayPalService
             : "https://api-m.sandbox.paypal.com");
     }
 
+    /// <summary>
+    /// Retrieves a cached OAuth 2.0 access token from PayPal, or requests a new one if
+    /// the cached token is absent or has expired.
+    /// </summary>
+    /// <returns>A valid PayPal Bearer access token string.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <c>ApiKeys:PayPal:ClientId</c> or <c>ApiKeys:PayPal:ClientSecret</c>
+    /// are not configured in application secrets.
+    /// </exception>
+    /// <exception cref="Exception">Thrown if the PayPal token response does not contain an access token.</exception>
     private async Task<string> GetAccessToken()
     {
         if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
@@ -60,6 +84,20 @@ public class PayPalService : IPayPalService
         return _cachedToken;
     }
 
+    /// <summary>
+    /// Creates a PayPal checkout order for a given amount and returns the buyer approval URL.
+    /// The <paramref name="customId"/> is embedded in the order so it can be retrieved after capture.
+    /// </summary>
+    /// <param name="amount">The monetary amount to charge, in the specified currency.</param>
+    /// <param name="currency">The ISO 4217 currency code (e.g., <c>CAD</c>, <c>USD</c>).</param>
+    /// <param name="returnUrl">The URL PayPal redirects the buyer to after approval.</param>
+    /// <param name="cancelUrl">The URL PayPal redirects the buyer to if they cancel.</param>
+    /// <param name="customId">
+    /// An application-defined identifier embedded in the order (e.g., the plan ID),
+    /// returned in the capture response for reconciliation.
+    /// </param>
+    /// <returns>The PayPal buyer approval URL that the user should be redirected to.</returns>
+    /// <exception cref="Exception">Thrown if the PayPal response does not include an approval link.</exception>
     public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
     {
         var accessToken = await GetAccessToken();
@@ -103,6 +141,21 @@ public class PayPalService : IPayPalService
         return approveLink ?? throw new Exception("PayPal approval link not found");
     }
 
+    /// <summary>
+    /// Captures a previously approved PayPal order using its approval token.
+    /// Returns the PayPal capture ID and the custom ID that was embedded when the order was created.
+    /// </summary>
+    /// <param name="token">The PayPal order approval token (returned by PayPal as the <c>token</c> query parameter).</param>
+    /// <returns>
+    /// A tuple containing:
+    /// <list type="bullet">
+    ///   <item><description><c>CaptureId</c> – the PayPal capture transaction identifier.</description></item>
+    ///   <item><description><c>CustomId</c> – the application-defined value set when the order was created (e.g., plan ID).</description></item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="Exception">
+    /// Thrown if the PayPal response is missing <c>custom_id</c>, or if the payment capture status is not <c>COMPLETED</c>.
+    /// </exception>
     public async Task<(string CaptureId, string CustomId)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();

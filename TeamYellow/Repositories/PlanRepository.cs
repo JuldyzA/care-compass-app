@@ -5,10 +5,19 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
+    /// <summary>
+    /// Repository providing data access operations for <see cref="Plan"/> entities.
+    /// Plans are ordered by price and include their associated <see cref="PlanFeature"/> records.
+    /// </summary>
     public class PlanRepository(ApplicationDbContext context) : IPlanRepository
     {
         private readonly ApplicationDbContext _context = context;
 
+        /// <summary>
+        /// Retrieves all plans that are currently active, ordered by price ascending.
+        /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
+        /// </summary>
+        /// <returns>A list of active <see cref="Plan"/> entities ordered by price.</returns>
         public async Task<List<Plan>> GetActivePlans()
         {
             var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
@@ -18,6 +27,11 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
+        /// <summary>
+        /// Retrieves all plans regardless of active status, ordered by price ascending.
+        /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
+        /// </summary>
+        /// <returns>A list of all <see cref="Plan"/> entities ordered by price.</returns>
         public async Task<List<Plan>> GetAllPlans()
         {
             var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
@@ -26,12 +40,25 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
+        /// <summary>
+        /// Retrieves a single plan by its primary key, including its associated features.
+        /// </summary>
+        /// <param name="id">The primary key of the plan to retrieve.</param>
+        /// <returns>The matching <see cref="Plan"/> with features, or <c>null</c> if not found.</returns>
         public async Task<Plan?> GetPlanById(int id)
         {
             return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
                 .FirstOrDefaultAsync(p => p.PlanId == id);
         }
 
+        /// <summary>
+        /// Updates an existing plan with the data provided in the DTO.
+        /// Existing plan features are removed and replaced with the new set from the DTO,
+        /// preserving the supplied sort order.
+        /// </summary>
+        /// <param name="updatePlanDto">The DTO containing updated plan data.</param>
+        /// <returns>The updated <see cref="Plan"/> entity.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown when no plan with the given ID exists.</exception>
         public async Task<Plan> UpdatePlan(UpdatePlanDto updatePlanDto)
         {
             var plan = await _context.Plans
@@ -56,6 +83,12 @@ namespace TeamYellow.Repositories
             return plan;
         }
 
+        /// <summary>
+        /// Soft-deletes a plan by setting its <see cref="Plan.IsActive"/> flag to <c>false</c>.
+        /// The plan record is retained in the database for historical referencing.
+        /// </summary>
+        /// <param name="id">The ID of the plan to deactivate.</param>
+        /// <returns><c>true</c> if the plan was found and deactivated; <c>false</c> if the plan does not exist.</returns>
         public async Task<bool> DeletePlan(int id)
         {
             var plan = await _context.Plans.FindAsync(id);
@@ -67,6 +100,13 @@ namespace TeamYellow.Repositories
             return true;
         }
 
+        /// <summary>
+        /// Creates and persists a new plan from the supplied DTO.
+        /// Plan features from the DTO are assigned a sequential <see cref="PlanFeature.SortOrder"/>
+        /// based on their position in the DTO list.
+        /// </summary>
+        /// <param name="addPlanDto">The DTO containing the new plan data.</param>
+        /// <returns>The newly created and persisted <see cref="Plan"/> entity.</returns>
         public async Task<Plan> AddPlan(AddPlanDto addPlanDto)
         {
             var plan = new Plan

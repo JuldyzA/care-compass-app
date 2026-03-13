@@ -6,6 +6,13 @@ using TeamYellow.Services;
 
 namespace TeamYellow.Controllers;
 
+/// <summary>
+/// Controller responsible for handling subscription workflows,
+/// including initiating PayPal payments, processing subscription success,
+/// handling cancellations, and assigning counsellor roles.
+/// Accessible to authenticated users with the roles
+/// <c>Registered_Visitor</c>, <c>Paid_Counselor</c>, or <c>Free_Counselor</c>.
+/// </summary>
 [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
 public class SubscriptionController : Controller
 {
@@ -16,6 +23,15 @@ public class SubscriptionController : Controller
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<SubscriptionController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="SubscriptionController"/>.
+    /// </summary>
+    /// <param name="subscriptionService">Service handling subscription business logic.</param>
+    /// <param name="userManager">ASP.NET Identity user manager.</param>
+    /// <param name="counsellorRepository">Repository for counsellor data access.</param>
+    /// <param name="subscriptionRepository">Repository for subscription data access.</param>
+    /// <param name="signInManager">ASP.NET Identity sign-in manager used to refresh user claims.</param>
+    /// <param name="logger">Logger for recording error and diagnostic information.</param>
     public SubscriptionController(
         ISubscriptionService subscriptionService,
         UserManager<IdentityUser> userManager,
@@ -32,6 +48,17 @@ public class SubscriptionController : Controller
         _logger = logger;
     }
 
+    /// <summary>
+    /// Initiates the subscription process for the specified plan.
+    /// Creates a counsellor profile if one does not yet exist for the current user.
+    /// For free plans, completes the subscription immediately and assigns the <c>Free_Counselor</c> role.
+    /// For paid plans, creates a PayPal order and redirects the user to the PayPal approval page.
+    /// </summary>
+    /// <param name="planId">The ID of the plan the user wants to subscribe to.</param>
+    /// <returns>
+    /// Redirects to the PayPal approval URL for paid plans,
+    /// returns a success view for free plans, or returns an error result for invalid requests.
+    /// </returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Subscribe(int planId)
@@ -103,6 +130,18 @@ public class SubscriptionController : Controller
         }
     }
 
+    /// <summary>
+    /// Handles the PayPal payment return callback after the user approves the order.
+    /// Captures the payment, creates the subscription record, and assigns the <c>Paid_Counselor</c> role.
+    /// </summary>
+    /// <param name="orderId">
+    /// The PayPal order token returned as a query string parameter named <c>token</c>
+    /// from the PayPal approval redirect.
+    /// </param>
+    /// <returns>
+    /// The success view with a confirmation message, or a redirect to the home page with an error
+    /// if the payment token is missing, the counsellor profile is not found, or the payment fails.
+    /// </returns>
     [HttpGet]
     public async Task<IActionResult> Success([FromQuery(Name = "token")] string orderId)
     {
@@ -140,12 +179,24 @@ public class SubscriptionController : Controller
         }
     }
 
+    /// <summary>
+    /// Handles the PayPal cancellation callback when the user cancels the payment flow.
+    /// </summary>
+    /// <returns>The cancellation view informing the user that no charge was made.</returns>
     [HttpGet]
     public IActionResult Cancel()
     {
         return View();
     }
 
+    /// <summary>
+    /// Removes any existing counsellor-related roles from the user and assigns the specified target role.
+    /// Refreshes the user's sign-in cookie so the new role takes effect immediately.
+    /// </summary>
+    /// <param name="userId">The ID of the user whose roles should be updated.</param>
+    /// <param name="targetRole">
+    /// The role to assign to the user. Expected values are <c>Free_Counselor</c> or <c>Paid_Counselor</c>.
+    /// </param>
     private async Task AssignCounsellorRole(string userId, string targetRole)
     {
         var user = await _userManager.FindByIdAsync(userId);

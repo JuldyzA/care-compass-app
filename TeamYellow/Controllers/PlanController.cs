@@ -9,6 +9,11 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers;
 
+/// <summary>
+/// Controller responsible for managing subscription plans,
+/// including listing, checkout, creation, editing, and deletion.
+/// Requires authentication by default; individual actions may restrict or relax this requirement.
+/// </summary>
 [Authorize]
 public class PlanController : Controller
 {
@@ -17,6 +22,13 @@ public class PlanController : Controller
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly UserManager<IdentityUser> _userManager;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="PlanController"/>.
+    /// </summary>
+    /// <param name="planService">Service used to retrieve and manage plans.</param>
+    /// <param name="counsellorRepository">Repository for counsellor data access.</param>
+    /// <param name="subscriptionRepository">Repository for subscription data access.</param>
+    /// <param name="userManager">ASP.NET Identity user manager.</param>
     public PlanController(
         IPlanService planService,
         ICounsellorRepository counsellorRepository,
@@ -29,6 +41,12 @@ public class PlanController : Controller
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Displays a list of all active subscription plans.
+    /// If the current user is an authenticated <c>Paid_Counselor</c>, their current plan ID
+    /// is injected into <see cref="Controller.ViewData"/> so the view can highlight it.
+    /// </summary>
+    /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns>
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
@@ -51,6 +69,16 @@ public class PlanController : Controller
         return View(plans.Select(MapToPlanVM).ToList());
     }
 
+    /// <summary>
+    /// Displays the checkout page for the specified plan.
+    /// Redirects back to the plan index with an appropriate error message if the user
+    /// is already subscribed to the requested plan or attempts an invalid plan change.
+    /// </summary>
+    /// <param name="id">The ID of the plan the user wants to check out.</param>
+    /// <returns>
+    /// The checkout view for the requested plan, or a redirect/not-found result
+    /// if the plan is unavailable or the user is already subscribed.
+    /// </returns>
     [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
     public async Task<IActionResult> Checkout(int id)
     {
@@ -83,6 +111,11 @@ public class PlanController : Controller
         return View(MapToPlanVM(plan));
     }
 
+    /// <summary>
+    /// Displays the plan management page with all plans (active and inactive).
+    /// Restricted to users with the <c>Manager</c> role.
+    /// </summary>
+    /// <returns>The management view with a full list of <see cref="PlanVM"/> objects.</returns>
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Manage()
     {
@@ -90,12 +123,24 @@ public class PlanController : Controller
         return View(plans.Select(MapToPlanVM).ToList());
     }
 
+    /// <summary>
+    /// Displays the plan creation form.
+    /// Restricted to users with the <c>Manager</c> role.
+    /// </summary>
+    /// <returns>The plan creation view.</returns>
     [Authorize(Roles = "Manager")]
     public IActionResult Create()
     {
         return View();
     }
 
+    /// <summary>
+    /// Processes the submitted plan creation form.
+    /// Restricted to users with the <c>Manager</c> role.
+    /// Returns the form view with errors if validation fails or an exception occurs.
+    /// </summary>
+    /// <param name="addPlanDto">The DTO containing new plan data submitted from the form.</param>
+    /// <returns>Redirects to <see cref="Manage"/> on success; otherwise re-displays the form with errors.</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Manager")]
@@ -118,6 +163,12 @@ public class PlanController : Controller
         }
     }
 
+    /// <summary>
+    /// Displays the plan edit form pre-populated with the current plan data.
+    /// Restricted to users with the <c>Manager</c> role.
+    /// </summary>
+    /// <param name="id">The ID of the plan to edit.</param>
+    /// <returns>The edit view with an <see cref="UpdatePlanDto"/>, or <c>404 Not Found</c> if the plan does not exist.</returns>
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Edit(int id)
     {
@@ -146,6 +197,15 @@ public class PlanController : Controller
         return View(updatePlanDto);
     }
 
+    /// <summary>
+    /// Processes the submitted plan edit form.
+    /// Restricted to users with the <c>Manager</c> role.
+    /// </summary>
+    /// <param name="updatePlanDto">The DTO containing updated plan data submitted from the form.</param>
+    /// <returns>
+    /// Redirects to <see cref="Manage"/> on success; returns <c>404 Not Found</c> if the plan
+    /// does not exist; otherwise re-displays the form with an error message.
+    /// </returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Manager")]
@@ -172,6 +232,15 @@ public class PlanController : Controller
         }
     }
 
+    /// <summary>
+    /// Soft-deletes (deactivates) the specified plan.
+    /// Restricted to users with the <c>Manager</c> role.
+    /// </summary>
+    /// <param name="id">The ID of the plan to delete.</param>
+    /// <returns>
+    /// Redirects to <see cref="Manage"/> on success or failure;
+    /// returns <c>404 Not Found</c> if the plan does not exist.
+    /// </returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Manager")]
@@ -194,6 +263,11 @@ public class PlanController : Controller
         }
     }
 
+    /// <summary>
+    /// Maps a <see cref="Plan"/> domain model to a <see cref="PlanVM"/> view model.
+    /// </summary>
+    /// <param name="plan">The plan domain model to map.</param>
+    /// <returns>A <see cref="PlanVM"/> populated from the given <paramref name="plan"/>.</returns>
     private static PlanVM MapToPlanVM(Plan plan) => new()
     {
         PlanId = plan.PlanId,
