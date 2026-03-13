@@ -1,6 +1,4 @@
-﻿"user strict";
-
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     loadClients();
 });
 
