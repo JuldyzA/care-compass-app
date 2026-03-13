@@ -30,17 +30,23 @@ public class CounsellorRepository
                 LatestSubscription = c.Subscriptions
                     .Where(s => s.Status == SubscriptionStatus.Active)
                     .OrderByDescending(s => s.UpdatedAt)
-                    .FirstOrDefault(),
-                Clients = c.Clients
-                    .Where(cl => cl.CounsellorId == c.CounsellorId)
-                    .ToList()
+                    .FirstOrDefault()
             })
             .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (data != null)
         {
-            CounsellorDashboardDto dto = CounsellorDashboardHelper.MapToDashboardDto(data.Counsellor, data.UserProfile, data.LatestSubscription, data.Clients);
+            var clients = await _context.Clients
+                .Where(cl => cl.CounsellorId == data.Counsellor.CounsellorId)
+                .AsNoTracking()
+                .ToListAsync();
+
+            CounsellorDashboardDto dto = CounsellorDashboardHelper.MapToDashboardDto(
+                data.Counsellor,
+                data.UserProfile,
+                data.LatestSubscription,
+                clients);
             return dto;
         }
 
