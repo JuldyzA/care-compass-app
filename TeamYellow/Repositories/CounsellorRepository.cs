@@ -21,7 +21,8 @@ public class CounsellorRepository
         var data = await (
             from c in _context.Counsellors
             where c.UserId == userId
-            join up in _context.UserProfiles on c.UserId equals up.UserId
+            join up in _context.UserProfiles on c.UserId equals up.UserId into ups
+            from up in ups.DefaultIfEmpty()
             select new
             {
                 Counsellor = c,
