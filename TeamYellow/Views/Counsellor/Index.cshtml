@@ -145,9 +145,9 @@
         const currentMonthFull = now.toLocaleString('default', { month: 'long' });
 
         const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
-                const date = new Date();
-                date.setMonth(now.getMonth() + i + 1);
-                return date.toLocaleString('default', { month: 'long' });
+            const date = new Date(now);
+            date.setMonth(now.getMonth() - 11 + i);
+            return date.toLocaleString('default', { month: 'long' });
         });
 
         const monthlyData = [@Html.Raw(Json.Serialize(Model.MonthlyClientCounts))][0];
