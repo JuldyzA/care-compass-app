@@ -39,6 +39,22 @@ public class CounsellorService
     public async Task<ClientTableVm> GetClientsAsync(ClaimsPrincipal user, int page, int pageSize)
     {
         string? userId = _userManager.GetUserId(user);
+
+        if (page < 1)
+        {
+            page = 1;
+        }
+
+        const int maxPageSize = 100;
+        if (pageSize < 1)
+        {
+            pageSize = 1;
+        }
+        else if (pageSize > maxPageSize)
+        {
+            pageSize = maxPageSize;
+        }
+
         ClientTableDto dto = await _repository.GetClientsAsync(userId, page, pageSize);
 
         ClientTableVm clientTableVm = CounsellorDashboardHelper.MapToVm(dto);
