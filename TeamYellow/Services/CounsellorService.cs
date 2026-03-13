@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
@@ -22,7 +21,6 @@ public class CounsellorService
         _userManager = userManager;
     }
 
-    [HttpGet]
     public async Task<CounsellorDashboardVM> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
@@ -38,7 +36,6 @@ public class CounsellorService
         return vm;
     }
 
-    [HttpGet]
     public async Task<ClientTableVm> GetClientsAsync(ClaimsPrincipal user, int page, int pageSize)
     {
         string? userId = _userManager.GetUserId(user);
