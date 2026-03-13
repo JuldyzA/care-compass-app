@@ -83,8 +83,10 @@ public static class CounsellorDashboardHelper
         }
         else
         {
-            startEntry = (dto.Page - 1) * dto.PageSize + 1;
-            endEntry = Math.Min(dto.TotalCount, dto.Page * dto.PageSize);
+            int calculatedStart = (dto.Page - 1) * dto.PageSize + 1;
+            int calculatedEnd = dto.Page * dto.PageSize;
+            startEntry = Math.Max(0, Math.Min(dto.TotalCount, calculatedStart));
+            endEntry = Math.Max(0, Math.Min(dto.TotalCount, calculatedEnd));
         }
 
         return new ClientTableVm
