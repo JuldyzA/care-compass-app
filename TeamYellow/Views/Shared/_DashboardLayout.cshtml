@@ -76,10 +76,16 @@
             </div>
             }
 
+            @{
+                var currentPath = Context?.Request?.Path.Value ?? string.Empty;
+                var isDashboardPage = string.Equals(currentPath, "/Counsellor", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(currentPath, "/Counsellor/Index", StringComparison.OrdinalIgnoreCase);
+            }
+
             <nav class="sidebar-nav" aria-label="Dashboard navigation">
                 <ul class="nav flex-column" role="list">
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor" data-page="dashboard" aria-current="page">
+                        <a class="nav-link" href="/Counsellor" data-page="dashboard" @(isDashboardPage ? "aria-current=\"page\"" : "")>
                             <i class="bi bi-speedometer2" aria-hidden="true"></i>
                             <span>Dashboard</span>
                         </a>
