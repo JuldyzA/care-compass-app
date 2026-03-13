@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers;
 
@@ -112,10 +113,19 @@ public class SubscriptionController : Controller
                 {
                     _logger.LogError(ex, "Failed to assign Free_Counselor role to user {UserId} after free subscription.", user.Id);
                 }
-                ViewData["Message"] = result == SubscriptionResult.PlanChanged
-                    ? "Your plan has been updated successfully."
-                    : "You have successfully subscribed to the Free plan.";
-                return View("Success");
+
+                var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
+                var vm = new SubscriptionSuccessVM
+                {
+                    Message = result == SubscriptionResult.PlanChanged
+                        ? "Your plan has been updated successfully."
+                        : "You have successfully subscribed to the Free plan.",
+                    SubscriptionId = subscription?.SubscriptionId ?? 0,
+                    PlanName = subscription?.Plan?.PlanName ?? string.Empty,
+                    CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
+                    CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
+                };
+                return View("Success", vm);
             }
 
             return Redirect(approvalUrl);
@@ -168,10 +178,19 @@ public class SubscriptionController : Controller
             }
             if (result == SubscriptionResult.AlreadySubscribed)
                 return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
-            ViewData["Message"] = result == SubscriptionResult.PlanChanged
-                ? "Your plan has been updated successfully."
-                : "Thank you for your subscription. Your plan is now active.";
-            return View("Success");
+
+            var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
+            var vm = new SubscriptionSuccessVM
+            {
+                Message = result == SubscriptionResult.PlanChanged
+                    ? "Your plan has been updated successfully."
+                    : "Thank you for your subscription. Your plan is now active.",
+                SubscriptionId = subscription?.SubscriptionId ?? 0,
+                PlanName = subscription?.Plan?.PlanName ?? string.Empty,
+                CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
+                CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
+            };
+            return View("Success", vm);
         }
         catch (Exception)
         {

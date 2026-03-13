@@ -60,6 +60,24 @@ namespace TeamYellow.Repositories
         /// Typically called after modifying the subscription's status (e.g., cancellation).
         /// </summary>
         /// <param name="subscription">The subscription entity with updated values to persist.</param>
+        /// <summary>
+        /// Retrieves the active subscription for the specified counsellor,
+        /// including the associated <see cref="Plan"/> navigation property so that
+        /// <see cref="Plan.PlanName"/> and other plan details are available without
+        /// an additional query.
+        /// </summary>
+        /// <param name="counsellorId">The primary key of the counsellor to look up.</param>
+        /// <returns>
+        /// The counsellor's active <see cref="Subscription"/> with its <see cref="Plan"/> loaded,
+        /// or <c>null</c> if no active subscription exists.
+        /// </returns>
+        public async Task<Subscription?> GetActiveSubscriptionWithPlanByCounsellorId(int counsellorId)
+        {
+            return await _context.Subscriptions
+                .Include(s => s.Plan)
+                .FirstOrDefaultAsync(s => s.CounsellorId == counsellorId && s.Status == SubscriptionStatus.Active);
+        }
+
         public async Task UpdateSubscription(Subscription subscription)
         {
             _context.Subscriptions.Update(subscription);

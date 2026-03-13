@@ -6,7 +6,11 @@ namespace TeamYellow.Repositories
     public interface ISubscriptionRepository
     {
         Task<Subscription> CreateSubscription(AddSubscriptionDto addSubscriptionDto);
+
         Task<Subscription?> GetActiveSubscriptionByCounsellorId(int counsellorId);
+
+        Task<Subscription?> GetActiveSubscriptionWithPlanByCounsellorId(int counsellorId);
+
         Task UpdateSubscription(Subscription subscription);
     }
 }
