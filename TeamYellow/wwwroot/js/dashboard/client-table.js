@@ -14,7 +14,7 @@ async function loadClients(page = 1) {
         const container = document.getElementById("clientTableContainer");
 
         if (container) {
-            container.innerHTML = html;
+            container.outerHTML = html;
         }
     } catch (error) {
         console.error("Failed to load clients:", error);
