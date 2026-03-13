@@ -18,30 +18,15 @@ public static class CounsellorDashboardHelper
         var dto = new CounsellorDashboardDto
         {
             // UserProfile data
-            UserProfileId = profile.UserProfileId,
-            FirstName = profile.FirstName,
-            LastName = profile.LastName,
-            Phone = profile.Phone,
-            ProfileCreateAt = profile.CreatedAt,
             ProfilePhotoUrl = profile.ProfilePhotoUrl,
-            UnitNumber = profile.UnitNumber,
-            Street = profile.Street,
-            City = profile.City,
-            Province = profile.Province,
-            PostalCode = profile.PostalCode,
 
             // Counsellor data
-            CounsellerId = counsellor.CounsellorId,
-            PractitionerLicenceId = counsellor.PractitionerLicenceId,
             DisplayName = counsellor.DisplayName,
-            IsCounsellorActive = counsellor.IsActive,
 
             // Subscription data
-            SubscriptionId = sub?.SubscriptionId ?? 0,
             Status = sub?.Status ?? SubscriptionStatus.Expired,
             CycleStart = sub?.CycleStart ?? DateTime.MinValue,
             CycleEnd = sub?.CycleEnd ?? DateTime.MinValue,
-            UpdatedAt = sub?.UpdatedAt ?? DateTime.MinValue,
 
             // Post Query data processing
             MonthlyClientCounts = monthlyCounts,
@@ -61,29 +46,12 @@ public static class CounsellorDashboardHelper
 
         return new CounsellorDashboardVM
         {
-            UserId = userId,
-            Email = email,
-            UserProfileId = dto.UserProfileId,
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            Phone = dto.Phone,
-            ProfileCreateAt = dto.ProfileCreateAt,
             ProfilePhotoUrl = dto.ProfilePhotoUrl,
-            UnitNumber = dto.UnitNumber,
-            Street = dto.Street,
-            City = dto.City,
-            Province = dto.Province,
-            PostalCode = dto.PostalCode,
-            CounsellerId = dto.CounsellerId,
-            PractitionerLicenceId = dto.PractitionerLicenceId,
             DisplayName = dto.DisplayName,
-            IsCounsellorActive = dto.IsCounsellorActive,
-            SubscriptionId = dto.SubscriptionId,
             Status = dto.Status,
             IsSubscriptionActive = dto.IsSubscriptionActive,
             CycleStart = dto.CycleStart,
             CycleEnd = dto.CycleEnd,
-            UpdatedAt = dto.UpdatedAt,
             MonthlyClientCounts = dto.MonthlyClientCounts,
             ClientGrowthFromLastMonth = CalculateGrowth(dto.MonthlyClientCounts[10], dto.MonthlyClientCounts[11]),
             ActiveClientCount = dto.ActiveClientCount,

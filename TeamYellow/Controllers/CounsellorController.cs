@@ -23,9 +23,7 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            CounsellorDashboardVM? dashboardVM = await _service.GetCounsellorDashboardAsync(User);
-
-            //TODO: Handle null case (e.g. redirect to error page or show message)
+            CounsellorDashboardVM dashboardVM = await _service.GetCounsellorDashboardAsync(User);
             
             //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
 

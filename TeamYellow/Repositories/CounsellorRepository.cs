@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Humanizer;
+using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
@@ -16,7 +17,7 @@ public class CounsellorRepository
         _context = context;
     }
 
-    public async Task<CounsellorDashboardDto?> GetCounsellorDashboardDtoAsync(string? userId)
+    public async Task<CounsellorDashboardDto> GetCounsellorDashboardDtoAsync(string? userId)
     {
         var data = await (
             from c in _context.Counsellors
@@ -45,7 +46,7 @@ public class CounsellorRepository
             return dto;
         }
 
-        return null;
+        return new CounsellorDashboardDto();
     }
 
     public async Task<ClientTableDto> GetClientsAsync(string? userId, int page, int pageSize)

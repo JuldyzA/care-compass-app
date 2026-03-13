@@ -6,6 +6,7 @@
     ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
     ViewData["DisplayName"] = Model.DisplayName;
     
+    // To VM
     int total = @Model.TotalSubscriptionDays;
     int remainder = @Model.RemainingSubscriptionDays;
     double percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
