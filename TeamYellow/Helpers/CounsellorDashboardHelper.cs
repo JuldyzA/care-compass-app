@@ -67,7 +67,7 @@ public static class CounsellorDashboardHelper
             {
                 FirstName = c.FirstName,
                 LastName = c.LastName,
-                Initials = $"{c.FirstName?[0]}{c.LastName?[0]}",
+                Initials = $"{GetInitial(c.FirstName)}{GetInitial(c.LastName)}",
                 Email = c.Email,
                 Phone = c.Phone,
                 Status = c.Status == ClientStatus.Active ? true : false,
@@ -131,5 +131,14 @@ public static class CounsellorDashboardHelper
             return currentMonth > 0 ? 100.0 : 0.0;
         }
         return Math.Round(((double)(currentMonth - lastMonth) / lastMonth) * 100, 2);
+    }
+
+    private static string GetInitial(string? name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return string.Empty;
+        }
+        return name.Substring(0, 1);
     }
 }
