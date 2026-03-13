@@ -9,7 +9,11 @@
     // To VM
     int total = @Model.TotalSubscriptionDays;
     int remainder = @Model.RemainingSubscriptionDays;
-    double percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
+    double percentageRemaining = 0;
+    if (total > 0)
+    {
+        percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
+    }
     bool isHealthy = percentageRemaining > 20;
     string gaugeColor = isHealthy ? "#2ECC71" : "#E74C3C";
     string textColorClass = isHealthy ? "text-success" : "text-danger";
