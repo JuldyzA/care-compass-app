@@ -36,9 +36,9 @@ public static class CounsellorDashboardHelper
         return dto;
     }
 
-    public static CounsellorDashboardVM MapToVm(CounsellorDashboardDto? dto, string? userId, string? email)
+    public static CounsellorDashboardVM MapToVm(CounsellorDashboardDto? dto, string? userId)
     {
-        if (dto == null || userId == null || email == null)
+        if (dto == null || userId == null)
         {
             return new CounsellorDashboardVM();
         }
