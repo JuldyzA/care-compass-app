@@ -167,7 +167,12 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const dropdowns = document.querySelectorAll('.dropdown-menu.show');
         dropdowns.forEach(dropdown => {
-            bootstrap.Dropdown.getInstance(dropdown.previousElementSibling)?.hide();
+            const toggleEl = dropdown.previousElementSibling;
+            if (!toggleEl) {
+                return;
+            }
+            const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(toggleEl);
+            dropdownInstance.hide();
         });
     }
 });
