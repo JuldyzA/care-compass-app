@@ -15,6 +15,8 @@ namespace TeamYellow.Controllers
 
         public IActionResult Index()
         {
+            if (User.IsInRole("Manager"))
+                    return RedirectToAction("Index", "Manager");
             return View();
         }
 
