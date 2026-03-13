@@ -13,15 +13,15 @@ public static class CounsellorDashboardHelper
     /// <param name="counsellor">The counsellor entity containing basic info.</param>
     /// <param name="profile">The user profile for photo and display details.</param>
     /// <param name="sub">The current or most recent subscription record.</param>
-    /// <param name="client">A list of all clients used to calculate dashboard metrics.</param>
+    /// <param name="clients">A list of all clients used to calculate dashboard metrics.</param>
     /// <returns>A DTO containing summarized dashboard data and processed client counts.</returns>
     public static CounsellorDashboardDto MapToDashboardDto(
         Counsellor counsellor,
         UserProfile? profile,
         Subscription? sub,
-        List<Client> client
+        List<Client> clients
     ) {
-        var (monthlyCounts, activeCount, inActiveCount) = CalculateMonthlyCounts(client);
+        var (monthlyCounts, activeCount, inActiveCount) = CalculateMonthlyCounts(clients);
 
         var dto = new CounsellorDashboardDto
         {
