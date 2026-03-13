@@ -39,13 +39,22 @@
                         <th class="sortable" data-column="datetime">
                             Date & Time <i class="bi bi-chevron-expand text-muted"></i>
                         </th>
-                        <th class="sortable" data-column="type">
-                            Type <i class="bi bi-chevron-expand text-muted"></i>
+                        <th class="sortable" data-column="email">
+                            Email <i class="bi bi-chevron-expand text-muted"></i>
                         </th>
+                        @if (isMainPage)
+                        {
+                            <th class="sortable" data-column="phone">
+                                Phone <i class="bi bi-chevron-expand text-muted"></i>
+                            </th>
+                        }
                         <th class="sortable" data-column="status">
                             Status <i class="bi bi-chevron-expand text-muted"></i>
                         </th>
-                        <th class="text-end">Actions</th>
+                        @if (isMainPage)
+                        {
+                            <th class="text-end">Actions</th>
+                        }
                     </tr>
                 </thead>
                 <tbody id="sessionsTableBody">
@@ -64,22 +73,24 @@
                                 <div>@c.CreatedAt.ToShortDateString()</div>
                                 <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
                             </td>
+                            <td>
+                                <small>@c.Email</small>
+                            </td>
                             @if (isMainPage)
                             {
-                                <td>
-                                    <small>@c.Email</small>
-                                </td>
                                 <td>
                                     <small>@c.Phone</small>
                                 </td>
                             }
-                            <td><span class="badge bg-light text-dark border">Individual</span></td>
                             <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
+                            @if (isMainPage)
+                            {
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>

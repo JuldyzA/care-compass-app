@@ -67,7 +67,7 @@ public class CounsellorRepository
         int total = await query.CountAsync();
 
         List<ClientDto> clientsDtos = await query
-            .OrderByDescending(c => c.CreatedAt)
+            .OrderBy(c => c.FirstName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
