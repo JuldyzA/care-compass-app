@@ -89,19 +89,19 @@
             <nav class="sidebar-nav" aria-label="Dashboard navigation">
                 <ul class="nav flex-column" role="list">
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor" data-page="dashboard" @(isDashboardPage ? "aria-current=\"page\"" : "")>
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Index" data-page="dashboard" @(isDashboardPage ? "aria-current=\"page\"" : "")>
                             <i class="bi bi-speedometer2" aria-hidden="true"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor/Clients" data-page="clients">
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Clients" data-page="clients">
                             <i class="bi bi-people" aria-hidden="true"></i>
                             <span>Clients</span>
                         </a>
                     </li>
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor/Appointments" data-page="appointments">
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Appointments" data-page="appointments">
                             <i class="bi bi-calendar-check" aria-hidden="true"></i>
                             <span>Appointments</span>
                         </a>
@@ -112,13 +112,13 @@
 
                 <ul class="nav flex-column" role="list">
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor/Billing" data-page="billing">
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Billing" data-page="billing">
                             <i class="bi bi-credit-card" aria-hidden="true"></i>
                             <span>Billing</span>
                         </a>
                     </li>
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor/Upgrade" data-page="upgrade">
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Upgrade" data-page="upgrade">
                             <i class="bi bi-arrow-up-circle" aria-hidden="true"></i>
                             <span>Upgrade</span>
                         </a>
@@ -129,7 +129,7 @@
 
                 <ul class="nav flex-column" role="list">
                     <li class="nav-item" role="listitem">
-                        <a class="nav-link" href="/Counsellor/Profile" data-page="profile">
+                        <a class="nav-link" asp-controller="Counsellor" asp-action="Profile" data-page="profile">
                             <i class="bi bi-person-circle" aria-hidden="true"></i>
                             <span>Profile</span>
                         </a>
