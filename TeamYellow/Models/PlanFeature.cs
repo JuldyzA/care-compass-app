@@ -5,7 +5,7 @@ namespace TeamYellow.Models;
 
 [Table("PlanFeature")]
 public class PlanFeature
-{   
+{
     [Key]
     [Column("pkPlanFeatureId")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -18,12 +18,12 @@ public class PlanFeature
     [Column("featureDescription")]
     [Required, MaxLength(300)]
     public string FeatureDescription { get; set; } = String.Empty;
-    
+
     [Column("sortOrder")]
-    public int sortOrder { get; set; }
-   
+    public int SortOrder { get; set; }
+
     [Column("fkPlanId")]
     public int PlanId { get; set; }
-    
+
     public virtual Plan Plan { get; set; } = null!;
 }

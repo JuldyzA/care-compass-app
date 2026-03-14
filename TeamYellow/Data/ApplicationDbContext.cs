@@ -228,7 +228,7 @@ namespace TeamYellow.Data
                 {
                     DiscountId = 1,
                     DiscountCode = "WELCOME10",
-                    DiscountType = DiscountType.Percent, 
+                    DiscountType = DiscountType.Percent,
                     Value = 10.00m,
                     StartDateTime = new DateTime(2025, 01, 01),
                     EndDateTime = new DateTime(9999, 12, 31),
@@ -249,12 +249,12 @@ namespace TeamYellow.Data
             modelBuilder.Entity<PlanDiscount>().HasData(
                 new PlanDiscount
                 {
-                    PlanId = 2,   
+                    PlanId = 2,
                     DiscountId = 1
                 },
                 new PlanDiscount
                 {
-                    PlanId = 3,  
+                    PlanId = 3,
                     DiscountId = 1
                 },
 
@@ -274,7 +274,7 @@ namespace TeamYellow.Data
                     PlanId = 1,
                     FeatureName = "Basic Access",
                     FeatureDescription = "Access to limited resources and tools.",
-                    sortOrder = 1
+                    SortOrder = 1
                 },
                 new PlanFeature
                 {
@@ -282,7 +282,7 @@ namespace TeamYellow.Data
                     PlanId = 1,
                     FeatureName = "Community Support",
                     FeatureDescription = "Access to community forum support.",
-                    sortOrder = 2
+                    SortOrder = 2
                 },
 
                 // Monthly Plan Features
@@ -292,7 +292,7 @@ namespace TeamYellow.Data
                     PlanId = 2,
                     FeatureName = "All Free Features",
                     FeatureDescription = "Includes all Free plan features.",
-                    sortOrder = 1
+                    SortOrder = 1
                 },
                 new PlanFeature
                 {
@@ -300,7 +300,7 @@ namespace TeamYellow.Data
                     PlanId = 2,
                     FeatureName = "Priority Support",
                     FeatureDescription = "Get help faster with priority support.",
-                    sortOrder = 2
+                    SortOrder = 2
                 },
                 new PlanFeature
                 {
@@ -308,7 +308,7 @@ namespace TeamYellow.Data
                     PlanId = 2,
                     FeatureName = "Advanced Analytics",
                     FeatureDescription = "Access to detailed reports and analytics.",
-                    sortOrder = 3
+                    SortOrder = 3
                 },
 
                 // Yearly Plan Features
@@ -318,7 +318,7 @@ namespace TeamYellow.Data
                     PlanId = 3,
                     FeatureName = "All Monthly Features",
                     FeatureDescription = "Includes all Monthly plan features.",
-                    sortOrder = 1
+                    SortOrder = 1
                 },
                 new PlanFeature
                 {
@@ -326,7 +326,7 @@ namespace TeamYellow.Data
                     PlanId = 3,
                     FeatureName = "Dedicated Account Manager",
                     FeatureDescription = "Assigned a dedicated account manager for support.",
-                    sortOrder = 2
+                    SortOrder = 2
                 },
                 new PlanFeature
                 {
@@ -334,7 +334,7 @@ namespace TeamYellow.Data
                     PlanId = 3,
                     FeatureName = "Unlimited Storage",
                     FeatureDescription = "Store unlimited data and files.",
-                    sortOrder = 3
+                    SortOrder = 3
                 }
             );
         }

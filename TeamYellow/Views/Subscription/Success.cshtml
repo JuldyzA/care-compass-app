@@ -1,0 +1,36 @@
+﻿@model TeamYellow.ViewModels.SubscriptionSuccessVM
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container mt-5 text-center">
+    <div class="display-1 text-success mb-4">
+        &#10003;
+    </div>
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p class="lead mb-4">@Model.Message</p>
+
+    <div class="card mx-auto mb-5 shadow-sm" style="max-width: 480px;">
+        <div class="card-header bg-success text-white fw-semibold">
+            Subscription Details
+        </div>
+        <ul class="list-group list-group-flush text-start">
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Plan</span>
+                <strong>@Model.PlanName</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Plan Start Date</span>
+                <strong>@Model.CycleStart.ToString("MMMM dd, yyyy")</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Plan End Date</span>
+                <strong>@Model.CycleEnd.ToString("MMMM dd, yyyy")</strong>
+            </li>
+        </ul>
+    </div>
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+        Go to Dashboard
+    </a>
+</div>

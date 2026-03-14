@@ -7,6 +7,8 @@ using TeamYellow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -20,8 +22,22 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<ICounsellorRepository, CounsellorRepository>();
 
 // Register services with DI
 builder.Services.AddScoped<UserRepository>();
@@ -64,8 +80,8 @@ if (app.Environment.IsDevelopment())
     var db = services.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
 
-    await services.GetRequiredService<RoleSeeder>().SeedAsync();     
-    await services.GetRequiredService<IdentitySeeder>().SeedAsync(); 
+    await services.GetRequiredService<RoleSeeder>().SeedAsync();
+    await services.GetRequiredService<IdentitySeeder>().SeedAsync();
 
     await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
     await services.GetRequiredService<CounsellorSeeder>().SeedAsync();
