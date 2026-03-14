@@ -22,7 +22,7 @@ public class CounsellorDashboardVM
 
     public int ActiveClientCount { get; set; }
 
-    public int InActiveClientCount { get; set; }
+    public int InactiveClientCount { get; set; }
 
     public int TotalSubscriptionDays { get; set; }
 

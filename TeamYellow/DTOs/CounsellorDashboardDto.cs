@@ -20,5 +20,5 @@ public class CounsellorDashboardDto
 
     public int ActiveClientCount { get; set; }
 
-    public int InActiveClientCount { get; set; }
+    public int InactiveClientCount { get; set; }
 }

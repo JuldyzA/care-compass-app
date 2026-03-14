@@ -32,7 +32,7 @@ public static class CounsellorDashboardHelper
             CycleEnd = sub?.CycleEnd ?? DateTime.MinValue,
             MonthlyClientCounts = monthlyCounts,
             ActiveClientCount = activeCount,
-            InActiveClientCount = inActiveCount
+            InactiveClientCount = inActiveCount
         };
 
         return dto;
@@ -63,7 +63,7 @@ public static class CounsellorDashboardHelper
             MonthlyClientCounts = dto.MonthlyClientCounts,
             ClientGrowthFromLastMonth = CalculateGrowth(dto.MonthlyClientCounts[10], dto.MonthlyClientCounts[11]),
             ActiveClientCount = dto.ActiveClientCount,
-            InActiveClientCount = dto.InActiveClientCount,
+            InactiveClientCount = dto.InactiveClientCount,
             TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - dto.CycleStart.Date).TotalDays : 0,
             RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - DateTime.UtcNow.Date).TotalDays : 0
         };
