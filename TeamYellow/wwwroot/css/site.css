@@ -18,6 +18,71 @@ body {
   min-height: 100vh;
 }
 
-main {
-  flex: 1;
+body {
+  margin-bottom: 60px;
+}
+
+:root {
+    --brand-primary: #2F6F73;
+    --brand-secondary: #A8C3B0;
+    --brand-accent: #10B981;
+    --special-highlight: #A3F5E5;
+}
+
+/* Primary Styles*/
+.text-brand-primary {
+    color: var(--brand-primary);
+}
+
+.bg-brand-primary {
+    background-color: var(--brand-primary);
+}
+
+.border-brand-primary {
+    border-color: var(--brand-primary);
+}
+
+/* Secondary Styles*/
+.text-brand-secondary {
+    color: var(--brand-secondary);
+}
+
+.bg-brand-secondary {
+    background-color: var(--brand-secondary);
+}
+
+.border-brand-secondary {
+    border-color: var(--brand-secondary);
+}
+
+/* Accent Styles*/
+.text-brand-accent {
+    color: var(--brand-accent);
+}
+
+.bg-brand-accent {
+    background-color: var(--brand-accent);
+}
+
+.border-brand-accent {
+    border-color: var(--brand-accent);
+}
+
+/* Typography */
+
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--brand-primary);
+}
+
+h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #444;
 }

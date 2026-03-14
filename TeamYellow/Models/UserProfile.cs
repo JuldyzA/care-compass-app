@@ -13,11 +13,9 @@ public class UserProfile
     public int UserProfileId { get; set; }
 
     [Column("firstName")]
-    [Required, MaxLength(50)]
     public string FirstName { get; set; } = String.Empty;
 
     [Column("lastName")]
-    [Required, MaxLength(50)]
     public string LastName { get; set; } = String.Empty;
 
     [Column("phone")]

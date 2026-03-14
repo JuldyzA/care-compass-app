@@ -39,6 +39,12 @@ builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ICounsellorRepository, CounsellorRepository>();
 
+// Register services with DI
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<UserRoleRepository>();
+builder.Services.AddScoped<UserLogRepository>();
+
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
 builder.Services.AddTransient<IdentitySeeder>();
@@ -48,6 +54,8 @@ builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
+builder.Services.AddTransient<IEmailService, BrevoEmailService>();
+builder.Services.AddTransient<HttpClient>();
 
 var app = builder.Build();
 
