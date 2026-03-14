@@ -134,9 +134,14 @@ public class SubscriptionController : Controller
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest("Unable to process payment. Please try again.");
+            _logger.LogError(
+                ex,
+                "Error processing subscription payment for user {UserId} and plan {PlanId}.",
+                user.Id,
+                planId);
+            return RedirectToAction("Index", "Plan");
         }
     }
 
@@ -168,6 +173,8 @@ public class SubscriptionController : Controller
         try
         {
             var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
+            if (result == SubscriptionResult.AlreadySubscribed)
+                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
             try
             {
                 await AssignCounsellorRole(user.Id, "Paid_Counselor");
@@ -176,8 +183,7 @@ public class SubscriptionController : Controller
             {
                 _logger.LogError(ex, "Failed to assign Paid_Counselor role to user {UserId} after PayPal subscription.", user.Id);
             }
-            if (result == SubscriptionResult.AlreadySubscribed)
-                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
+
 
             var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
             var vm = new SubscriptionSuccessVM

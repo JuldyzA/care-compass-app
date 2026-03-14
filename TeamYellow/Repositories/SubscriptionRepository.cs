@@ -56,11 +56,6 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Persists changes to an existing <see cref="Subscription"/> entity.
-        /// Typically called after modifying the subscription's status (e.g., cancellation).
-        /// </summary>
-        /// <param name="subscription">The subscription entity with updated values to persist.</param>
-        /// <summary>
         /// Retrieves the active subscription for the specified counsellor,
         /// including the associated <see cref="Plan"/> navigation property so that
         /// <see cref="Plan.PlanName"/> and other plan details are available without
@@ -78,6 +73,11 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync(s => s.CounsellorId == counsellorId && s.Status == SubscriptionStatus.Active);
         }
 
+        /// <summary>
+        /// Persists changes to an existing <see cref="Subscription"/> entity.
+        /// Typically called after modifying the subscription's status (for example, cancellation).
+        /// </summary>
+        /// <param name="subscription">The subscription entity with updated values to persist.</param>
         public async Task UpdateSubscription(Subscription subscription)
         {
             _context.Subscriptions.Update(subscription);

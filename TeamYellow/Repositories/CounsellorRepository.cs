@@ -7,9 +7,11 @@ namespace TeamYellow.Repositories;
 /// <summary>
 /// Repository providing data access operations for <see cref="Counsellor"/> entities.
 /// </summary>
-public class CounsellorRepository(ApplicationDbContext context) : ICounsellorRepository
+public class CounsellorRepository(ApplicationDbContext context, ILogger<CounsellorRepository> logger) : ICounsellorRepository
 {
     private readonly ApplicationDbContext _context = context;
+    private readonly ILogger<CounsellorRepository> _logger = logger;
+
 
     /// <summary>
     /// Retrieves the counsellor profile associated with the specified ASP.NET Identity user ID.
@@ -29,11 +31,23 @@ public class CounsellorRepository(ApplicationDbContext context) : ICounsellorRep
     /// </summary>
     /// <param name="counsellor">The counsellor entity to add.</param>
     /// <returns>The newly created <see cref="Counsellor"/> with any database-generated values populated.</returns>
+
     public async Task<Counsellor> CreateAsync(Counsellor counsellor)
     {
-        _context.Counsellors.Add(counsellor);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            _context.Counsellors.Add(counsellor);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Successfully added counsellor '{CounsellorId}'", counsellor.CounsellorId);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error adding counsellor '{PractitionerLicenceId}'", counsellor.PractitionerLicenceId);
+        }
+
         return counsellor;
+
     }
 
     /// <summary>

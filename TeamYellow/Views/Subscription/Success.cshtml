@@ -1,4 +1,4 @@
-@model TeamYellow.ViewModels.SubscriptionSuccessVM
+﻿@model TeamYellow.ViewModels.SubscriptionSuccessVM
 @{
     ViewData["Title"] = "Payment Successful";
 }
@@ -15,10 +15,6 @@
             Subscription Details
         </div>
         <ul class="list-group list-group-flush text-start">
-            <li class="list-group-item d-flex justify-content-between">
-                <span class="text-muted">Subscription ID</span>
-                <strong>#@Model.SubscriptionId</strong>
-            </li>
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan</span>
                 <strong>@Model.PlanName</strong>
