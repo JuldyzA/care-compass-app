@@ -20,7 +20,7 @@ public class Subscription
 
     [Required]
     [Column("status")]
-    public SubscriptionStatus Status { get; set; } = SubscriptionStatus.Active;
+    public SubscriptionStatus Status { get; set; } = SubscriptionStatus.Expired;
 
     [Column("cycleStart")]
     public DateTime CycleStart { get; set; }
