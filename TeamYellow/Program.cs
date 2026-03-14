@@ -33,7 +33,7 @@ builder.Services.AddControllersWithViews();
 // Services
 builder.Services.AddScoped<CounsellorService>();
 builder.Services.AddTransient<IEmailService, BrevoEmailService>();
-builder.Services.AddTransient<HttpClient>();
+builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
