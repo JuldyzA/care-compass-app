@@ -19,7 +19,7 @@ public class SubscriptionController : Controller
 {
     private readonly ISubscriptionService _subscriptionService;
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly ICounsellorRepository _counsellorRepository;
+    private readonly CounsellorRepository _counsellorRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<SubscriptionController> _logger;
@@ -36,7 +36,7 @@ public class SubscriptionController : Controller
     public SubscriptionController(
         ISubscriptionService subscriptionService,
         UserManager<IdentityUser> userManager,
-        ICounsellorRepository counsellorRepository,
+        CounsellorRepository counsellorRepository,
         ISubscriptionRepository subscriptionRepository,
         SignInManager<IdentityUser> signInManager,
         ILogger<SubscriptionController> logger)

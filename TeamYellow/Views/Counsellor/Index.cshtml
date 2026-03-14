@@ -1,0 +1,1219 @@
+﻿@using TeamYellow.ViewModels
+@model TeamYellow.ViewModels.CounsellorDashboardVM
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
+    ViewData["DisplayName"] = Model.DisplayName;
+    
+    // To VM
+    int total = @Model.TotalSubscriptionDays;
+    int remainder = @Model.RemainingSubscriptionDays;
+    double percentageRemaining = 0;
+    bool isHealthy = false;
+    if (total > 0)
+    {
+        percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
+        isHealthy = percentageRemaining > 20;
+    }
+    string gaugeColor = isHealthy ? "#2ECC71" : "#E74C3C";
+    string textColorClass = isHealthy ? "text-success" : "text-danger";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard/index.css" asp-append-version="true" />
+}
+
+<div class="stats-row">
+    <div class="stats-card">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="card-stats-header">
+                    <div>
+                        <div class="text-secondary">Sessions This Month</div>
+                        <div class="h1 mb-0">12</div>
+                    </div>
+                    <div class="text-success">
+                        +12%
+                    </div>
+                </div>
+                <div id="monthlySessionsChart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="stats-card">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="card-stats-header">
+                    <div>
+                        <div class="text-secondary">Completed This Month</div>
+                        <div class="h1 mb-0">43</div>
+                    </div>
+                    <div class="text-success">
+                        +52%
+                    </div>
+                </div>
+                <div id="monthlyCompletedSessionsChart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="stats-card">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="card-stats-header">
+                    <div>
+                        <div class="text-secondary">Cancelled This Month</div>
+                        <div class="h1 mb-0">22</div>
+                    </div>
+                    <div class="text-danger">
+                        -12%
+                    </div>
+                </div>
+                <div id="monthlyCancelledSessionChart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="stats-card">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="card-stats-header">
+                    <div>
+                        <div class="text-secondary">New Patient This Month</div>
+                        <div class="h1 mb-0">@Model.MonthlyClientCounts[11]</div>
+                    </div>
+                    <div class="@(Model.ClientGrowthFromLastMonth >= 0 ? "text-success" : "text-danger")">
+                        @Model.ClientGrowthFromLastMonth<span>%</span>
+                    </div>
+                </div>
+                <div id="monthlyNewClientChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-grid-left">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="mainSummaryChart"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="sessionHeatMap"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+        </div>
+    </div>
+
+    <div class="dashboard-grid-right">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="sessionPieChart"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="m-3" id="patientStatusPieChart"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div id="planUsageGauge"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer-banner">
+    <p class="@textColorClass">
+        <i class="bi bi-@(isHealthy ? "check-circle-fill" : "exclamation-triangle-fill") me-2"></i>
+        Your plan is ending in @Model.RemainingSubscriptionDays days
+    </p>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTopBtn" aria-label="Back to top" title="Back to top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+@section Scripts {
+    <script>
+
+        const now = new Date();
+        const currentMonthFull = now.toLocaleString('default', { month: 'long' });
+
+        const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
+            const date = new Date(now);
+            date.setMonth(now.getMonth() - 11 + i);
+            return date.toLocaleString('default', { month: 'long' });
+        });
+
+        const monthlyData = [@Html.Raw(Json.Serialize(Model.MonthlyClientCounts))][0];
+
+        // Sessions This Month Option
+        const monthlySessionsOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Sessions',
+                data: [18,32,20,28,26,30,74,18,32,20,28,26]
+            }],
+
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#206bc4'],
+        };
+
+        // Monthly Completed Sessions Option
+        const monthlyCompletedSessionsOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Completed Sessions',
+                data: [42, 11, 85, 3, 56, 78, 24, 99, 15, 67, 30, 49]
+            }],
+
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#1da1f2']
+        };
+
+        // Monthly Cancelled Session Option
+        const monthlyCancelledSessionOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'Cancelled Session',
+                data: [29, 84, 13, 57, 92, 4, 38, 71, 10, 66, 45, 98]
+            }],
+
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#667eea']
+        };
+
+        // Monthly New Client Option
+        const monthlyNewClientOptions = {
+            chart: {
+                type: 'area',
+                height: 100,
+                sparkline: {
+                    enabled: true
+                },
+            },
+
+            grid: {
+                padding: {
+                    top: -100,
+                    bottom: -10
+                }
+            },
+
+            series: [{
+                name: 'New Clients',
+                data: monthlyData
+            }],
+
+            xaxis: {
+                categories: monthsStartingFromNow
+            },
+
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1
+                }
+            },
+
+            tooltip: {
+                enabled: true
+            },
+
+            colors: ['#4299e1']
+        };
+
+        // Main Chart
+        const mainSummaryChartOptions = {
+            series: [
+                { name: "Grace Johnson", data: [40, 47, 55, 55, 59, 64, 70, 78, 84, 90, 98], color: "#00E396" },
+                { name: "Emily Clark", data: [37, 47, 48, 61, 59, 66, 75, 74, 84, 92, 89], color: "#2E93fA" },
+                { name: "Isabella Perez", data: [57, 59, 53, 54, 42, 40, 37, 28, 33, 29, 25], color: "#FEB019" },
+                { name: "Chloe Lee", data: [86, 65, 63, 58, 52, 43, 44, 32, 30, 25, 23], color: "#FF4560" },
+                { name: "Clinic Average", type: "area", data: [50, 52, 53, 57, 57, 59, 61, 63, 65, 69, 70], color: "#a1a8b0" },
+            ],
+            chart: {
+                height: 500,
+                type: "line",
+                zoom: { enabled: true },
+                toolbar: { 
+                    show: true,
+                    offsetY: -5 
+                },
+            },
+            stroke: {
+                width: [4, 4, 4, 4, 2],
+                curve: "smooth",
+                dashArray: [0, 0, 0, 0, 5],
+            },
+            legend: { 
+                position: "top", 
+                horizontalAlign: "left", 
+                fontSize: '14px',
+                fontWeight: 600,
+                offsetY: 0,
+                offsetX: -10,
+                itemMargin: {
+                    horizontal: 5,
+                    vertical: 0
+                }
+            },
+            grid: {
+                padding: {
+                    top: 25,      
+                    left: 20,
+                    right: 20
+                }
+            },
+            annotations: {
+                yaxis: [
+                    { y: 85, borderColor: "#00E396", borderWidth: 2, label: { text: "Discharge Readiness", style: { color: "#fff", background: "#00E396" } } },
+                    { y: 30, borderColor: "#FF4560", borderWidth: 2, label: { text: "Urgent Review Req.", style: { color: "#fff", background: "#FF4560" } } },
+                ],
+                xaxis: [
+                    { x: new Date("2024-03-01").getTime(), strokeDashArray: 3, label: { text: "Phase 2 Start", style: { background: "#775DD0", color: "#fff" } } },
+                ],
+            },
+            fill: {
+                type: ["solid", "solid", "solid", "solid", "gradient"],
+                gradient: { opacityFrom: 0.3, opacityTo: 0.1 },
+            },
+            labels: ["2024-01-10", "2024-01-20", "2024-02-01", "2024-02-15", "2024-02-22", "2024-03-01", "2024-03-05", "2024-03-10", "2024-03-15", "2024-03-25", "2024-04-01"],
+            xaxis: { 
+                type: "datetime",
+                labels: {
+                    style: { fontSize: "12px" }
+                }
+            },
+            yaxis: {
+                max: 100,
+                title: {
+                    text: "Wellness Score %",
+                    rotate: -90,
+                    offsetX: 10, 
+                    style: { fontSize: "16px", fontWeight: 900, color: "#263238" },
+                },
+                labels: {
+                    style: { fontSize: "12px", fontWeight: 600, colors: ["#475569"] },
+                },
+            },
+            tooltip: { shared: true, theme: "dark" },
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            height: 400,
+                            toolbar: { show: false } 
+                        },
+                        legend: {
+                            show: false 
+                        },
+                        grid: {
+                            padding: {
+                                top: 10,
+                                right: 10,
+                                bottom: 10,
+                                left: 5
+                            }
+                        },
+                        yaxis: {
+                            title: {
+                                text: "Wellness %",
+                                style: { fontSize: "14px" }
+                            },
+                            labels: {
+                                style: { fontSize: "11px" }
+                            }
+                        },
+                        xaxis: {
+                            labels: {
+                                style: { fontSize: "10px" }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 350,
+                            toolbar: { show: false } 
+                        },
+                        legend: {
+                            show: false 
+                        },
+                        grid: {
+                            padding: {
+                                top: 5,
+                                right: 5,
+                                bottom: 5,
+                                left: 0
+                            }
+                        },
+                        tooltip: { enabled: false },
+                        yaxis: {
+                            title: { text: "" },
+                            labels: { show: false } 
+                        },
+                        xaxis: {
+                            labels: {
+                                show: true,
+                                style: { fontSize: "9px" },
+                                rotate: -45
+                            }
+                        },
+                        annotations: {
+                            yaxis: [],
+                            xaxis: []
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 300,
+                            toolbar: { show: false }
+                        },
+                        legend: { show: false },
+                        stroke: {
+                            width: [2, 2, 2, 2, 1]
+                        },
+                        xaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+        // Session Summary Pie
+        const sessionPieChartOptions = {
+            title: {
+                text: "Patient Session Overview",
+                align: "center",
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+                margin: 10, 
+            },
+
+            series: [43, 22, 8, 5],
+
+            labels: [
+                "Completed Sessions",
+                "Cancelled Sessions",
+                "No Show",
+                "Rescheduled",
+            ],
+
+            chart: {
+                type: "donut",
+                height: 380,
+                width: '100%'  
+            },
+
+            colors: ["#2ECC71", "#E74C3C", "#F1C40F", "#3498DB"],
+
+            plotOptions: {
+                pie: {
+                    donut: {
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: "Total Sessions",
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce(
+                                        (a, b) => a + b,
+                                        0,
+                                    );
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+
+            legend: {
+                show: true,
+                position: "bottom",
+                fontSize: "14px"
+            },
+
+            dataLabels: {
+                enabled: true,
+                formatter: function (val, opts) {
+                    return opts.w.config.series[opts.seriesIndex]
+                }
+            },
+
+            responsive: [
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 320
+                        },
+                        title: {
+                            style: {
+                                fontSize: "16px"
+                            }
+                        },
+                        legend: {
+                            show: false
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    labels: {
+                                        show: true,
+                                        total: {
+                                            show: true,
+                                            fontSize: "18px"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 280
+                        },
+                        title: {
+                            style: {
+                                fontSize: "14px"
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+        // Session heat map 
+        const sessionHeatMapOptions = {
+            series: [
+                generatePatientData("Sunday"),
+                generatePatientData("Saturday"),
+                generatePatientData("Friday"),
+                generatePatientData("Thursday"),
+                generatePatientData("Wednesday"),
+                generatePatientData("Tuesday"),
+                generatePatientData("Monday"),
+            ],
+
+            chart: {
+                height: 230,
+                type: "heatmap",
+                toolbar: { show: false },
+                animations: { enabled: false },
+            },
+
+            dataLabels: {
+                enabled: false,
+            },
+
+            colors: ["#4AD0FF"],
+            
+            plotOptions: {
+                heatmap: {
+                    enableShades: false,
+                    radius: 2,
+                    useFillColorAsStroke: false,
+                    colorScale: {
+                        ranges: [
+                            {
+                                from: 0,
+                                to: 0,
+                                color: "#ebedf0",
+                                name: "0",
+                            },
+                            {
+                                from: 1,
+                                to: 3,
+                                color: "#B2EDFF",
+                                name: "low",
+                            },
+                            {
+                                from: 4,
+                                to: 7,
+                                color: "#7ADFFF",
+                                name: "medium",
+                            },
+                            {
+                                from: 8,
+                                to: 11,
+                                color: "#4AD0FF",
+                                name: "high",
+                            },
+                            {
+                                from: 12,
+                                to: 100,
+                                color: "#0099CC",
+                                name: "very high",
+                            },
+                        ],
+                    },
+                },
+            },
+
+            stroke: {
+                width: 2,
+                colors: ["#fff"],
+            },
+
+            title: {
+                text: "Patient Sessions Heatmap",
+                align: "center",
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+            },
+
+            xaxis: {
+                type: "category",
+                position: "top",
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                labels: {
+                    show: true,
+                    rotate: 0,
+                    style: { fontSize: "10px" },
+                    formatter: (val) => (val.includes("W1") ? val.split(" ")[0] : ""),
+                },
+            },
+
+            yaxis: {
+                labels: {
+                    show: true,
+                    style: { fontSize: "10px" },
+                },
+            },
+
+            grid: {
+                padding: {
+                    right: 10,
+                    left: 10,
+                },
+            },
+
+            legend: {
+                show: false,
+            },
+
+            tooltip: {
+                x: {
+                    show: true,
+                    formatter: (val) => val,
+                },
+                y: {
+                    formatter: (val) => `${val} sessions`,
+                },
+            },
+
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            height: 200
+                        },
+                        title: {
+                            style: { fontSize: "13px" }
+                        },
+                        xaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        },
+                        yaxis: {
+                            labels: {
+                                show: false 
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 180
+                        },
+                        title: {
+                            style: { fontSize: "12px" }
+                        },
+                        xaxis: {
+                            labels: { show: false }
+                        },
+                        yaxis: {
+                            labels: { show: false }
+                        },
+                        grid: {
+                            padding: {
+                                right: 5,
+                                left: 5,
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 150
+                        },
+                        title: {
+                            style: { fontSize: "11px" }
+                        },
+                        plotOptions: {
+                            heatmap: {
+                                radius: 1
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+        
+        // Patient status pie chart
+        var patientStatusPieChartOptions = {
+            title: {
+                text: "Patient Status Distribution",
+                align: "center",
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+                margin: 10,
+            },
+
+            series: [ @Model.ActiveClientCount, @Model.InactiveClientCount ],
+
+            chart: {
+                width: '100%', 
+                type: "donut",
+                height: 350,
+            },
+
+            labels: ["Active Patients", "Inactive Patients"],
+            colors: ["#2ECC71", "#E74C3C"],
+
+            plotOptions: {
+                pie: {
+                    donut: {
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: "Total Patients",
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce(
+                                        (a, b) => a + b,
+                                        0,
+                                    );
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+
+            legend: {
+                show: true,
+                position: "bottom",
+                fontSize: "14px"
+            },
+
+            dataLabels: {
+                enabled: true,
+                formatter: function (val, opts) {
+                    return opts.w.config.series[opts.seriesIndex]
+                }
+            },
+
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            width: "100%",
+                            height: 320
+                        },
+                        title: {
+                            style: {
+                                fontSize: "16px"
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            width: "100%",
+                            height: 300
+                        },
+                        title: {
+                            style: {
+                                fontSize: "14px"
+                            }
+                        },
+                        legend: {
+                            show: false 
+                        },
+                        dataLabels: {
+                            enabled: false 
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    labels: {
+                                        show: true,
+                                        total: {
+                                            show: true,
+                                            fontSize: "18px"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            width: "100%",
+                            height: 260
+                        },
+                        title: {
+                            style: {
+                                fontSize: "13px"
+                            }
+                        }
+                    }
+                }
+            ],
+        };
+
+        const gaugeColor = '@gaugeColor';
+        const percentageRemaining = Number('@percentageRemaining');
+
+        // Plan usage gauge
+        const planUsageGaugeOptions = {
+            series: [percentageRemaining],
+            title: {
+                text: "Plan Usage",
+                align: "center",
+                offsetY: 30,
+                style: {
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#333",
+                },
+            },
+            chart: {
+                height: 380,
+                type: "radialBar",
+                offsetY: -10,
+            },
+            plotOptions: {
+                radialBar: {
+                    startAngle: -135,
+                    endAngle: 135,
+                    dataLabels: {
+                        name: {
+                            fontSize: "16px",
+                            color: "#888",
+                            offsetY: 120,
+                        },
+                        value: {
+                            offsetY: 76,
+                            fontSize: "22px",
+                            color: gaugeColor,
+                            formatter: function (val) {
+                                return '@remainder' + " Days";
+                            },
+                        },
+                    },
+                },
+            },
+            fill: {
+                type: 'solid',
+                colors: [gaugeColor]
+            },
+            stroke: {
+                dashArray: 4,
+            },
+            labels: ["Time Remaining"],
+
+            responsive: [
+                {
+                    breakpoint: 992,
+                    options: {
+                        chart: {
+                            height: 300
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "14px",
+                                        offsetY: 100
+                                    },
+                                    value: {
+                                        fontSize: "20px",
+                                        offsetY: 65
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 280
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "13px",
+                                        offsetY: 90
+                                    },
+                                    value: {
+                                        fontSize: "18px",
+                                        offsetY: 60
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 250
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: {
+                                        fontSize: "12px",
+                                        offsetY: 80
+                                    },
+                                    value: {
+                                        fontSize: "16px",
+                                        offsetY: 55
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+        const monthlySessionsChart = new ApexCharts(
+            document.querySelector("#monthlySessionsChart"),
+            monthlySessionsOptions
+        );
+        const monthlyCompletedSessionsChart = new ApexCharts(
+            document.querySelector("#monthlyCompletedSessionsChart"),
+            monthlyCompletedSessionsOptions
+        );
+        const monthlyCancelledSessionChart = new ApexCharts(
+            document.querySelector("#monthlyCancelledSessionChart"),
+            monthlyCancelledSessionOptions
+        );
+        const monthlyNewClientChart = new ApexCharts(
+            document.querySelector("#monthlyNewClientChart"),
+            monthlyNewClientOptions
+        );
+        const mainSummaryChart = new ApexCharts(
+            document.querySelector("#mainSummaryChart"), 
+            mainSummaryChartOptions
+        );
+        const sessionPieChart = new ApexCharts(
+            document.querySelector("#sessionPieChart"),
+            sessionPieChartOptions
+        );
+        const sessionHeatMap = new ApexCharts(
+            document.querySelector("#sessionHeatMap"),
+            sessionHeatMapOptions
+        );
+        const patientStatusPieChart = new ApexCharts(
+            document.querySelector("#patientStatusPieChart"),
+            patientStatusPieChartOptions
+        );
+        const planUsageGauge = new ApexCharts(
+            document.querySelector("#planUsageGauge"),
+            planUsageGaugeOptions
+        );
+
+        monthlySessionsChart.render();
+        monthlyCompletedSessionsChart.render();
+        monthlyCancelledSessionChart.render();
+        monthlyNewClientChart.render();
+        mainSummaryChart.render();
+        sessionPieChart.render();
+        sessionHeatMap.render();
+        patientStatusPieChart.render();
+        planUsageGauge.render();
+
+        // Listen for sidebar toggle events and resize charts
+        let sidebarToggleTimeout;
+        window.addEventListener('sidebar-toggled', function() {
+            clearTimeout(sidebarToggleTimeout);
+            sidebarToggleTimeout = setTimeout(() => {
+                // Resize all charts using updateOptions
+                if (typeof sessionPieChart !== 'undefined') {
+                    sessionPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof patientStatusPieChart !== 'undefined') {
+                    patientStatusPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof mainSummaryChart !== 'undefined') {
+                    mainSummaryChart.updateOptions({}, true, true);
+                }
+                if (typeof planUsageGauge !== 'undefined') {
+                    planUsageGauge.updateOptions({}, true, true);
+                }
+                
+                if (typeof sessionHeatMap !== 'undefined') {
+                    const newSeries = [
+                        generatePatientData("Sunday"),
+                        generatePatientData("Saturday"),
+                        generatePatientData("Friday"),
+                        generatePatientData("Thursday"),
+                        generatePatientData("Wednesday"),
+                        generatePatientData("Tuesday"),
+                        generatePatientData("Monday"),
+                    ];
+                    sessionHeatMap.updateSeries(newSeries, true);
+                }
+            }, 100);
+        });
+
+        // Also handle window resize events
+        let chartResizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(chartResizeTimeout);
+            chartResizeTimeout = setTimeout(() => {
+                if (typeof sessionPieChart !== 'undefined') {
+                    sessionPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof sessionHeatMap !== 'undefined') {
+                    sessionHeatMap.updateOptions({}, true, true);
+                }
+                if (typeof patientStatusPieChart !== 'undefined') {
+                    patientStatusPieChart.updateOptions({
+                        chart: {
+                            width: '100%'
+                        }
+                    }, true, true);
+                }
+                if (typeof mainSummaryChart !== 'undefined') {
+                    mainSummaryChart.updateOptions({}, true, true);
+                }
+                if (typeof planUsageGauge !== 'undefined') {
+                    planUsageGauge.updateOptions({}, true, true);
+                }
+            }, 200);
+        });
+
+        function generatePatientData(dayName) {
+            const months = monthsStartingFromNow;
+            let data = [];
+
+            months.forEach(function (month) {
+                // Generate 4 weeks for each month
+                for (let week = 1; week <= 4; week++) {
+                    data.push({
+                        x: `${month} W${week}`,
+                        y: Math.floor(Math.random() * 16),
+                    });
+                }
+            });
+
+            return {
+                name: dayName,
+                data: data,
+            };
+        }
+
+
+        // ===== Back to Top Button Functionality =====
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        // Show/hide button based on scroll position
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+
+        // Scroll to top smoothly when clicked
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+    <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
+}

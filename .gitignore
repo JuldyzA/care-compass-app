@@ -122,7 +122,8 @@ src/.vs/config/applicationhost.config
 .vscode/
 
 # Personal notes  
-.notes.md 
+.notes.md
 
-# Secrets
-secrets.json
+# DB files
+*.db-shm
+*.db-wal

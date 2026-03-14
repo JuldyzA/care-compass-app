@@ -17,7 +17,7 @@ namespace TeamYellow.Controllers;
 public class PlanController : Controller
 {
     private readonly IPlanService _planService;
-    private readonly ICounsellorRepository _counsellorRepository;
+    private readonly CounsellorRepository _counsellorRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -30,7 +30,7 @@ public class PlanController : Controller
     /// <param name="userManager">ASP.NET Identity user manager.</param>
     public PlanController(
         IPlanService planService,
-        ICounsellorRepository counsellorRepository,
+        CounsellorRepository counsellorRepository,
         ISubscriptionRepository subscriptionRepository,
         UserManager<IdentityUser> userManager)
     {
