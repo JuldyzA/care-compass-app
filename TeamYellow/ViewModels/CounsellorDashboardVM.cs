@@ -6,7 +6,7 @@ public class CounsellorDashboardVM
 {
     public string? ProfilePhotoUrl { get; set; }
 
-    public string DisplayName { get; set; } = null!;
+    public string DisplayName { get; set; } = string.Empty;
 
     public SubscriptionStatus Status { get; set; }
 
