@@ -106,6 +106,10 @@ public class CounsellorRepository
                 clients);
             return dto;
         }
+        else
+        {
+            _logger.LogWarning("Unable to retrieve counsellor info, User ID: {UserId}", userId);
+        }
 
         return new CounsellorDashboardDto
         {

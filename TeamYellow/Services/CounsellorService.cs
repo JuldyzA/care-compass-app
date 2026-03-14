@@ -15,8 +15,8 @@ public class CounsellorService
 
     public CounsellorService(
         CounsellorRepository repository,
-        UserManager<IdentityUser> userManager)
-    {
+        UserManager<IdentityUser> userManager
+    ) {
         _repository = repository;
         _userManager = userManager;
     }
@@ -30,12 +30,9 @@ public class CounsellorService
     public async Task<CounsellorDashboardVM> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
-        CounsellorDashboardDto? dto = await _repository.GetCounsellorDashboardDtoAsync(userId);
+        CounsellorDashboardDto dto = await _repository.GetCounsellorDashboardDtoAsync(userId);
 
-        if (dto != null)
-        {
-            dto.IsSubscriptionActive = dto.CycleEnd > DateTime.UtcNow && dto.Status == SubscriptionStatus.Active;
-        }
+        dto.IsSubscriptionActive = dto.CycleEnd > DateTime.UtcNow && dto.Status == SubscriptionStatus.Active;
 
         CounsellorDashboardVM vm = CounsellorDashboardHelper.MapToVm(dto, userId);
 
