@@ -33,11 +33,20 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Get all available users in the system.
+        /// Displays a paginated, sortable, and filterable list of users in the system.
         /// </summary>
-        public async Task<IActionResult> UserRoleIndex()
+        public async Task<IActionResult> UserRoleIndex(string? sortOrder, string? emailFilter, int? pageNumber)
         {
-            var users = await _userRepository.GetAllUsersAsync();
+            string currentSortOrder = string.IsNullOrEmpty(sortOrder) ? "email_asc" : sortOrder;
+            ViewBag.CurrentSortOrder = currentSortOrder;
+            ViewBag.CurrentEmailFilter = emailFilter;
+
+            ViewBag.EmailSortParam = currentSortOrder == "email_asc" ? "email_desc" : "email_asc";
+
+            // Will change this later accordingly
+            int pageSize = 5;
+
+            var users = await _userRepository.GetAllUsersAsync(emailFilter, currentSortOrder, pageNumber ?? 1, pageSize);
             return View(users);
         }
 
