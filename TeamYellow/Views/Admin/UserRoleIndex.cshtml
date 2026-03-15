@@ -3,7 +3,9 @@
 @{
     ViewData["Title"] = "User Management";
     string? currentSortOrder = ViewBag.CurrentSortOrder as string;
-    string emailArrow = currentSortOrder == "email_desc" ? "▼" : "▲";
+    string emailArrow = currentSortOrder == "email_desc" ? "▼" : 
+                        currentSortOrder == "email_asc" ? "▲" : 
+                        "";
 }
 
 <h1>User Management</h1>
