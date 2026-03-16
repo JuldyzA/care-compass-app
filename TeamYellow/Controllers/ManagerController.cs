@@ -34,13 +34,35 @@ namespace TeamYellow.Controllers
         /// Aggregates transaction statistics and details for each counsellor.
         /// </summary>
         /// <returns>The dashboard view with aggregated data.</returns>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchEmail, DateTime? startDate, DateTime? endDate)
         {
             var counsellors = await CounsellorRepository.GetCounsellorsWithPaymentsAsync();
 
             var dashboardData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .ToList();
+
+            // Filter by email
+            if (!string.IsNullOrEmpty(searchEmail))
+            {
+                dashboardData = dashboardData
+                    .Where(d => d.Email != null && d.Email.Contains(searchEmail, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            };
+            // Filter by start date
+            if (startDate.HasValue)
+            {
+                dashboardData = dashboardData
+                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value >= startDate.Value)
+                    .ToList();
+            }
+            // Filter by end date
+            if (endDate.HasValue)
+            {
+                dashboardData = dashboardData
+                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value <= endDate.Value)
+                    .ToList();
+            }
 
             var stats = new DashboardStatsVM
             {
@@ -84,7 +106,7 @@ namespace TeamYellow.Controllers
                 SOP = payments.Any(p => p?.Status == PaymentTransactionStatus.Failed)
                     ? "Failed"
                     : "Paid",
-                PaidAt = firstPayment?.PaidAt.ToString("yyyy-MM-dd"),
+                PaidAt = firstPayment?.PaidAt, 
                 RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
             };
         }
@@ -245,15 +267,19 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> ApplyDiscountAsync()
         {
-            var discounts = await DiscountRepository.GetAllAsync();
+            var discounts = await DiscountRepository.GetActiveDiscountAsync();
             var plans = await PlanRepository.GetAllAsync();
-
+            
             var vm = new DiscountVM
             {
-                Discounts = discounts,
-                Plans = plans
-            };
-
+                
+                Plans = plans,
+                DiscountCodeOptions = discounts.Select(d => new SelectListItem
+                {
+                    Value = d.DiscountId.ToString(),
+                    Text = d.DiscountCode
+                }).ToList()
+            };         
             return View("ApplyDiscount", vm);
         }
 

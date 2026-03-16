@@ -11,7 +11,7 @@ namespace TeamYellow.ViewModels
         public string SOP { get; set; } = string.Empty;
         public string RegistrationDate { get; set; } = string.Empty;
         public string Currency { get; set; } = "CAD";
-        public string? PaidAt { get; set; }
+        public DateTime? PaidAt { get; set; }
         public int PaymentTransactionId { get; set; }
       
     }

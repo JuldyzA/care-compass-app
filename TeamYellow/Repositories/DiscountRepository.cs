@@ -22,6 +22,12 @@ namespace TeamYellow.Repositories
             return await _context.Discounts.ToListAsync();
         }
 
+
+public async Task<List<Discount>> GetActiveDiscountAsync(){
+            return await _context.Discounts
+                    .Where(d => d.EndDateTime >= DateTime.Now)
+                    .ToListAsync();
+        }
         /// <summary>
         /// Adds a new discount to the database and saves changes.
         /// </summary>

@@ -20,7 +20,6 @@
                 <h5 class="mb-3">Discounts</h5>
 
                 <form asp-action="CreateDiscount" method="post">
-                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="mb-3">
                     <label>Discount Code</label>
                     <small class="form-text text-muted">
@@ -66,10 +65,10 @@
                         }
 
                     <input asp-for="EndDateTime"
-                           type="datetime-local"
-                           min="@now"
+                                type="datetime-local"
+                               value="@Model.EndDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                                min="@now"
                                max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")"
-                               value="@Model.StartDateTime.ToString("yyyy-MM-ddTHH:mm")"
                            class="form-control" />
                         <span asp-validation-for="EndDateTime" class="text-danger"></span>
                     </div>
