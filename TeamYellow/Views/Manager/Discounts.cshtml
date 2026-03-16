@@ -27,8 +27,9 @@
                             <th>Value</th>
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Created</th>
+                            
                             <th>Applyed To</th>
+                            <th>Edit</th>
                         </tr>
                     </thead>
 
@@ -41,26 +42,37 @@
                                     <td>@d.DiscountCode</td>
                                     <td>@d.DiscountType</td>
                                     <td>@d.Value</td>
-                                    <td>@d.StartDateTime.ToString("yyyy-MM-dd")</td>
-                                    <td>@d.EndDateTime.ToString("yyyy-MM-dd")</td>
-                                    <td>@d.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    <td>@d.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@d.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    
                                     <td>
                                         @if (d.PlanDiscounts != null && d.PlanDiscounts.Any())
                                         {
-                                            
-                                                @foreach (var pd in d.PlanDiscounts)
-                                                {
-                                                    
-                                                        <span class="badge bg-info text-dark me-1">
-                                                            @pd.Plan.PlanName
-                                                        </span>
-                                                    
-                                                }
-                                           
+                                            @foreach (var pd in d.PlanDiscounts)
+                                            {
+                                                <span class="badge bg-info text-dark me-1">
+                                                    @pd.Plan.PlanName
+                                                </span>
+                                            }
                                         }
                                         else
                                         {
                                             <span>No plans</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (d.EndDateTime < DateTime.Now)
+                                        {
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                Expired
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
+                                               class="btn btn-sm btn-warning">
+                                                Edit
+                                            </a>
                                         }
                                     </td>
                                 </tr>

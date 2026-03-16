@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TeamYellow.Models;
+using System.Collections.Generic;
 
 namespace TeamYellow.ViewModels
 {
@@ -17,7 +18,8 @@ namespace TeamYellow.ViewModels
         public DiscountType DiscountType { get; set; }
 
         [Required]
-        [Range(0, 100000)]
+        [RegularExpression(@"^\d{1,3}(.\d{1,2})?$",
+        ErrorMessage = "Discount can have up to two decimal places only.")]
         public decimal Value { get; set; }
 
         [Required]
@@ -34,9 +36,16 @@ namespace TeamYellow.ViewModels
         // APPLY DISCOUNT PAGE
         public IEnumerable<Plan>? Plans { get; set; }
 
+        // PLAN SELECTION
+        public IEnumerable<SelectListItem>? AvailablePlans { get; set; }
         public List<int> PlanIds { get; set; } = new();
 
-        // dropdown helper
+        // dropdown helper aplly discount
         public IEnumerable<SelectListItem>? DiscountCodeOptions { get; set; }
+
+        //edit discount
+        public bool IsStarted { get; set; }
+        public bool IsExpired { get; set; }
+        public bool HasPlans { get; set; }
     }
 }

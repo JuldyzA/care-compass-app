@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
 {
-    [Authorize]
+    [Authorize (Roles ="Manager")]
     public class ManagerController : Controller
     {
         private readonly CounsellorRepository CounsellorRepository;
@@ -17,8 +19,7 @@ namespace TeamYellow.Controllers
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagerController"/> class.
-        /// </summary>
-        /// <param name="counsellorRepository">The repository for counsellor data.</param>
+        /// /// <param name="counsellorRepository">The repository for counsellor data.</param>
         /// <param name="planRepository">The repository for plan data.</param>
         /// <param name="discountRepository">The repository for discount data.</param>
         public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository, DiscountRepository discountRepository)
@@ -67,7 +68,7 @@ namespace TeamYellow.Controllers
             var payments = counsellor.Subscriptions?
                 .Select(s => s.PaymentTransaction)
                 .Where(p => p != null)
-                .ToList() ?? new List<PaymentTransaction?>();
+                .ToList() ?? [];
 
             var firstPayment = payments.FirstOrDefault();
 
@@ -113,7 +114,7 @@ namespace TeamYellow.Controllers
         /// <returns>The plans view with a list of plans.</returns>
         public async Task<IActionResult> Plans()
         {
-            var plans = await Task.Run(() => PlanRepository.GetAll());
+            var plans = await PlanRepository.GetAllAsync();
             var vm = new PlanVM
             {
                 Plans = plans
@@ -129,7 +130,7 @@ namespace TeamYellow.Controllers
         /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
         public async Task<IActionResult> PlanEdit(int id)
         {
-            var plan = await Task.Run(() => PlanRepository.GetById(id));
+            var plan = await PlanRepository.GetById(id);
 
             if (plan == null)
             {
@@ -151,8 +152,7 @@ namespace TeamYellow.Controllers
 
         /// <summary>
         /// Processes the submission of the plan edit form and updates the plan details asynchronously.
-        /// </summary>
-        /// <param name="vm">The view model containing updated plan information.</param>
+        /// /// <param name="vm">The view model containing updated plan information.</param>
         /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
         [HttpPost]
         public async Task<IActionResult> PlanEdit(PlanVM vm)
@@ -161,7 +161,7 @@ namespace TeamYellow.Controllers
             {
                 return View(vm);
             }
-            var plan = await Task.Run(() => PlanRepository.GetById(vm.PlanId));
+            var plan = await PlanRepository.GetById(vm.PlanId);
 
             if (plan == null)
             {
@@ -173,7 +173,7 @@ namespace TeamYellow.Controllers
             plan.Price = vm.Price;
             plan.BillingType = vm.BillingType;
             plan.IsActive = vm.IsActive;
-            await Task.Run(() => PlanRepository.Update(plan));
+            await PlanRepository.Update(plan);
 
             return RedirectToAction(nameof(Plans));
         }
@@ -186,7 +186,7 @@ namespace TeamYellow.Controllers
         {
             var vm = new DiscountVM
             {
-                Discounts = await Task.Run(() => DiscountRepository.GetAllDiscountsWithPlans())
+                Discounts =  await DiscountRepository.GetAllDiscountsWithPlansAsync()
             };
 
             return View(vm);
@@ -199,7 +199,10 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public IActionResult CreateDiscount()
         {
-            var vm = new DiscountVM();
+            var vm = new DiscountVM(){
+                    StartDateTime = DateTime.Now,
+                    EndDateTime = DateTime.Now.AddMonths(1)
+            };
             return View(vm);
         }
 
@@ -209,10 +212,16 @@ namespace TeamYellow.Controllers
         /// <param name="vm">The view model containing discount information.</param>
         /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
         [HttpPost]
-        public IActionResult CreateDiscount(DiscountVM vm)
+        public async Task<IActionResult> CreateDiscount(DiscountVM vm)
         {
             if (!ModelState.IsValid)
                 return View(vm);
+
+            if (vm.EndDateTime <= vm.StartDateTime)
+            {
+                ModelState.AddModelError("End DateTime", "End date must be after start date.");
+                return View(vm);
+            }
 
             var discount = new Discount
             {
@@ -224,9 +233,9 @@ namespace TeamYellow.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            DiscountRepository.Add(discount);
+            await DiscountRepository.AddAsync(discount);
 
-            return RedirectToAction("Discounts");
+            return RedirectToAction(nameof(Discounts));
         }
 
         /// <summary>
@@ -236,8 +245,8 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> ApplyDiscountAsync()
         {
-            var discounts = await Task.Run(() => DiscountRepository.GetAll());
-            var plans = await PlanRepository.GetAll();
+            var discounts = await DiscountRepository.GetAllAsync();
+            var plans = await PlanRepository.GetAllAsync();
 
             var vm = new DiscountVM
             {
@@ -254,17 +263,119 @@ namespace TeamYellow.Controllers
         /// <param name="vm">The view model containing selected plan IDs and discount ID.</param>
         /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
         [HttpPost]
-        public IActionResult ApplyDiscount(DiscountVM vm)
+        public  async Task<IActionResult> ApplyDiscount(DiscountVM vm)
         {
-            if (vm.PlanIds == null || !vm.PlanIds.Any())
+            if (vm.PlanIds == null || vm.PlanIds.Count == 0)
                 return RedirectToAction("ApplyDiscount");
 
             foreach (var planId in vm.PlanIds)
             {
-                DiscountRepository.AddDiscountToPlan(planId, vm.DiscountId);
+               await DiscountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
             }
 
             return RedirectToAction("Discounts");
+        }
+
+        //// <summary>
+        /// Displays the edit form for a specific discount.
+        /// Retrieves the discount by its ID, determines its current status
+        /// (started or expired), and prepares the view model with the discount
+        /// details and available plans for selection.
+        /// </summary>
+        /// <param name="id">The unique identifier of the discount to edit.</param>
+        /// <returns>
+        /// The edit discount view populated with the existing discount data and
+        /// associated plan selections, or <see cref="NotFound"/> if the discount
+        /// does not exist.
+        /// </returns>
+        [HttpGet]
+        public async Task<IActionResult> EditDiscount(int id)
+        {
+            var discount = await DiscountRepository.GetDiscountByIdAsync(id);
+
+
+            if (discount == null)
+            {
+                return NotFound();
+            }
+            var now = DateTime.Now;
+
+            bool isStarted = discount.StartDateTime <= now;
+            bool isExpired = discount.EndDateTime < now;
+            bool HasPlans = discount.PlanDiscounts.Count != 0;
+
+            // Await the plans and then use Select
+            var plans = (await PlanRepository.GetAllAsync())
+                .Where(p => p.PlanName != "Free");
+
+            var vm = new DiscountVM
+            {
+                DiscountId = discount.DiscountId,
+                DiscountCode = discount.DiscountCode,
+                DiscountType = discount.DiscountType,
+                Value = discount.Value,
+                StartDateTime = discount.StartDateTime,
+                EndDateTime = discount.EndDateTime,
+                IsStarted = isStarted,
+                IsExpired = isExpired,
+                HasPlans = HasPlans,
+                AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = p.PlanName,
+                    Selected = discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
+                }).ToList()
+            };
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// Processes the submission of the edit discount form and updates the selected discount.
+        /// Updates the start and end dates of the discount and modifies the associated plans
+        /// based on the selected plan IDs from the form.
+        /// </summary>
+        /// <param name="vm">
+        /// The view model containing the updated discount data, including the selected plan IDs.
+        /// </param>
+        /// <returns>
+        /// Redirects to the Discounts page if the update is successful; otherwise redisplays
+        /// the edit form with validation errors.
+        /// </returns>
+        [HttpPost]
+        public async Task<IActionResult> EditDiscount(DiscountVM vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+            var discount = await DiscountRepository.GetDiscountByIdAsync(vm.DiscountId);
+
+            if (discount == null)
+            {
+                return NotFound();
+            }
+
+            //update date of discount
+            discount.StartDateTime = vm.StartDateTime;
+            discount.EndDateTime = vm.EndDateTime;
+
+            //clear existing plan associations and add new ones based on selected plan IDs
+            discount.PlanDiscounts.Clear();
+            if (vm.PlanIds != null)
+            {
+                foreach (var planId in vm.PlanIds)
+                {
+                    discount.PlanDiscounts.Add(new PlanDiscount
+                    {
+                        DiscountId = discount.DiscountId,
+                        PlanId = planId
+                    });
+                }
+            }
+            await DiscountRepository.UpdateAsync(discount);
+
+            return RedirectToAction(nameof(Discounts));
         }
     }
 }

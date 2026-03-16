@@ -16,20 +16,20 @@ namespace TeamYellow.Repositories
         /// <summary>
         /// Retrieves all discounts from the database.
         /// </summary>
-        /// <returns>An IEnumerable of all Discount entities.</returns>
-        public IEnumerable<Discount> GetAll()
+        /// <returns>A list of all Discount entities.</returns>
+        public async Task<List<Discount>> GetAllAsync()
         {
-            return _context.Discounts.ToList();
+            return await _context.Discounts.ToListAsync();
         }
 
         /// <summary>
         /// Adds a new discount to the database and saves changes.
         /// </summary>
         /// <param name="discount">The Discount entity to add.</param>
-        public void Add(Discount discount)
+        public async Task AddAsync(Discount discount)
         {
-            _context.Discounts.Add(discount);
-            _context.SaveChanges();
+            await _context.Discounts.AddAsync(discount);
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -37,36 +37,79 @@ namespace TeamYellow.Repositories
         /// </summary>
         /// <param name="planId">The ID of the plan.</param>
         /// <param name="discountId">The ID of the discount.</param>
-        public void AddDiscountToPlan(int planId, int discountId)
+        public async Task AddDiscountToPlanAsync(int planId, int discountId)
         {
-            var plan = _context.Plans.Find(planId);
-            var discount = _context.Discounts.Find(discountId);
+            var plan = await _context.Plans.FindAsync(planId);
+            var discount = await _context.Discounts.FindAsync(discountId);
+
             if (plan == null || discount == null)
                 return;
-            var exists = _context.PlanDiscounts
-                    .Any(pd => pd.Plan.PlanId == planId && pd.Discount.DiscountId == discountId);
+
+            var exists = await _context.PlanDiscounts
+                .AnyAsync(pd => pd.PlanId == planId && pd.DiscountId == discountId);
 
             if (exists)
                 return;
+
             var planDiscount = new PlanDiscount
             {
-                Plan = plan,
-                Discount = discount
+                PlanId = planId,
+                DiscountId = discountId
             };
-            _context.PlanDiscounts.Add(planDiscount);
-            _context.SaveChanges();
+
+            await _context.PlanDiscounts.AddAsync(planDiscount);
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
         /// Retrieves all discounts including their associated plans.
         /// </summary>
-        /// <returns>An IEnumerable of Discount entities with related PlanDiscounts and Plans.</returns>
-        public IEnumerable<Discount> GetAllDiscountsWithPlans()
+        /// <returns>A list of Discount entities with related PlanDiscounts and Plans.</returns>
+        public async Task<List<Discount>> GetAllDiscountsWithPlansAsync()
         {
-            return _context.Discounts
+            return await _context.Discounts
                 .Include(d => d.PlanDiscounts)
                 .ThenInclude(pd => pd.Plan)
-                .ToList();
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a discount by its ID, including associated plans.
+        /// </summary>
+        /// <param name="discountId">The ID of the discount.</param>
+        /// <returns>The Discount entity if found; otherwise, null.</returns>
+        public async Task<Discount?> GetDiscountByIdAsync(int discountId)
+        {
+            return await _context.Discounts
+                .Include(d => d.PlanDiscounts)
+                .ThenInclude(pd => pd.Plan)
+                .FirstOrDefaultAsync(d => d.DiscountId == discountId);
+        }
+
+        /// <summary>
+        /// Updates an existing discount entity in the database.
+        /// </summary>
+        /// <param name="entity">The Discount entity to update.</param>
+        /// <returns>The ID of the updated discount as a string.</returns>
+        /// <exception cref="ApplicationException">Thrown when an error occurs during update.</exception>
+        public async Task<string> UpdateAsync(Discount entity)
+        {
+            try
+            {
+                _context.Discounts.Update(entity);
+                await _context.SaveChangesAsync();
+                return entity.DiscountId.ToString();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log exception or handle as needed
+                throw new ApplicationException("An error occurred while updating the Discount in the database.", ex);
+            }
+            catch (Exception ex)
+            {
+                // Log exception or handle as needed
+                throw new ApplicationException("An unexpected error occurred while updating the discount record.", ex);
+            }
         }
     }
 }

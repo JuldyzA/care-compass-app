@@ -18,8 +18,9 @@
                         <label class="form-label">Select Discount</label>
 
                         <select asp-for="DiscountId"
-                                asp-items="@(new SelectList(Model.Discounts, "DiscountId", "DiscountCode"))"
+                                asp-items="Model.DiscountCodeOptions"
                                 class="form-select">
+                            <option value="">-- Select Discount --</option>
                         </select>
 
                     </div>

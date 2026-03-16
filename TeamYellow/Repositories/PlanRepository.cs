@@ -17,7 +17,7 @@ namespace TeamYellow.Repositories
         /// <summary>
         /// Retrieves all plans from the database asynchronously.
         /// </summary>
-        public async Task<IEnumerable<Plan>> GetAll()
+        public async Task<IEnumerable<Plan>> GetAllAsync()
         {
             return await _context.Plans.ToListAsync();
         }
