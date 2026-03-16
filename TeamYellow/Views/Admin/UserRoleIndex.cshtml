@@ -106,7 +106,7 @@
                asp-action="UserRoleIndex"
                asp-route-sortOrder="@ViewBag.CurrentSortOrder"
                asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
-               asp-route-pageNumber="@(Math.Max(Model.TotalPages, Model.PageIndex + 1))">
+               asp-route-pageNumber="@(Math.Min(Model.TotalPages, Model.PageIndex + 1))">
                 Next
             </a>
         </li>

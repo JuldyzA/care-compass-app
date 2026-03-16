@@ -107,8 +107,8 @@
                     Log In Time @loginArrow
                 </a>
             </th>
-            <th>LogOutTime</th>
-            <th>Abandoned</th>
+            <th>@Html.DisplayNameFor(model => model[0].LogOutTime)</th>
+            <th>@Html.DisplayNameFor(model => model[0].Abandoned)</th>
         </tr>
     </thead>
     <tbody>
@@ -166,7 +166,7 @@
         <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
             <a class="page-link"
                asp-action="UserLogAll"
-               asp-route-pageNumber="@(Math.Max(Model.TotalPages, Model.PageIndex + 1))"
+               asp-route-pageNumber="@(Math.Min(Model.TotalPages, Model.PageIndex + 1))"
                asp-route-sortOrder="@ViewBag.CurrentSortOrder"
                asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
                asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
