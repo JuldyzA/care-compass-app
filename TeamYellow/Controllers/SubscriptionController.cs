@@ -98,7 +98,11 @@ public class SubscriptionController : Controller
 
             var existingSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
             if (existingSubscription?.PlanId == planId)
-                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
+            {
+                TempData["Message"] = "You are already subscribed to this plan.";
+                TempData["MessageType"] = "info";
+                return RedirectToAction("Index", "Plan");
+            }
 
             var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, returnUrl, cancelUrl);
 
@@ -161,20 +165,32 @@ public class SubscriptionController : Controller
     public async Task<IActionResult> Success([FromQuery(Name = "token")] string orderId)
     {
         if (string.IsNullOrEmpty(orderId))
-            return RedirectToAction("Index", "Home", new { error = "Payment token is missing. Please try again." });
+        {
+            TempData["Message"] = "Payment token is missing. Please try again.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Home");
+        }
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
         var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
         if (counsellor == null)
-            return RedirectToAction("Index", "Home", new { error = "Counsellor profile not found." });
+        {
+            TempData["Message"] = "Counsellor profile not found.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Home");
+        }
 
         try
         {
             var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
             if (result == SubscriptionResult.AlreadySubscribed)
-                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
+            {
+                TempData["Message"] = "You are already subscribed to this plan.";
+                TempData["MessageType"] = "info";
+                return RedirectToAction("Index", "Plan");
+            }
             try
             {
                 await AssignCounsellorRole(user.Id, "Paid_Counselor");
@@ -200,7 +216,9 @@ public class SubscriptionController : Controller
         }
         catch (Exception)
         {
-            return RedirectToAction("Index", "Home", new { error = "Payment failed. Please try again." });
+            TempData["Message"] = "Payment failed. Please try again.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Home");
         }
     }
 
