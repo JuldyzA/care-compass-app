@@ -33,11 +33,21 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Get all available users in the system.
+        /// Displays a paginated, sortable, and filterable list of users in the system.
         /// </summary>
-        public async Task<IActionResult> UserRoleIndex()
+        public async Task<IActionResult> UserRoleIndex(string? sortOrder, string? emailFilter, int? pageNumber)
         {
-            var users = await _userRepository.GetAllUsersAsync();
+            string currentSortOrder = string.IsNullOrEmpty(sortOrder) ? "email_asc" : sortOrder;
+            ViewBag.CurrentSortOrder = currentSortOrder;
+            ViewBag.CurrentEmailFilter = emailFilter;
+
+            ViewBag.EmailSortParam = currentSortOrder == "email_asc" ? "email_desc" : "email_asc";
+
+            // Will change this later accordingly
+            int pageSize = 5;
+            int safePageNumber = Math.Max(1, pageNumber ?? 1);
+
+            var users = await _userRepository.GetAllUsersAsync(emailFilter, currentSortOrder, safePageNumber, pageSize);
             return View(users);
         }
 
@@ -264,11 +274,42 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Get all the user logs for Admin
+        /// Displays a paginated, sortable, and filterable list of user logs in the system.
         /// </summary>
-        public async Task<IActionResult> UserLogAll()
+        public async Task<IActionResult> UserLogAll(string? sortOrder, string? emailFilter, string? abandonedFilter, DateTime? startDate, DateTime? endDate, int? pageNumber)
         {
-            var userLogVM = await _userLogRepository.GetAllAsync();
+            string currentSortOrder = string.IsNullOrEmpty(sortOrder) ? "login_desc" : sortOrder;
+
+            if (startDate.HasValue && startDate.Value.Date > DateTime.Today)
+            {
+                startDate = DateTime.Today;
+            }
+
+            if (endDate.HasValue && endDate.Value.Date > DateTime.Today)
+            {
+                endDate = DateTime.Today;
+            }
+
+            if (startDate.HasValue && endDate.HasValue && startDate.Value.Date > endDate.Value.Date)
+            {
+                TempData["ErrorMessage"] = "Start date cannot be later than end date. Please try again.";
+                endDate = startDate;
+            }
+
+            ViewBag.CurrentSortOrder = currentSortOrder;
+            ViewBag.CurrentEmailFilter = emailFilter;
+            ViewBag.CurrentAbandonedFilter = abandonedFilter;
+            ViewBag.CurrentStartDate = startDate?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentEndDate = endDate?.ToString("yyyy-MM-dd");
+
+            ViewBag.EmailSortParam = currentSortOrder == "email_asc" ? "email_desc" : "email_asc";
+            ViewBag.LoginSortParam = currentSortOrder == "login_asc" ? "login_desc" : "login_asc";
+
+            // Will change this later accordingly
+            int pageSize = 10;
+            int safePageNumber = Math.Max(1, pageNumber ?? 1);
+
+            var userLogVM = await _userLogRepository.GetAllAsync(emailFilter, abandonedFilter, startDate, endDate, currentSortOrder, safePageNumber, pageSize);
 
             return View(userLogVM);
         }
