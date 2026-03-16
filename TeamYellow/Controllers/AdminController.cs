@@ -45,8 +45,9 @@ namespace TeamYellow.Controllers
 
             // Will change this later accordingly
             int pageSize = 5;
+            int safePageNumber = Math.Max(1, pageNumber ?? 1);
 
-            var users = await _userRepository.GetAllUsersAsync(emailFilter, currentSortOrder, pageNumber ?? 1, pageSize);
+            var users = await _userRepository.GetAllUsersAsync(emailFilter, currentSortOrder, safePageNumber, pageSize);
             return View(users);
         }
 
@@ -306,8 +307,9 @@ namespace TeamYellow.Controllers
 
             // Will change this later accordingly
             int pageSize = 10;
+            int safePageNumber = Math.Max(1, pageNumber ?? 1);
 
-            var userLogVM = await _userLogRepository.GetAllAsync(emailFilter, abandonedFilter, startDate, endDate, currentSortOrder, pageNumber ?? 1, pageSize);
+            var userLogVM = await _userLogRepository.GetAllAsync(emailFilter, abandonedFilter, startDate, endDate, currentSortOrder, safePageNumber, pageSize);
 
             return View(userLogVM);
         }

@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "User Logs";
     string? currentSortOrder = ViewBag.CurrentSortOrder as string;
+    string? currentAbandonedFilter = ViewBag.CurrentAbandonedFilter as string;
     string emailArrow = currentSortOrder == "email_desc" ? "▼" : 
                         currentSortOrder == "email_asc" ? "▲" : 
                         "";
@@ -35,8 +36,23 @@
         <label for="abandonedFilter" class="form-label">Abandoned</label>
         <select id="abandonedFilter" name="abandonedFilter" class="form-select">
             <option value="">All</option>
-            <option value="yes" selected="@(ViewBag.CurrentAbandonedFilter == "yes")">Yes</option>
-            <option value="no" selected="@(ViewBag.CurrentAbandonedFilter == "no")">No</option>
+            @if (currentAbandonedFilter == "yes")
+            {
+                <option value="yes" selected="selected">Yes</option>
+            }
+            else
+            {
+                <option value="yes">Yes</option>
+            }
+
+            @if (currentAbandonedFilter == "no")
+            {
+                <option value="no" selected="selected">No</option>
+            }
+            else
+            {
+                <option value="no">No</option>
+            }
         </select>
     </div>
 
@@ -131,7 +147,7 @@
         <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
             <a class="page-link"
                asp-action="UserLogAll"
-               asp-route-pageNumber="@(Model.PageIndex - 1)"
+               asp-route-pageNumber="@(Math.Max(1, Model.PageIndex - 1))"
                asp-route-sortOrder="@ViewBag.CurrentSortOrder"
                asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
                asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
@@ -150,7 +166,7 @@
         <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
             <a class="page-link"
                asp-action="UserLogAll"
-               asp-route-pageNumber="@(Model.PageIndex + 1)"
+               asp-route-pageNumber="@(Math.Max(Model.TotalPages, Model.PageIndex + 1))"
                asp-route-sortOrder="@ViewBag.CurrentSortOrder"
                asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
                asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"

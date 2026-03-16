@@ -25,12 +25,13 @@ namespace TeamYellow.Repositories
         /// Used for the admin user logs screen.
         /// Uses AsNoTracking() because this is read-only for display.
         /// </summary>
-        public async Task<IEnumerable<UserLogVM>> GetAllAsync(string? emailFilter = null, string? abandonedFilter = null, DateTime? startDate = null, DateTime? endDate = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
+        public async Task<PaginatedList<UserLogVM>> GetAllAsync(string? emailFilter = null, string? abandonedFilter = null, DateTime? startDate = null, DateTime? endDate = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
             IQueryable<UserLogVM> query = _context.UserLogs
                                        .AsNoTracking()
                                        .Select(ul => new UserLogVM
                                        {
+                                           LogId = ul.LogId,
                                            Email = (ul.User != null) ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : "(user missing)",
                                            LogInTime = ul.LogInTime,
                                            LogOutTime = ul.LogOutTime,
@@ -71,23 +72,28 @@ namespace TeamYellow.Repositories
             {
                 case "email_desc":
                     query = query.OrderByDescending(u => u.Email)
-                        .ThenByDescending(u => u.LogInTime);
+                        .ThenByDescending(u => u.LogInTime)
+                        .ThenByDescending(u => u.LogId);
                     break;
                 case "email_asc":
                     query = query.OrderBy(u => u.Email)
-                        .ThenBy(u => u.LogInTime);
+                        .ThenBy(u => u.LogInTime)
+                        .ThenBy(u => u.LogId);
                     break;
                 case "login_desc":
                     query = query.OrderByDescending(u => u.LogInTime)
-                        .ThenByDescending(u => u.Email);
+                        .ThenByDescending(u => u.Email)
+                        .ThenByDescending(u => u.LogId);
                     break;
                 case "login_asc":
                     query = query.OrderBy(u => u.LogInTime)
-                        .ThenBy(u => u.Email);
+                        .ThenBy(u => u.Email)
+                        .ThenBy(u => u.LogId);
                     break;
                 default:
                     query = query.OrderByDescending(u => u.LogInTime)
-                        .ThenByDescending(u => u.Email);
+                        .ThenByDescending(u => u.Email)
+                        .ThenByDescending(u => u.LogId);
                     break;
             }
 

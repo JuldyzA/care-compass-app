@@ -22,7 +22,7 @@ namespace TeamYellow.Repositories
         /// Returns a paginated, sortable, and filterable list of users projected into UserVM.
         /// Used for the admin user role management screen.
         /// </summary>
-        public async Task<IEnumerable<UserVM>> GetAllUsersAsync(string? emailFilter = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
+        public async Task<PaginatedList<UserVM>> GetAllUsersAsync(string? emailFilter = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
             IQueryable<UserVM> query = _context.Users
                                        .AsNoTracking()

@@ -15,8 +15,16 @@ namespace TeamYellow.Helpers
 
         public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
         {
+            if (pageSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pageSize), "pageSize must be greater than zero.");
+            }
+
             PageIndex = pageIndex;
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+
+            int totalPagesCalculated = (int)Math.Ceiling(count / (double)pageSize);
+            TotalPages = Math.Max(1, totalPagesCalculated);
+
             AddRange(items);
         }
 
@@ -26,6 +34,16 @@ namespace TeamYellow.Helpers
         /// </summary>
         public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
         {
+            if (pageSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pageSize), "pageSize must be greater than zero.");
+            }
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
             int count = await source.CountAsync();
             List<T> items = await source
                             .Skip((pageIndex - 1) * pageSize)
