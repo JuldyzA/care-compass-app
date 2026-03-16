@@ -41,7 +41,7 @@ namespace TeamYellow.Repositories
             if (!string.IsNullOrWhiteSpace(emailFilter))
             {
                 string trimmedEmail = emailFilter.Trim();
-                query = query.Where(u => u.Email.Contains(trimmedEmail));
+                query = query.Where(u => (u.Email ?? string.Empty).Contains(trimmedEmail));
             }
 
             if (!string.IsNullOrWhiteSpace(abandonedFilter))
