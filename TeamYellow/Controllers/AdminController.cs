@@ -290,7 +290,7 @@ namespace TeamYellow.Controllers
                 endDate = DateTime.Today;
             }
 
-            if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+            if (startDate.HasValue && endDate.HasValue && startDate.Value.Date > endDate.Value.Date)
             {
                 TempData["ErrorMessage"] = "Start date cannot be later than end date. Please try again.";
                 endDate = startDate;

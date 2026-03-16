@@ -58,14 +58,16 @@ namespace TeamYellow.Repositories
 
             if (startDate.HasValue)
             {
-                DateTime start = startDate.Value.Date;
-                query = query.Where(u => u.LogInTime >= start);
+                DateTime localStart = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Local);
+                DateTime startUtc = localStart.ToUniversalTime();
+                query = query.Where(u => u.LogInTime >= startUtc);
             }
 
             if (endDate.HasValue)
             {
-                DateTime endExclusive = endDate.Value.Date.AddDays(1);
-                query = query.Where(u => u.LogInTime < endExclusive);
+                DateTime localEndExclusive = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1), DateTimeKind.Local);
+                DateTime endUtcExclusive = localEndExclusive.ToUniversalTime();
+                query = query.Where(u => u.LogInTime < endUtcExclusive);
             }
 
             switch (sortOrder)
