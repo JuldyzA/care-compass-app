@@ -30,6 +30,7 @@
                             
                             <th>Applyed To</th>
                             <th>Edit</th>
+                            <th>Delete </th>
                         </tr>
                     </thead>
 
@@ -74,6 +75,14 @@
                                                 Edit
                                             </a>
                                         }
+                                    
+                                    </td>
+                                    <td>
+                                        <a asp-action="DeleteDiscount"
+                                           asp-route-id="@d.DiscountId"
+                                           class="btn btn-sm btn-danger">
+                                            Delete
+                                        </a>
                                     </td>
                                 </tr>
                             }

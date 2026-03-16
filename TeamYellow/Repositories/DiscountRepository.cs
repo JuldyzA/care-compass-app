@@ -111,5 +111,25 @@ namespace TeamYellow.Repositories
                 throw new ApplicationException("An unexpected error occurred while updating the discount record.", ex);
             }
         }
+
+
+        public async Task<bool> DeleteIfUnusedAsync(int discountId)
+        {
+            var discount = await _context.Discounts
+                .Include(d => d.PlanDiscounts)
+                .FirstOrDefaultAsync(d => d.DiscountId == discountId);
+
+            if (discount == null)
+                return false;
+
+            // do not delete if it has dependencies
+            if (discount.PlanDiscounts.Any())
+                return false;
+
+            _context.Discounts.Remove(discount);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

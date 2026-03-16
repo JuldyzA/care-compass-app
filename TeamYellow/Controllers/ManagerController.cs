@@ -377,5 +377,39 @@ namespace TeamYellow.Controllers
 
             return RedirectToAction(nameof(Discounts));
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteDiscount(int id)
+        {
+            var discount = await DiscountRepository.GetDiscountByIdAsync(id);
+
+            if (discount == null)
+                return NotFound();
+
+            var vm = new DiscountVM
+            {
+                DiscountId = discount.DiscountId,
+                DiscountCode = discount.DiscountCode,
+                Value = discount.Value,
+                StartDateTime = discount.StartDateTime,
+                EndDateTime = discount.EndDateTime,
+                HasPlans = discount.PlanDiscounts.Any()
+            };
+
+            return View(vm);
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteDiscountConfirmed(int id)
+        {
+            var deleted = await DiscountRepository.DeleteIfUnusedAsync(id);
+
+            if (!deleted)
+            {
+                TempData["Error"] = "Discount cannot be deleted because it is applied to plans.";
+            }
+
+            return RedirectToAction(nameof(Discounts));
+        }
     }
 }
