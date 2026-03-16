@@ -45,6 +45,14 @@ namespace TeamYellow.Helpers
             }
 
             int count = await source.CountAsync();
+            int totalPagesCalculated = (int)Math.Ceiling(count / (double)pageSize);
+            int totalPages = Math.Max(1, totalPagesCalculated);
+
+            if (pageIndex > totalPages)
+            {
+                pageIndex = totalPages;
+            }
+
             List<T> items = await source
                             .Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize)
