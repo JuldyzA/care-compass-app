@@ -20,10 +20,20 @@ namespace TeamYellow.Helpers
                 throw new ArgumentOutOfRangeException(nameof(pageSize), "pageSize must be greater than zero.");
             }
 
-            PageIndex = pageIndex;
-
             int totalPagesCalculated = (int)Math.Ceiling(count / (double)pageSize);
             TotalPages = Math.Max(1, totalPagesCalculated);
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            if (pageIndex > TotalPages)
+            {
+                pageIndex = TotalPages;
+            }
+
+            PageIndex = pageIndex;
 
             AddRange(items);
         }
