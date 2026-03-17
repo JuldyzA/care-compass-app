@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using TeamYellow.Models;
 using TeamYellow.Services;
 using static TeamYellow.Services.ReCAPTCHA;
+using TeamYellow.Data;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
 {
@@ -33,6 +34,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -40,7 +42,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -49,6 +52,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             _logger = logger;
             _emailService = emailService;
             _configuration = configuration;
+            _context = context;
         }
 
         /// <summary>
@@ -155,6 +159,25 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+                    //create new userprofile record
+                    var userProfile = new UserProfile
+                    {
+                        UserId = user.Id,
+                        FirstName = Input.FirstName,
+                        LastName = Input.LastName,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    //assign role to user
+                    var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+
+                    if (!roleResult.Succeeded)
+                    {
+                        throw new Exception("Failed to assign role.");
+                    }
+                    //add userprofile to database
+                    _context.UserProfiles.Add(userProfile);
+                    //save changes
+                    await _context.SaveChangesAsync();
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
