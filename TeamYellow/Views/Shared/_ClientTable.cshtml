@@ -1,117 +1,107 @@
-﻿@using TeamYellow.DTOs
-@using TeamYellow.ViewModels
+﻿@using TeamYellow.ViewModels
 @model ClientTableVm
 
-@{
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action = ViewContext.RouteData.Values["action"]?.ToString();
-
-    bool isMainPage = controller == "Counsellor" && action == "Index";
-}
-
-<div id="clientTableContainer">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Client Details</h5>
-        <div class="d-flex gap-2">
-            <div class="input-group input-group-sm" style="width: 250px;">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients...">
-            </div>
-            <button class="btn btn-sm btn-outline-secondary" type="button" id="clientFilterBtn">
-                <i class="bi bi-funnel"></i> Filter
-            </button>
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Client Details</h5>
+    <div class="d-flex gap-2">
+        <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients...">
         </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" id="clientFilterBtn">
+            <i class="bi bi-funnel"></i> Filter
+        </button>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="clientsTable">
-                <thead class="table-light">
+</div>
+<div class="card-body p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="clientsTable">
+            <thead class="table-light">
+                <tr>
+                    <th class="sortable" data-column="patient">
+                        Patient Name <i class="bi bi-chevron-expand text-muted"></i>
+                    </th>
+                    <th class="sortable" data-column="datetime">
+                        Date & Time <i class="bi bi-chevron-expand text-muted"></i>
+                    </th>
+                    <th class="sortable" data-column="email">
+                        Email <i class="bi bi-chevron-expand text-muted"></i>
+                    </th>
+                    @if (!Model.IsDashboard)
+                    {
+                        <th class="sortable" data-column="phone">
+                            Phone <i class="bi bi-chevron-expand text-muted"></i>
+                        </th>
+                    }
+                    <th class="sortable" data-column="status">
+                        Status <i class="bi bi-chevron-expand text-muted"></i>
+                    </th>
+                    @if (!Model.IsDashboard)
+                    {
+                        <th class="text-end">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody id="clientsTableBody">
+                @foreach (ClientVM c in Model.Clients)
+                {
                     <tr>
-                        <th class="sortable" data-column="patient">
-                            Patient Name <i class="bi bi-chevron-expand text-muted"></i>
-                        </th>
-                        <th class="sortable" data-column="datetime">
-                            Date & Time <i class="bi bi-chevron-expand text-muted"></i>
-                        </th>
-                        <th class="sortable" data-column="email">
-                            Email <i class="bi bi-chevron-expand text-muted"></i>
-                        </th>
-                        @if (isMainPage)
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2">
+                                    <span class="avatar-initial rounded-circle bg-primary">@c.Initials</span>
+                                </div>
+                                <span class="fw-medium">@c.FirstName @c.LastName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@c.CreatedAt.ToShortDateString()</div>
+                            <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
+                        </td>
+                        <td>
+                            <small>@c.Email</small>
+                        </td>
+                        @if (!Model.IsDashboard)
                         {
-                            <th class="sortable" data-column="phone">
-                                Phone <i class="bi bi-chevron-expand text-muted"></i>
-                            </th>
+                            <td>
+                                <small>@c.Phone</small>
+                            </td>
                         }
-                        <th class="sortable" data-column="status">
-                            Status <i class="bi bi-chevron-expand text-muted"></i>
-                        </th>
-                        @if (isMainPage)
+                        <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
+                        @if (!Model.IsDashboard)
                         {
-                            <th class="text-end">Actions</th>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
                         }
                     </tr>
-                </thead>
-                <tbody id="clientsTableBody">
-                    @foreach (ClientVM c in Model.Clients)
-                    {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-2">
-                                        <span class="avatar-initial rounded-circle bg-primary">@c.Initials</span>
-                                    </div>
-                                    <span class="fw-medium">@c.FirstName @c.LastName</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div>@c.CreatedAt.ToShortDateString()</div>
-                                <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
-                            </td>
-                            <td>
-                                <small>@c.Email</small>
-                            </td>
-                            @if (isMainPage)
-                            {
-                                <td>
-                                    <small>@c.Phone</small>
-                                </td>
-                            }
-                            <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
-                            @if (isMainPage)
-                            {
-                                <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
-    <div class="d-flex justify-content-between align-items-center p-3 border-top">
-        <div class="text-muted small">
-            Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
-        </div>
-        <nav aria-label="Clients pagination">
-            <ul class="pagination pagination-sm mb-0" id="clientsPagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+</div>
+<div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <div class="text-muted small">
+        Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
     </div>
+    <nav aria-label="Clients pagination">
+        <ul class="pagination pagination-sm mb-0" id="clientsPagination">
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>

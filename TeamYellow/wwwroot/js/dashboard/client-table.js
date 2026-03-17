@@ -10,17 +10,17 @@ document.addEventListener("click", (e) => {
 });
 
 async function loadClients(page = 1) {
-    try {
-        const response = await fetch(`/Counsellor/ClientTable?page=${page}`);
+    const container = document.getElementById("clientTableContainer");
+    if (!container) return;
 
+    const isDashboard = container.getAttribute("data-is-dashboard") === "true";
+
+    try {
+        const response = await fetch(`/Counsellor/ClientTable?page=${page}&isDashboard=${isDashboard}`);
         if (!response.ok) throw new Error("Network response was not ok");
 
         const html = await response.text();
-        const container = document.getElementById("clientTableContainer");
-
-        if (container) {
-            container.innerHTML = html;
-        }
+        container.innerHTML = html;
     } catch (error) {
         console.error("Failed to load clients:", error);
     }

@@ -1,0 +1,15 @@
+﻿@using TeamYellow.ViewModels
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard/client-table.css" asp-append-version="true" />
+}
+
+<div class="card">
+    <div id="clientTableContainer" data-is-dashboard="false">
+        @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
+}

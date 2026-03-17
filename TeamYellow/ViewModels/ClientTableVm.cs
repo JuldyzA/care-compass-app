@@ -10,5 +10,7 @@ public class ClientTableVm
 
     public int TotalCount { get; set; }
 
+    public bool IsDashboard { get; set; }
+
     public IEnumerable<ClientVM> Clients { get; set; } = new List<ClientVM>();
 }

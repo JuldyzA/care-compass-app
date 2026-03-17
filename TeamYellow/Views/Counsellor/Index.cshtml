@@ -1,12 +1,7 @@
 ﻿@using TeamYellow.ViewModels
 @model TeamYellow.ViewModels.CounsellorDashboardVM
 
-@{
-    Layout = "_DashboardLayout";
-    ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
-    ViewData["DisplayName"] = Model.DisplayName;
-    
-    // To VM
+@{  
     int total = @Model.TotalSubscriptionDays;
     int remainder = @Model.RemainingSubscriptionDays;
     double percentageRemaining = 0;
@@ -22,6 +17,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/dashboard/index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dashboard/client-table.css" asp-append-version="true" />
 }
 
 <div class="stats-row">
@@ -106,7 +102,9 @@
         </div>
 
         <div class="card">
-            @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+            <div id="clientTableContainer" data-is-dashboard="true">
+                @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+            </div>
         </div>
     </div>
 
