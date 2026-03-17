@@ -63,8 +63,9 @@ public class CounsellorController : Controller
     /// <param name="pageSize">The number of records per page (defaults to 5).</param>
     /// <returns>A partial view containing the client table data.</returns>
     [HttpGet]
-    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5, bool isDashboard = false)
+    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false)
     {
+        if (isDashboard) pageSize = 5;
         ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize);
         clientTableVm.IsDashboard = isDashboard;
 
