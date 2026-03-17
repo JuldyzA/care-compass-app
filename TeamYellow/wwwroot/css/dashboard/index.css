@@ -456,13 +456,13 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 500;
-    color: inherit;
+    color: #212529;
 }
 
 @media (max-width: 767.98px) {
     .footer-banner {
         left: var(--sidebar-collapsed-width);
-        padding: 0.65rem 1rem;
+        padding: 0.75rem 1rem;
     }
 
         .footer-banner p {
@@ -499,9 +499,9 @@
     user-select: none;
 }
 
-    .dashboard-content.locked-dashboard * {
-        pointer-events: none;
-    }
+.dashboard-content.locked-dashboard * {
+    pointer-events: none;
+}
 
 .dashboard-lock-overlay {
     position: absolute;
