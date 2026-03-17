@@ -383,8 +383,23 @@ namespace TeamYellow.Controllers
             }
 
             //update date of discount
-            discount.StartDateTime = vm.StartDateTime;
-            discount.EndDateTime = vm.EndDateTime;
+            if (discount.EndDateTime < DateTime.Now)
+            {
+                // expired → allow reactivation
+                discount.StartDateTime = vm.StartDateTime;
+                discount.EndDateTime = vm.EndDateTime;
+            }
+            else if (discount.StartDateTime <= DateTime.Now)
+            {
+                // active → only end date editable
+                discount.EndDateTime = vm.EndDateTime;
+            }
+            else
+            {
+                // not started
+                discount.StartDateTime = vm.StartDateTime;
+                discount.EndDateTime = vm.EndDateTime;
+            }
 
             //clear existing plan associations and add new ones based on selected plan IDs
             discount.PlanDiscounts.Clear();

@@ -32,11 +32,13 @@
                         <input asp-for="Value" class="form-control" type="number" readonly />
                     </div>
 
+                   
                     <div class="mb-3">
                         <label>Start Date</label>
 
-                        @if (Model.IsStarted)
+                        @if (Model.IsStarted && !Model.IsExpired)
                         {
+                          
                             <input asp-for="StartDateTime"
                                    type="datetime-local"
                                    class="form-control"
@@ -48,48 +50,34 @@
                         }
                         else
                         {
+                            
                             <input asp-for="StartDateTime"
                                    type="datetime-local"
                                    class="form-control"
                                    min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
                         }
 
-                        <span asp-validation-for="StartDateTime" class="text-danger"></span>
+                        
                     </div>
-
+                    
+               
                     <div class="mb-3">
                         <label>End Date</label>
-                        @if (Model.IsExpired
-                        )
-                        {
-                            <input asp-for="EndDateTime"
-                                   type="datetime-local"
-                                   class="form-control"
-                                   readonly />
 
-                            <small class="text-warning">
-                                This discount has expired and cannot be modified.
-                            </small>
-                        }else
-                        {
                         <input asp-for="EndDateTime"
                                type="datetime-local"
                                class="form-control"
-                               
                                min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
-                               max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")" />
-                        <span asp-validation-for="EndDateTime" class="text-danger"></span>                          
-                        }
-                              
+                               max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")" /> 
                     </div>
 
-                    @if (!Model.IsExpired && !Model.IsStarted)
+                    @if (Model.IsExpired)
                     {
-                        <div class="alert alert-info">
-                            You can modify the start and end dates of this discount.
+                        <div class="alert alert-warning">
+                            This discount has expired. To activate it again, please set new start and end dates.
                         </div>
                     }
-                    else if (Model.IsStarted && !Model.IsExpired)
+                    else if (Model.IsStarted)
                     {
                         <div class="alert alert-warning">
                             This discount is currently active. You can only modify the end date.
@@ -97,8 +85,8 @@
                     }
                     else
                     {
-                        <div class="alert alert-danger">
-                            This discount has expired and can no longer be modified.
+                        <div class="alert alert-info">
+                            You can modify the start and end dates of this discount.
                         </div>
                     }
 
@@ -117,7 +105,7 @@
                                            value="@plan.Value"
                                            id="plan_@plan.Value"
                                            @(plan.Selected ? "checked" : "")
-                                           @(Model.IsExpired ? "disabled" : "") />
+                                            />
 
                                     <label class="form-check-label" for="plan_@plan.Value">
                                         @plan.Text
@@ -130,7 +118,7 @@
 
                     <button type="submit"
                             class="btn btn-primary"
-                            @(Model.IsExpired ? "disabled" : "")>
+                           >
                         Save
                     </button>
 

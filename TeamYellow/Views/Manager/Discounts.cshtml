@@ -64,9 +64,10 @@
                                     <td>
                                         @if (d.EndDateTime < DateTime.Now)
                                         {
-                                            <button class="btn btn-sm btn-secondary" disabled>
+                                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
+                                               class="btn btn-sm btn-warning">
                                                 Expired
-                                            </button>
+                                            </a>
                                         }
                                         else
                                         {
