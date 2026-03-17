@@ -11,7 +11,6 @@ public class CounsellorController : Controller
 {
     private readonly CounsellorService _counsellorService;
     private readonly ClientService _clientService;
-    private readonly IConfiguration _configuration;
 
     public CounsellorController (
         CounsellorService counsellorService,
@@ -20,7 +19,6 @@ public class CounsellorController : Controller
     ) {
         _counsellorService = counsellorService;
         _clientService = clientService;
-        _configuration = configuration;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -51,6 +49,7 @@ public class CounsellorController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
     public IActionResult Clients()
     {
         return View();
