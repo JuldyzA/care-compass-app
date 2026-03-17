@@ -430,8 +430,8 @@
 }
 
 /* ========================================
-       Footer
-       ======================================== */
+   Footer
+   ======================================== */
 
 .footer-banner {
     position: fixed;
@@ -456,26 +456,105 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 500;
-    color: #212529;
+    color: inherit;
 }
 
 @media (max-width: 767.98px) {
     .footer-banner {
         left: var(--sidebar-collapsed-width);
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 1rem;
     }
-    
-    .footer-banner p {
-        font-size: 0.85rem;
-    }
+
+        .footer-banner p {
+            font-size: 0.85rem;
+        }
 }
 
 @media (max-width: 576px) {
     .footer-banner {
         padding: 0.5rem 0.75rem;
     }
-    
-    .footer-banner p {
-        font-size: 0.8rem;
+
+        .footer-banner p {
+            font-size: 0.8rem;
+        }
+}
+
+/* ========================================
+   Dashboard Lock
+   ======================================== */
+
+.dashboard-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dashboard-content-area {
+    position: relative;
+}
+
+.dashboard-content.locked-dashboard {
+    filter: blur(4px);
+    user-select: none;
+}
+
+    .dashboard-content.locked-dashboard * {
+        pointer-events: none;
+    }
+
+.dashboard-lock-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 5rem;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.dashboard-lock-modal {
+    width: min(90vw, 520px);
+    max-width: 520px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    padding: 2rem;
+    text-align: center;
+}
+
+.footer-banner.locked-footer-banner {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-preview-wrapper {
+        padding-bottom: 0;
+    }
+
+    .footer-banner {
+        position: static;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        min-height: auto;
+        margin-top: 0.75rem;
+        padding: 0.65rem 0.9rem;
+        box-shadow: none;
+    }
+
+        .footer-banner p {
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+    .back-to-top {
+        bottom: 1rem;
+        right: 1rem;
     }
 }

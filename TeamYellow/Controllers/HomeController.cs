@@ -28,10 +28,10 @@ namespace TeamYellow.Controllers
                 {
                     return RedirectToAction("Index", "Counsellor");
                 }
-
-                //TODO: Uncomment and update code for other roles' Index views
-                /*if (User.IsInRole("Manager"))
-                    return RedirectToAction("Index", "Manager");*/
+                else if (User.IsInRole("Manager"))
+                {
+                    return RedirectToAction("Index", "Manager");
+                }
             }
 
             return View();

@@ -3,212 +3,297 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
+@{
+    var userName = UserManager.GetUserName(User) ?? "User";
+    var displayName = ViewData["DisplayName"]?.ToString();
+    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/Images/placeholder-profile.jpg");
+
+    var rawName = !string.IsNullOrWhiteSpace(displayName)
+    ? displayName.Trim()
+    : userName;
+
+    bool isAdmin = User.IsInRole("Administrator");
+    bool isManager = User.IsInRole("Manager");
+    bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
+    bool isRegisteredVisitor = User.IsInRole("Registered_Visitor");
+
+    string roleLabel =
+        isAdmin ? "Administrator" :
+        isManager ? "Manager" :
+        isCounsellor ? "Counsellor" :
+        isRegisteredVisitor ? "Registered Visitor" :
+        "User";
+
+
+    bool alreadyHasDr =
+        rawName.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase) ||
+        rawName.StartsWith("Dr ", StringComparison.OrdinalIgnoreCase);
+
+    string welcomeName =
+        isCounsellor
+            ? (alreadyHasDr ? rawName : $"Dr. {rawName}")
+            : rawName;
+
+    string headerMessage =
+        isAdmin ? "Manage users, roles, and logs" :
+        isManager ? "Manage plans, discounts, and payment activity" :
+        isCounsellor ? "Here is the latest update of your clinic" :
+        "Welcome to CareCompass";
+}
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - CareCompass Dashboard</title>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>@ViewData["Title"] - CareCompass Dashboard</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-    <!-- Custom Dashboard CSS -->
-    <link rel="stylesheet" href="~/css/dashboard/dashboard-layout.css" asp-append-version="true" />
+        <!-- Custom Dashboard CSS -->
+        <link rel="stylesheet" href="~/css/dashboard/dashboard-layout.css" asp-append-version="true" />
 
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @RenderSection("Styles", required: false)
-</head>
-<body>
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        @RenderSection("Styles", required: false)
+    </head>
+    <body class="@(ViewData["DisablePageScroll"] as bool? == true ? "locked-page-scroll" : "")">
 
-    <div class="dashboard-wrapper">
+        <div class="dashboard-wrapper">
 
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-            <div class="sidebar-header">
-                <div class="logo-container">
-                    <i class="bi bi-compass text-primary fs-2" aria-hidden="true"></i>
-                    <h4 class="logo-text mb-0">CareCompass</h4>
-                </div>
-            </div>
-
-            <!-- User Info Section -->
-            @if (SignInManager.IsSignedIn(User))
-            {
-                var userName = UserManager.GetUserName(User);
-                <div class="sidebar-user-section">
-                    <div class="dropdown w-100">
-                        <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-                            <div class="user-info">
-                                <div class="user-avatar" aria-hidden="true">
-                                    <img class="sidebar-user-profile-picture" src="@(ViewData["UserProfilePicture"] ??
-                                        ViewData["DefaultUserProfilePicture"] ??
-                                        Url.Content("~/Images/placeholder-profile.jpg"))" alt="User Profile Picture" />
-                                </div>
-                                <div class="user-details">
-                                    <div class="user-name">@userName</div>
-                                    <div class="user-role">
-                                        @(User.IsInRole("Administrator") ? "Administrator" :
-                                        User.IsInRole("Manager") ? "Manager" :
-                                        (User.IsInRole("Paid_Counselor") ||
-                                            User.IsInRole("Free_Counselor")) ? "Counsellor" : "User")
-                                    </div>
-                                </div>
-                                <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+                <div class="sidebar-header">
+                    <div class="logo-container">
+                        <i class="bi bi-compass text-primary fs-2" aria-hidden="true"></i>
+                        <h4 class="logo-text mb-0">CareCompass</h4>
                     </div>
-                        </button>
-                        <ul class="dropdown-menu w-100" aria-labelledby="userMenuDropdown">
-                            <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
-                            <li><a class="dropdown-item" href="/Counsellor/Clients"><i class="bi bi-people" aria-hidden="true"></i> Clients</a></li>
-                            <li>
-                                <a class="dropdown-item" href="#" id="notificationsLink">
-                                    <i class="bi bi-bell" aria-hidden="true"></i> Notifications
-                                    <span class="badge bg-danger ms-2">3</span>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-                                    <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
-                                </form>
-                            </li>
-                        </ul>
                 </div>
-            </div>
-            }
 
-            <nav class="sidebar-nav" aria-label="Dashboard navigation">
-                <ul class="nav flex-column" role="list">
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Index" data-page="dashboard">
-                            <i class="bi bi-speedometer2" aria-hidden="true"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Clients" data-page="clients">
-                            <i class="bi bi-people" aria-hidden="true"></i>
-                            <span>Clients</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Appointments" data-page="appointments">
-                            <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                            <span>Appointments</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="sidebar-divider" role="separator"></div>
-
-                <ul class="nav flex-column" role="list">
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Billing" data-page="billing">
-                            <i class="bi bi-credit-card" aria-hidden="true"></i>
-                            <span>Billing</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Upgrade" data-page="upgrade">
-                            <i class="bi bi-arrow-up-circle" aria-hidden="true"></i>
-                            <span>Upgrade</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="sidebar-divider" role="separator"></div>
-
-                <ul class="nav flex-column" role="list">
-                    <li class="nav-item" role="listitem">
-                        <a class="nav-link" asp-controller="Counsellor" asp-action="Profile" data-page="profile">
-                            <i class="bi bi-person-circle" aria-hidden="true"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Toggle Button (Outside Sidebar) -->
-        <button class="sidebar-toggle-inline" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
-            <i class="bi bi-chevron-left" aria-hidden="true"></i>
-        </button>
-
-        <!-- Main Content Area -->
-        <div class="main-content">
-
-            <div class="site-header">
-                <div class="header-content">
-                    <div class="header-left">
-                        <h2 class="header-welcome">Welcome back, Dr. @(ViewData["DisplayName"])!</h2>
-                        <p class="header-message">Here is the latest update of your clinic</p>
-                    </div>
-                    <div class="header-right">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            var userName = UserManager.GetUserName(User);
-                            <div class="dropdown">
-                                <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-                                    <div class="header-user-info">
-                                        <div class="header-user-avatar" aria-hidden="true">
-                                            <img class="header-user-profile-picture" src="@(ViewData["UserProfilePicture"] ??
-                                                ViewData["DefaultUserProfilePicture"] ??
-                                                Url.Content("~/Images/placeholder-profile.jpg"))" alt="User Profile Picture" />
-                                        </div>
-                                        <div class="header-user-details">
-                                            <div class="header-user-name">@userName</div>
-                                            <div class="header-user-role">    
-                                                @(User.IsInRole("Administrator") ? "Administrator" :
-                                                User.IsInRole("Manager") ? "Manager" :
-                                                (User.IsInRole("Paid_Counselor") ||
-                                                    User.IsInRole("Free_Counselor")) ? "Counsellor" : "User")
-                                            </div>
-                                        </div>
-                                        <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="sidebar-user-section">
+                        <div class="dropdown w-100">
+                            <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                                <div class="user-info">
+                                    <div class="user-avatar" aria-hidden="true">
+                                        <img class="sidebar-user-profile-picture" src="@profilePicture" alt="User Profile Picture" />
                                     </div>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
-                                    <li><a class="dropdown-item" href="/Counsellor/Profile"><i class="bi bi-person" aria-hidden="true"></i> My Profile</a></li>
-                                    <li><a class="dropdown-item" href="/Counsellor/Clients"><i class="bi bi-people" aria-hidden="true"></i> Clients</a></li>
+                                    <div class="user-details">
+                                        <div class="user-name">@rawName</div>
+                                        <div class="user-role">@roleLabel</div>
+                                    </div>
+                                    <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
+                                </div>
+                            </button>
+
+                            <ul class="dropdown-menu w-100" aria-labelledby="userMenuDropdown">
+                                @if (isAdmin)
+                                {
                                     <li>
-                                        <a class="dropdown-item" href="#" id="headerNotificationsLink">
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="UserRoleIndex">
+                                            <i class="bi bi-speedometer2" aria-hidden="true"></i> User Management
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="RoleIndex">
+                                            <i class="bi bi-people" aria-hidden="true"></i> Role Management
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="UserLogAll">
+                                            <i class="bi bi-journal-text" aria-hidden="true"></i> User Logs
+                                        </a>
+                                    </li>
+                                }
+                                else if (isManager)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Manager" asp-action="Index">
+                                            <i class="bi bi-speedometer2" aria-hidden="true"></i> Transactions
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Manager" asp-action="Plans">
+                                            <i class="bi bi-card-list" aria-hidden="true"></i> Plans
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Manager" asp-action="Discounts">
+                                            <i class="bi bi-tags" aria-hidden="true"></i> Discounts
+                                        </a>
+                                    </li>
+                                }
+                                else if (isCounsellor)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Counsellor" asp-action="Index">
+                                            <i class="bi bi-person" aria-hidden="true"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Counsellor" asp-action="Clients">
+                                            <i class="bi bi-people" aria-hidden="true"></i> Clients
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" id="notificationsLink">
                                             <i class="bi bi-bell" aria-hidden="true"></i> Notifications
                                             <span class="badge bg-danger ms-2">3</span>
                                         </a>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-                                            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
+                                }
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+
+                @if (isCounsellor || isRegisteredVisitor)
+                {
+                    @await Html.PartialAsync("_CounsellorSidebar")
+                }
+                else if (isAdmin)
+                {
+                    @await Html.PartialAsync("_AdminSidebar")
+                }
+                else if (isManager)
+                {
+                    @await Html.PartialAsync("_ManagerSidebar")
+                }
+            </aside>
+
+            <!-- Toggle Button (Outside Sidebar) -->
+            <button class="sidebar-toggle-inline" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+
+                <div class="site-header">
+                    <div class="header-content">
+                        <div class="header-left">
+                            <h2 class="header-welcome">Welcome back, @welcomeName!</h2>
+                            <p class="header-message">@headerMessage</p>
+                        </div>
+
+                        <div class="header-right">
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <div class="dropdown">
+                                    <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                                        <div class="header-user-info">
+                                            <div class="header-user-avatar" aria-hidden="true">
+                                                <img class="header-user-profile-picture" src="@profilePicture" alt="User Profile Picture" />
+                                            </div>
+                                            <div class="header-user-details">
+                                                <div class="header-user-name">@rawName</div>
+                                                <div class="header-user-role">@roleLabel</div>
+                                            </div>
+                                            <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
+                                        </div>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
+                                        @if (isAdmin)
+                                        {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="UserRoleIndex">
+                                                <i class="bi bi-speedometer2" aria-hidden="true"></i> User Management
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="RoleIndex">
+                                                <i class="bi bi-people" aria-hidden="true"></i> Role Management
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="UserLogAll">
+                                                <i class="bi bi-journal-text" aria-hidden="true"></i> User Logs
+                                            </a>
+                                        </li>
+                                        }
+                                        else if (isManager)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Manager" asp-action="Index">
+                                                    <i class="bi bi-speedometer2" aria-hidden="true"></i> Transactions
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Manager" asp-action="Plans">
+                                                    <i class="bi bi-card-list" aria-hidden="true"></i> Plans
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Manager" asp-action="Discounts">
+                                                    <i class="bi bi-tags" aria-hidden="true"></i> Discounts
+                                                </a>
+                                            </li>
+                                        }
+                                        else if (isCounsellor)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Counsellor" asp-action="Profile">
+                                                    <i class="bi bi-person" aria-hidden="true"></i> My Profile
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Counsellor" asp-action="Clients">
+                                                    <i class="bi bi-people" aria-hidden="true"></i> Clients
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" id="headerNotificationsLink">
+                                                    <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+                                                    <span class="badge bg-danger ms-2">3</span>
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
+
+                <!-- Page Content -->
+                <main class="content-area" role="main" aria-label="Main content">
+                    @RenderBody()
+                </main>
+
             </div>
-
-            <!-- Page Content -->
-            <main class="content-area" role="main" aria-label="Main content">
-                @RenderBody()
-            </main>
-
         </div>
-    </div>
 
-    <!-- apexcharts library -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
+        <!-- apexcharts library -->
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
 
-    <!-- Bootstrap JS -->
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+        <!-- Bootstrap JS -->
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
 
-    <!-- Dashboard Scripts -->
-    <script src="~/js/dashboard/dashboard-layout.js" asp-append-version="true"></script>
+        <!-- Dashboard Scripts -->
+        <script src="~/js/dashboard/dashboard-layout.js" asp-append-version="true"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
 </html>
