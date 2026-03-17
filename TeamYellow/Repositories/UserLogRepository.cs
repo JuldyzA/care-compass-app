@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
+using TeamYellow.Helpers;
 using TeamYellow.Models;
 using TeamYellow.ViewModels;
 
@@ -20,23 +21,85 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns all user logs as view models, sorted by most recent first.
+        /// Returns a paginated, sortable, and filterable list of user logs, sorted by most recent first.
+        /// Used for the admin user logs screen.
         /// Uses AsNoTracking() because this is read-only for display.
         /// </summary>
-        public async Task<IEnumerable<UserLogVM>> GetAllAsync()
+        public async Task<PaginatedList<UserLogVM>> GetAllAsync(string? emailFilter = null, string? abandonedFilter = null, DateTime? startDate = null, DateTime? endDate = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
-            return await _context.UserLogs
-                           .AsNoTracking()
-                           .OrderByDescending(ul => ul.LogInTime)
-                           .ThenByDescending(ul => ul.LogId)
-                           .Select(ul => new UserLogVM
-                           {
-                               Email = (ul.User != null) ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : "(user missing)",
-                               LogInTime = ul.LogInTime,
-                               LogOutTime = ul.LogOutTime,
-                               Abandoned = ul.Abandoned
-                           })
-                           .ToListAsync();
+            IQueryable<UserLogVM> query = _context.UserLogs
+                                       .AsNoTracking()
+                                       .Select(ul => new UserLogVM
+                                       {
+                                           LogId = ul.LogId,
+                                           Email = (ul.User != null) ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : "(user missing)",
+                                           LogInTime = ul.LogInTime,
+                                           LogOutTime = ul.LogOutTime,
+                                           Abandoned = ul.Abandoned
+                                       });
+
+            if (!string.IsNullOrWhiteSpace(emailFilter))
+            {
+                string trimmedEmail = emailFilter.Trim();
+                query = query.Where(u => (u.Email ?? string.Empty).Contains(trimmedEmail));
+            }
+
+            if (!string.IsNullOrWhiteSpace(abandonedFilter))
+            {
+                if (abandonedFilter == "yes")
+                {
+                    query = query.Where(ul => ul.Abandoned);
+                }
+                else if (abandonedFilter == "no")
+                {
+                    query = query.Where(ul => !ul.Abandoned);
+                }
+            }
+
+            if (startDate.HasValue)
+            {
+                DateTime localStart = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Local);
+                DateTime startUtc = localStart.ToUniversalTime();
+                query = query.Where(u => u.LogInTime >= startUtc);
+            }
+
+            if (endDate.HasValue)
+            {
+                DateTime localEndExclusive = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1), DateTimeKind.Local);
+                DateTime endUtcExclusive = localEndExclusive.ToUniversalTime();
+                query = query.Where(u => u.LogInTime < endUtcExclusive);
+            }
+
+            switch (sortOrder)
+            {
+                case "email_desc":
+                    query = query.OrderByDescending(u => u.Email)
+                        .ThenByDescending(u => u.LogInTime)
+                        .ThenByDescending(u => u.LogId);
+                    break;
+                case "email_asc":
+                    query = query.OrderBy(u => u.Email)
+                        .ThenBy(u => u.LogInTime)
+                        .ThenBy(u => u.LogId);
+                    break;
+                case "login_desc":
+                    query = query.OrderByDescending(u => u.LogInTime)
+                        .ThenByDescending(u => u.Email)
+                        .ThenByDescending(u => u.LogId);
+                    break;
+                case "login_asc":
+                    query = query.OrderBy(u => u.LogInTime)
+                        .ThenBy(u => u.Email)
+                        .ThenBy(u => u.LogId);
+                    break;
+                default:
+                    query = query.OrderByDescending(u => u.LogInTime)
+                        .ThenByDescending(u => u.Email)
+                        .ThenByDescending(u => u.LogId);
+                    break;
+            }
+
+            return await PaginatedList<UserLogVM>.CreateAsync(query, pageNumber, pageSize);
         }
 
         /// <summary>

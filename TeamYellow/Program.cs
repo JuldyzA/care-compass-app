@@ -20,17 +20,34 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
-// Register services with DI
+// Services
+builder.Services.AddScoped<CounsellorService>();
+builder.Services.AddTransient<IEmailService, BrevoEmailService>();
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+
+// Repositories
+builder.Services.AddScoped<CounsellorRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UserRoleRepository>();
 builder.Services.AddScoped<UserLogRepository>();
-builder.Services.AddScoped<CounsellorRepository>();
-builder.Services.AddScoped<PlanRepository>();
 builder.Services.AddScoped<DiscountRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 
 // Seeders
 builder.Services.AddTransient<RoleSeeder>();
@@ -41,8 +58,6 @@ builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
-builder.Services.AddTransient<IEmailService, BrevoEmailService>();
-builder.Services.AddTransient<HttpClient>();
 
 var app = builder.Build();
 

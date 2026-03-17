@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
-    public class PlanRepository 
+	  /// <summary>
+    /// Repository providing data access operations for Plans entities.
+    /// </summary>
+    public class PlanRepository : IPlanRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -12,7 +15,6 @@ namespace TeamYellow.Repositories
         {
             _context = context;
         }
-
 
         /// <summary>
         /// Retrieves all plans from the database asynchronously.
@@ -54,6 +56,31 @@ namespace TeamYellow.Repositories
                 await _context.SaveChangesAsync();
 
                 return true;
-        }  
+        }
+
+		    /// <summary>
+        /// Retrieves all plans that are currently active, ordered by price ascending.
+        /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
+        /// </summary>
+        /// <returns>A list of active <see cref="Plan"/> entities ordered by price.</returns>
+        public async Task<List<Plan>> GetActivePlans()
+        {
+            var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
+                .Where(p => p.IsActive)
+                .ToListAsync();
+
+            return [.. plans.OrderBy(p => p.Price)];
+        }
+
+		    /// <summary>
+        /// Retrieves a single plan by its primary key, including its associated features.
+        /// </summary>
+        /// <param name="id">The primary key of the plan to retrieve.</param>
+        /// <returns>The matching <see cref="Plan"/> with features, or <c>null</c> if not found.</returns>
+        public async Task<Plan?> GetPlanById(int id)
+        {
+            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
+                .FirstOrDefaultAsync(p => p.PlanId == id);
+        }		
     }
 }

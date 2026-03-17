@@ -21,16 +21,18 @@ namespace TeamYellow.Controllers
             if (User.Identity?.IsAuthenticated == true)
             {
                 if (User.IsInRole("Administrator"))
+                {
                     return RedirectToAction("UserRoleIndex", "Admin");
-
-                //TODO: Uncomment and update code for other roles' Index views
-                // if (User.IsInRole("Manager"))
-                //     return RedirectToAction("Index", "Manager");
-
-                /*if (User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor"))
-                    return RedirectToAction("Index", "Counsellor");*/
+                }
+                else if (User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor") || User.IsInRole("Registered_Visitor"))
+                {
+                    return RedirectToAction("Index", "Counsellor");
+                }
+                else if (User.IsInRole("Manager"))
+                {
+                    return RedirectToAction("Index", "Manager");
+                }
             }
-
             return View();
         }
 

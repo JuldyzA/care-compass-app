@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
+using TeamYellow.Helpers;
 using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories
@@ -18,19 +19,42 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns all users projected into a lightweight UserVM.
-        /// This is typically used for admin screens or dropdowns.
+        /// Returns a paginated, sortable, and filterable list of users projected into UserVM.
+        /// Used for the admin user role management screen.
         /// </summary>
-        public async Task<IEnumerable<UserVM>> GetAllUsersAsync()
+        public async Task<PaginatedList<UserVM>> GetAllUsersAsync(string? emailFilter = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
-            IEnumerable<UserVM> users = await _context.Users
-                                        .AsNoTracking()
-                                        .Select(u => new UserVM
-                                        {
-                                            Email = u.Email ?? "(no email)",
-                                        }).ToListAsync();
+            IQueryable<UserVM> query = _context.Users
+                                       .AsNoTracking()
+                                       .Select(u => new UserVM
+                                       {
+                                           UserId = u.Id, 
+                                           Email = u.Email ?? "(no email)",
+                                       });
 
-            return users;
+            if (!string.IsNullOrWhiteSpace(emailFilter))
+            {
+                string trimmedEmail = emailFilter.Trim();
+                query = query.Where(u => u.Email.Contains(trimmedEmail));
+            }
+
+            switch (sortOrder)
+            {
+                case "email_desc":
+                    query = query.OrderByDescending(u => u.Email)
+                        .ThenByDescending(u => u.UserId);
+                    break;
+                case "email_asc":
+                    query = query.OrderBy(u => u.Email)
+                        .ThenBy(u => u.UserId);
+                    break;
+                default:
+                    query = query.OrderBy(u => u.Email)
+                        .ThenBy(u => u.UserId);
+                    break;
+            }
+
+            return await PaginatedList<UserVM>.CreateAsync(query, pageNumber, pageSize);
         }
 
         /// <summary>

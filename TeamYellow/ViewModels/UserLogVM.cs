@@ -7,6 +7,8 @@ namespace TeamYellow.ViewModels
     /// </summary>
     public class UserLogVM
     {
+        public int LogId { get; set; }
+
         [Required]
         [Display(Name = "User Email")]
         public string? Email { get; set; }
