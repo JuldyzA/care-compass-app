@@ -8,14 +8,17 @@ namespace TeamYellow.Controllers
     [Authorize(Roles = "Paid_Counselor, Free_Counselor, Registered_Visitor")]
     public class CounsellorController : Controller
     {
-        private readonly CounsellorService _service;
+        private readonly CounsellorService _counsellorService;
+        private readonly ClientService _clientService;
         private readonly IConfiguration _configuration;
 
         public CounsellorController (
-            CounsellorService service, 
+            CounsellorService counsellorService,
+            ClientService clientService,
             IConfiguration configuration
         ) {
-            _service = service;
+            _counsellorService = counsellorService;
+            _clientService = clientService;
             _configuration = configuration;
         }
 
@@ -26,7 +29,7 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            CounsellorDashboardVM dashboardVM = await _service.GetCounsellorDashboardAsync(User);
+            CounsellorDashboardVM dashboardVM = await _counsellorService.GetCounsellorDashboardAsync(User);
             
             //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
 
@@ -47,7 +50,7 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5)
         {
-            ClientTableVm clientTableVm = await _service.GetClientsAsync(User, page, pageSize);
+            ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize);
 
             return PartialView("_ClientTable", clientTableVm);
         }

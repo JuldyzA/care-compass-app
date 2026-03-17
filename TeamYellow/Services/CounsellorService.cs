@@ -38,38 +38,4 @@ public class CounsellorService
 
         return vm;
     }
-
-    /// <summary>
-    /// Fetches a validated and paginated list of clients for the current user.
-    /// </summary>
-    /// <param name="user">The current user's claims.</param>
-    /// <param name="page">The requested page number.</param>
-    /// <param name="pageSize">The number of records to return, capped at 100.</param>
-    /// <returns>A view model containing the paginated client data.</returns>
-
-    public async Task<ClientTableVm> GetClientsAsync(ClaimsPrincipal user, int page, int pageSize)
-    {
-        string? userId = _userManager.GetUserId(user);
-
-        if (page < 1)
-        {
-            page = 1;
-        }
-
-        const int maxPageSize = 100;
-        if (pageSize < 1)
-        {
-            pageSize = 1;
-        }
-        else if (pageSize > maxPageSize)
-        {
-            pageSize = maxPageSize;
-        }
-
-        ClientTableDto dto = await _repository.GetClientsAsync(userId, page, pageSize);
-
-        ClientTableVm clientTableVm = CounsellorDashboardHelper.MapToVm(dto);
-
-        return clientTableVm;
-    }
 }

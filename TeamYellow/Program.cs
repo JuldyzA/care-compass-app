@@ -32,6 +32,7 @@ builder.Services.AddControllersWithViews();
 
 // Services
 builder.Services.AddScoped<CounsellorService>();
+builder.Services.AddScoped<ClientService>();
 builder.Services.AddTransient<IEmailService, BrevoEmailService>();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
@@ -40,10 +41,11 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 // Repositories
 builder.Services.AddScoped<CounsellorRepository>();
+builder.Services.AddScoped<ClientRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UserRoleRepository>();
-builder.Services.AddScoped<UserLogRepository>(); 
+builder.Services.AddScoped<UserLogRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
