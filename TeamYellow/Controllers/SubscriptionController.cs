@@ -21,6 +21,7 @@ public class SubscriptionController : Controller
     private readonly UserManager<IdentityUser> _userManager;
     private readonly CounsellorRepository _counsellorRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly UserProfileRepository _userProfileRepository;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<SubscriptionController> _logger;
 
@@ -38,6 +39,7 @@ public class SubscriptionController : Controller
         UserManager<IdentityUser> userManager,
         CounsellorRepository counsellorRepository,
         ISubscriptionRepository subscriptionRepository,
+        UserProfileRepository userProfileRepository,
         SignInManager<IdentityUser> signInManager,
         ILogger<SubscriptionController> logger)
     {
@@ -45,6 +47,7 @@ public class SubscriptionController : Controller
         _userManager = userManager;
         _counsellorRepository = counsellorRepository;
         _subscriptionRepository = subscriptionRepository;
+        _userProfileRepository = userProfileRepository;
         _signInManager = signInManager;
         _logger = logger;
     }
@@ -85,11 +88,23 @@ public class SubscriptionController : Controller
                     licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
                 }
                 while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+
+                var displayName = string.Join(" ", new[]
+                {
+                    profile?.FirstName,
+                    profile?.LastName
+                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = user.UserName ?? user.Email ?? "Unknown";
+                }
 
                 counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
                 {
                     UserId = user.Id,
-                    DisplayName = user.UserName ?? user.Email ?? "Unknown",
+                    DisplayName = displayName,
                     PractitionerLicenceId = licenceId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
