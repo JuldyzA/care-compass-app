@@ -33,7 +33,7 @@ namespace TeamYellow.Controllers
         /// Aggregates transaction statistics and details for each counsellor.
         /// </summary>
         /// <returns>The dashboard view with aggregated data.</returns>
-        public async Task<IActionResult> Index(string searchEmail, DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> Index(string? searchEmail, DateTime? startDate, DateTime? endDate)
         {
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
 
@@ -176,7 +176,7 @@ namespace TeamYellow.Controllers
 
         /// <summary>
         /// Processes the submission of the plan edit form and updates the plan details asynchronously.
-        /// /// <param name="vm">The view model containing updated plan information.</param>
+        /// <param name="vm">The view model containing updated plan information.</param>
         /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -337,7 +337,7 @@ namespace TeamYellow.Controllers
             return RedirectToAction("Discounts");
         }
 
-        //// <summary>
+        /// <summary>
         /// Displays the edit form for a specific discount.
         /// Retrieves the discount by its ID, determines its current status
         /// (started or expired), and prepares the view model with the discount
