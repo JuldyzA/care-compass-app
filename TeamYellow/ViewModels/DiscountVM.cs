@@ -18,8 +18,8 @@ namespace TeamYellow.ViewModels
         public DiscountType DiscountType { get; set; }
 
         [Required]
-        [RegularExpression(@"^\d{1,3}(.\d{1,2})?$",
-        ErrorMessage = "Discount can have up to two decimal places only.")]
+        [Range(typeof(decimal), "0", "999.99",
+        ErrorMessage = "Discount must be between 0 and 999.99 and have up to two decimal places.")]
         public decimal Value { get; set; }
 
         [Required]
@@ -30,20 +30,11 @@ namespace TeamYellow.ViewModels
 
         public DateTime CreatedAt { get; set; }
 
-        // LIST PAGE
         public IEnumerable<Discount>? Discounts { get; set; }
-
-        // APPLY DISCOUNT PAGE
         public IEnumerable<Plan>? Plans { get; set; }
-
-        // PLAN SELECTION
         public IEnumerable<SelectListItem>? AvailablePlans { get; set; }
         public List<int> PlanIds { get; set; } = new();
-
-        // dropdown helper aplly discount
         public IEnumerable<SelectListItem>? DiscountCodeOptions { get; set; }
-
-        //edit discount
         public bool IsStarted { get; set; }
         public bool IsExpired { get; set; }
         public bool HasPlans { get; set; }

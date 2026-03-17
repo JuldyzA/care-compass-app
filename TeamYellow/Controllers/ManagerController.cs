@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
@@ -12,9 +11,9 @@ namespace TeamYellow.Controllers
     [Authorize (Roles ="Manager")]
     public class ManagerController : Controller
     {
-        private readonly CounsellorRepository CounsellorRepository;
-        private readonly PlanRepository PlanRepository;
-        private readonly DiscountRepository DiscountRepository;
+        private readonly CounsellorRepository _counsellorRepository;
+        private readonly PlanRepository _planRepository;
+        private readonly DiscountRepository _discountRepository;
 
 
         /// <summary>
@@ -24,9 +23,9 @@ namespace TeamYellow.Controllers
         /// <param name="discountRepository">The repository for discount data.</param>
         public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository, DiscountRepository discountRepository)
         {
-            CounsellorRepository = counsellorRepository;
-            PlanRepository = planRepository;
-            DiscountRepository = discountRepository;
+            _counsellorRepository = counsellorRepository;
+            _planRepository = planRepository;
+            _discountRepository = discountRepository;
         }
 
         /// <summary>
@@ -36,7 +35,7 @@ namespace TeamYellow.Controllers
         /// <returns>The dashboard view with aggregated data.</returns>
         public async Task<IActionResult> Index(string searchEmail, DateTime? startDate, DateTime? endDate)
         {
-            var counsellors = await CounsellorRepository.GetCounsellorsWithPaymentsAsync();
+            var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
 
             var dashboardData = counsellors
                 .Select(c => GetManagerDashboardData(c))
@@ -92,7 +91,10 @@ namespace TeamYellow.Controllers
                 .Where(p => p != null)
                 .ToList() ?? [];
 
-            var firstPayment = payments.FirstOrDefault();
+            
+            bool anyPayments = payments.Any();
+            var latestPayment = payments.OrderByDescending(p => p.PaidAt).FirstOrDefault();
+            bool anyFailedPayments = payments.Any(p => p.Status == PaymentTransactionStatus.Failed);
 
             return new ManagerDashboardVM
             {
@@ -100,13 +102,13 @@ namespace TeamYellow.Controllers
                 PractitionerLicenceId = counsellor.PractitionerLicenceId,
                 CounsellorName = counsellor.DisplayName,
                 Email = counsellor.User?.Email ?? "No email",
-                Amount = payments.Sum(p => p?.Amount ?? 0),
-                PaymentTransactionId = firstPayment?.PaymentTransactionId ?? 0,
-                Currency = firstPayment?.Currency ?? "CAD",
-                SOP = payments.Any(p => p?.Status == PaymentTransactionStatus.Failed)
-                    ? "Failed"
-                    : "Paid",
-                PaidAt = firstPayment?.PaidAt, 
+                Amount = anyPayments ? payments.Sum(p => p?.Amount ?? 0) : 0,
+                PaymentTransactionId = anyPayments ? (latestPayment?.PaymentTransactionId ?? 0) : 0,
+                Currency = latestPayment?.Currency ?? "CAD",
+                SOP = anyPayments
+                ? (anyFailedPayments ? "Failed" : "Paid")
+                : "N/A",
+                 PaidAt = anyPayments ? latestPayment?.PaidAt : null,
                 RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
             };
         }
@@ -118,7 +120,7 @@ namespace TeamYellow.Controllers
         /// <returns>The details view for the specified transaction, or NotFound if not found.</returns>
         public async Task<IActionResult> TransactionDetails(int id)
         {
-            var counsellors = await CounsellorRepository.GetCounsellorsWithPaymentsAsync();
+            var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
             var detailsData = counsellors
                 .Select(c => GetManagerDashboardData(c))
                 .FirstOrDefault(d => d.PaymentTransactionId == id);
@@ -136,7 +138,7 @@ namespace TeamYellow.Controllers
         /// <returns>The plans view with a list of plans.</returns>
         public async Task<IActionResult> Plans()
         {
-            var plans = await PlanRepository.GetAllAsync();
+            var plans = await _planRepository.GetAllAsync();
             var vm = new PlanVM
             {
                 Plans = plans
@@ -152,7 +154,7 @@ namespace TeamYellow.Controllers
         /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
         public async Task<IActionResult> PlanEdit(int id)
         {
-            var plan = await PlanRepository.GetById(id);
+            var plan = await _planRepository.GetById(id);
 
             if (plan == null)
             {
@@ -181,9 +183,10 @@ namespace TeamYellow.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
                 return View(vm);
             }
-            var plan = await PlanRepository.GetById(vm.PlanId);
+            var plan = await _planRepository.GetById(vm.PlanId);
 
             if (plan == null)
             {
@@ -195,8 +198,14 @@ namespace TeamYellow.Controllers
             plan.Price = vm.Price;
             plan.BillingType = vm.BillingType;
             plan.IsActive = vm.IsActive;
-            await PlanRepository.Update(plan);
 
+            var success = await _planRepository.UpdateAsync(plan);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while updating the plan. Please try again.");
+                ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
+                return View(vm);
+            }
             return RedirectToAction(nameof(Plans));
         }
 
@@ -208,7 +217,7 @@ namespace TeamYellow.Controllers
         {
             var vm = new DiscountVM
             {
-                Discounts =  await DiscountRepository.GetAllDiscountsWithPlansAsync()
+                Discounts =  await _discountRepository.GetAllDiscountsWithPlansAsync()
             };
 
             return View(vm);
@@ -241,7 +250,7 @@ namespace TeamYellow.Controllers
 
             if (vm.EndDateTime <= vm.StartDateTime)
             {
-                ModelState.AddModelError("End DateTime", "End date must be after start date.");
+                ModelState.AddModelError("EndDateTime", "End date must be after start date.");
                 return View(vm);
             }
 
@@ -255,7 +264,7 @@ namespace TeamYellow.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            await DiscountRepository.AddAsync(discount);
+            await _discountRepository.AddAsync(discount);
 
             return RedirectToAction(nameof(Discounts));
         }
@@ -265,10 +274,10 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <returns>The apply discount view with available discounts and plans.</returns>
         [HttpGet]
-        public async Task<IActionResult> ApplyDiscountAsync()
+        public async Task<IActionResult> ApplyDiscount()
         {
-            var discounts = await DiscountRepository.GetActiveDiscountAsync();
-            var plans = await PlanRepository.GetAllAsync();
+            var discounts = await _discountRepository.GetActiveDiscountsAsync();
+            var plans = await _planRepository.GetAllAsync();
             
             var vm = new DiscountVM
             {
@@ -280,7 +289,7 @@ namespace TeamYellow.Controllers
                     Text = d.DiscountCode
                 }).ToList()
             };         
-            return View("ApplyDiscount", vm);
+            return View(vm);
         }
 
         /// <summary>
@@ -291,12 +300,35 @@ namespace TeamYellow.Controllers
         [HttpPost]
         public  async Task<IActionResult> ApplyDiscount(DiscountVM vm)
         {
-            if (vm.PlanIds == null || vm.PlanIds.Count == 0)
-                return RedirectToAction("ApplyDiscount");
-
-            foreach (var planId in vm.PlanIds)
+            if (vm.DiscountId == 0)
             {
-               await DiscountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
+                 ModelState.AddModelError(nameof(vm.DiscountId), "Please select a discount.");
+             }
+
+            if (vm.PlanIds == null || vm.PlanIds.Count == 0)
+            {
+                ModelState.AddModelError(nameof(vm.PlanIds), "Please select at least one plan.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var discounts = await _discountRepository.GetActiveDiscountsAsync();
+                var plans = await _planRepository.GetAllAsync();
+                vm.Plans = plans;
+                vm.DiscountCodeOptions = discounts.Select(d => new SelectListItem
+                {
+                    Value = d.DiscountId.ToString(),
+                    Text = d.DiscountCode
+                }).ToList();
+               
+            }
+
+            if (vm.PlanIds != null)
+            {
+                foreach (var planId in vm.PlanIds)
+                {
+                   await _discountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
+                }
             }
 
             return RedirectToAction("Discounts");
@@ -317,7 +349,7 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> EditDiscount(int id)
         {
-            var discount = await DiscountRepository.GetDiscountByIdAsync(id);
+            var discount = await _discountRepository.GetDiscountByIdAsync(id);
 
 
             if (discount == null)
@@ -331,7 +363,7 @@ namespace TeamYellow.Controllers
             bool HasPlans = discount.PlanDiscounts.Count != 0;
 
             // Await the plans and then use Select
-            var plans = (await PlanRepository.GetAllAsync())
+            var plans = (await _planRepository.GetAllAsync())
                 .Where(p => p.PlanName != "Free");
 
             var vm = new DiscountVM
@@ -349,7 +381,7 @@ namespace TeamYellow.Controllers
                 {
                     Value = p.PlanId.ToString(),
                     Text = p.PlanName,
-                    Selected = discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
+                    Selected = discount.PlanDiscounts.Any(pd => pd.Plan.PlanId == p.PlanId)
                 }).ToList()
             };
 
@@ -375,7 +407,7 @@ namespace TeamYellow.Controllers
             {
                 return View(vm);
             }
-            var discount = await DiscountRepository.GetDiscountByIdAsync(vm.DiscountId);
+            var discount = await _discountRepository.GetDiscountByIdAsync(vm.DiscountId);
 
             if (discount == null)
             {
@@ -407,14 +439,18 @@ namespace TeamYellow.Controllers
             {
                 foreach (var planId in vm.PlanIds)
                 {
-                    discount.PlanDiscounts.Add(new PlanDiscount
+                    var plan = await _planRepository.GetById(planId);
+                    if (plan != null)
                     {
-                        DiscountId = discount.DiscountId,
-                        PlanId = planId
-                    });
+                        discount.PlanDiscounts.Add(new PlanDiscount
+                        {
+                            Plan = plan,
+                            Discount = discount
+                        });
+                    }
                 }
             }
-            await DiscountRepository.UpdateAsync(discount);
+            await _discountRepository.UpdateAsync(discount);
 
             return RedirectToAction(nameof(Discounts));
         }
@@ -423,7 +459,7 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteDiscount(int id)
         {
-            var discount = await DiscountRepository.GetDiscountByIdAsync(id);
+            var discount = await _discountRepository.GetDiscountByIdAsync(id);
 
             if (discount == null)
                 return NotFound();
@@ -443,7 +479,7 @@ namespace TeamYellow.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteDiscountConfirmed(int id)
         {
-            var deleted = await DiscountRepository.DeleteIfUnusedAsync(id);
+            var deleted = await _discountRepository.DeleteIfUnusedAsync(id);
 
             if (!deleted)
             {

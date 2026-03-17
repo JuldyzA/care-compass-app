@@ -37,12 +37,9 @@ namespace TeamYellow.Repositories
         /// </summary>
         /// <param name="entity">The plan entity with updated values.</param>
         /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> Update(Plan entity)
+        public async Task<bool> UpdateAsync(Plan entity)
         {
-            try
-            {
-                var existingPlan = await _context.Plans.FindAsync(entity.PlanId);
-
+            var existingPlan = await _context.Plans.FindAsync(entity.PlanId);
                 if (existingPlan == null)
                 {
                     return false;
@@ -57,12 +54,6 @@ namespace TeamYellow.Repositories
                 await _context.SaveChangesAsync();
 
                 return true;
-            }
-            catch (Exception)
-            {
-                // Optionally log the exception here
-                return false;
-            }
-        }
+        }  
     }
 }
