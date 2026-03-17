@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 
 namespace TeamYellow.Repositories;
 
@@ -17,6 +18,7 @@ public class ClientRepository
 
     /// <summary>
     /// Retrieves a paginated list of client data for a specific counsellor, including the total record count for pagination.
+    /// Uses PaginatedList helper to produce pagination metadata.
     /// </summary>
     /// <param name="userId">The unique identifier of the counsellor.</param>
     /// <param name="page">The current page number to retrieve.</param>
@@ -37,20 +39,15 @@ public class ClientRepository
                CreatedAt = c.CreatedAt
            });
 
-        int total = await query.CountAsync();
-
-        List<ClientDto> clientsDtos = await query
-            .OrderBy(c => c.FirstName)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        // Use PaginatedList to get items + metadata
+        var paginated = await PaginatedList<ClientDto>.CreateAsync(query.OrderBy(c => c.FirstName), page, pageSize);
 
         ClientTableDto dto = new ClientTableDto
         {
-            Clients = clientsDtos,
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = total
+            Clients = paginated,
+            Page = paginated.PageIndex,
+            PageSize = paginated.PageSize,
+            TotalCount = paginated.TotalCount
         };
 
         return dto;

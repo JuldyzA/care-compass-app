@@ -9,6 +9,8 @@ namespace TeamYellow.Helpers
     {
         public int PageIndex { get; }
         public int TotalPages { get; }
+        public int TotalCount { get; }
+        public int PageSize { get; }
 
         public bool HasPreviousPage => PageIndex > 1;
         public bool HasNextPage => PageIndex < TotalPages;
@@ -19,6 +21,9 @@ namespace TeamYellow.Helpers
             {
                 throw new ArgumentOutOfRangeException(nameof(pageSize), "pageSize must be greater than zero.");
             }
+
+            TotalCount = count;
+            PageSize = pageSize;
 
             int totalPagesCalculated = (int)Math.Ceiling(count / (double)pageSize);
             TotalPages = Math.Max(1, totalPagesCalculated);

@@ -3,9 +3,11 @@
 });
 
 document.addEventListener("click", (e) => {
-    if (e.target.matches(".client-page-link")) {
+    const link = e.target.closest(".client-page-link");
+    if (link) {
         e.preventDefault();
-        loadClients(e.target.dataset.page);
+        const page = parseInt(link.dataset.page, 10) || 1;
+        loadClients(page);
     }
 });
 

@@ -41,9 +41,13 @@ public class ClientHelper
             endEntry = Math.Max(0, Math.Min(dto.TotalCount, calculatedEnd));
         }
 
+        int totalPages = (dto.PageSize > 0) ? (int)Math.Ceiling(dto.TotalCount / (double)dto.PageSize) : 1;
+
         return new ClientTableVm
         {
             Page = dto.Page,
+            PageSize = dto.PageSize,
+            TotalPages = Math.Max(1, totalPages),
             StartEntry = startEntry,
             EndEntry = endEntry,
             TotalCount = dto.TotalCount,
