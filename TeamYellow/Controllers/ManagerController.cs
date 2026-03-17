@@ -244,6 +244,7 @@ namespace TeamYellow.Controllers
         /// <param name="vm">The view model containing discount information.</param>
         /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDiscount(DiscountVM vm)
         {
             if (!ModelState.IsValid)
@@ -299,6 +300,7 @@ namespace TeamYellow.Controllers
         /// <param name="vm">The view model containing selected plan IDs and discount ID.</param>
         /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public  async Task<IActionResult> ApplyDiscount(DiscountVM vm)
         {
             if (vm.DiscountId == 0)
@@ -402,6 +404,7 @@ namespace TeamYellow.Controllers
         /// the edit form with validation errors.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditDiscount(DiscountVM vm)
         {
             if (!ModelState.IsValid)
