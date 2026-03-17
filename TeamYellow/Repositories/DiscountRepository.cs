@@ -23,10 +23,11 @@ namespace TeamYellow.Repositories
         }
 
 
-public async Task<List<Discount>> GetActiveDiscountsAsync()
-{
+        public async Task<List<Discount>> GetActiveDiscountsAsync()
+        {
+            var nowUtc = DateTime.UtcNow;
             return await _context.Discounts
-                    .Where(d => d.StartDateTime <= DateTime.Now && d.EndDateTime >= DateTime.Now)
+                    .Where(d => d.StartDateTime <= nowUtc && d.EndDateTime >= nowUtc)
                     .ToListAsync();
         }
         /// <summary>
@@ -53,7 +54,7 @@ public async Task<List<Discount>> GetActiveDiscountsAsync()
                 return;
 
             var exists = await _context.PlanDiscounts
-                .AnyAsync(pd => pd.Plan.PlanId == planId && pd.Discount.DiscountId == discountId);
+                .AnyAsync(pd => pd.PlanId == planId && pd.DiscountId == discountId);
 
             if (exists)
                 return;

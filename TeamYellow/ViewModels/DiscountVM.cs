@@ -9,7 +9,6 @@ namespace TeamYellow.ViewModels
     {
         public int DiscountId { get; set; }
 
-        [Required]
         [RegularExpression(@"^[A-Z0-9]{3,40}$",
             ErrorMessage = "Discount code must be 3–40 uppercase letters or numbers.")]
         public string DiscountCode { get; set; } = string.Empty;

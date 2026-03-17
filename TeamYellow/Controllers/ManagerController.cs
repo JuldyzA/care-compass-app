@@ -12,7 +12,7 @@ namespace TeamYellow.Controllers
     public class ManagerController : Controller
     {
         private readonly CounsellorRepository _counsellorRepository;
-        private readonly PlanRepository _planRepository;
+        private readonly IPlanRepository _planRepository;
         private readonly DiscountRepository _discountRepository;
 
 
@@ -21,7 +21,7 @@ namespace TeamYellow.Controllers
         /// /// <param name="counsellorRepository">The repository for counsellor data.</param>
         /// <param name="planRepository">The repository for plan data.</param>
         /// <param name="discountRepository">The repository for discount data.</param>
-        public ManagerController(CounsellorRepository counsellorRepository, PlanRepository planRepository, DiscountRepository discountRepository)
+        public ManagerController(CounsellorRepository counsellorRepository, IPlanRepository planRepository, DiscountRepository discountRepository)
         {
             _counsellorRepository = counsellorRepository;
             _planRepository = planRepository;
@@ -47,7 +47,7 @@ namespace TeamYellow.Controllers
                 dashboardData = dashboardData
                     .Where(d => d.Email != null && d.Email.Contains(searchEmail, StringComparison.OrdinalIgnoreCase))
                     .ToList();
-            };
+            }
             // Filter by start date
             if (startDate.HasValue)
             {
@@ -179,6 +179,7 @@ namespace TeamYellow.Controllers
         /// /// <param name="vm">The view model containing updated plan information.</param>
         /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlanEdit(PlanVM vm)
         {
             if (!ModelState.IsValid)
@@ -320,7 +321,7 @@ namespace TeamYellow.Controllers
                     Value = d.DiscountId.ToString(),
                     Text = d.DiscountCode
                 }).ToList();
-               
+                return View(vm);
             }
 
             if (vm.PlanIds != null)
@@ -415,13 +416,14 @@ namespace TeamYellow.Controllers
             }
 
             //update date of discount
-            if (discount.EndDateTime < DateTime.Now)
+            var now = DateTime.Now;
+            if (discount.EndDateTime < now)
             {
                 // expired → allow reactivation
                 discount.StartDateTime = vm.StartDateTime;
                 discount.EndDateTime = vm.EndDateTime;
             }
-            else if (discount.StartDateTime <= DateTime.Now)
+            else if (discount.StartDateTime <= now)
             {
                 // active → only end date editable
                 discount.EndDateTime = vm.EndDateTime;
@@ -433,20 +435,24 @@ namespace TeamYellow.Controllers
                 discount.EndDateTime = vm.EndDateTime;
             }
 
-            //clear existing plan associations and add new ones based on selected plan IDs
-            discount.PlanDiscounts.Clear();
-            if (vm.PlanIds != null)
+            //only allow plan changes when discount is not currently active
+            var isActive = discount.StartDateTime <= now && discount.EndDateTime >= now;
+            if (!isActive)
             {
-                foreach (var planId in vm.PlanIds)
+                discount.PlanDiscounts.Clear();
+                if (vm.PlanIds != null)
                 {
-                    var plan = await _planRepository.GetById(planId);
-                    if (plan != null)
+                    foreach (var planId in vm.PlanIds)
                     {
-                        discount.PlanDiscounts.Add(new PlanDiscount
+                        var plan = await _planRepository.GetById(planId);
+                        if (plan != null)
                         {
-                            Plan = plan,
-                            Discount = discount
-                        });
+                            discount.PlanDiscounts.Add(new PlanDiscount
+                            {
+                                Plan = plan,
+                                Discount = discount
+                            });
+                        }
                     }
                 }
             }
