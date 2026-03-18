@@ -222,6 +222,14 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to send confirmation email for user {UserId}", user.Id);
+
+                    var deleteResult = await _userManager.DeleteAsync(user);
+                    if (!deleteResult.Succeeded)
+                    {
+                        _logger.LogError("Failed to delete user {UserId} after email send failure.", user.Id);
+                    }
+                    ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try registering again later.");
+                    return Page();
                 }
                 
 
