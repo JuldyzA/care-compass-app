@@ -146,66 +146,51 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
 
-                if (result.Succeeded)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
                 {
-                    _logger.LogInformation("User created a new account with password.");
-                    await using (var transaction = await _context.Database.BeginTransactionAsync())
+                    var result = await _userManager.CreateAsync(user, Input.Password);
+                    if (!result.Succeeded)
                     {
-                        try
+                        foreach (var error in result.Errors)
                         {
-                            //create new userprofile record
-                            var userProfile = new UserProfile
-                            {
-                                UserId = user.Id,
-                                FirstName = Input.FirstName,
-                                LastName = Input.LastName,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            //assign role to user
-                            var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
-                            if (!roleResult.Succeeded)
-                            {
-                                foreach (var error in roleResult.Errors)
-                                {
-                                    ModelState.AddModelError(string.Empty, error.Description);
-                                }
-
-                                await transaction.RollbackAsync();
-
-                                var deleteResult = await _userManager.DeleteAsync(user);
-                                if (!deleteResult.Succeeded)
-                                {
-                                    foreach (var error in deleteResult.Errors)
-                                    {
-                                        ModelState.AddModelError(string.Empty, error.Description);
-                                    }
-                                }
-                                return Page();
-                            }
-                            //add userprofile to database
-                            _context.UserProfiles.Add(userProfile);
-                            //save changes
-                            await _context.SaveChangesAsync();
-                            await transaction.CommitAsync();
+                            ModelState.AddModelError(string.Empty, error.Description);
                         }
-                        catch (Exception ex)
-                        {
-                            await transaction.RollbackAsync();
-                            _logger.LogError(ex, "Error occurred while creating user profile or assigning role for user {UserId}.", user.Id);
-                            var deleteResult = await _userManager.DeleteAsync(user);
-                            if (!deleteResult.Succeeded)
-                            {
-                                foreach (var error in deleteResult.Errors)
-                                {
-                                    ModelState.AddModelError(string.Empty, error.Description);
-                                }
-                            }
-                            ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
-                            return Page();
-                        }
+                        await transaction.RollbackAsync();
+                        return Page();
                     }
+
+                    _logger.LogInformation("User created a new account with password. UserId: {UserId}, Email: {Email}", user.Id, user.Email);
+
+                    var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+                    if (!roleResult.Succeeded)
+                    {
+                        var roleErrors = string.Join("; ", roleResult.Errors.Select(e => $"[{e.Code}] {e.Description}"));
+
+                        _logger.LogWarning("Failed to add user {UserId} to role {Role}. Errors: {Errors}", user.Id, "Registered_Visitor", roleErrors);
+
+                        foreach (var error in roleResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+
+                        await transaction.RollbackAsync();
+                        return Page();
+                    }
+
+                    var userProfile = new UserProfile
+                    {
+                        UserId = user.Id,
+                        FirstName = Input.FirstName,
+                        LastName = Input.LastName,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.UserProfiles.Add(userProfile);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -213,7 +198,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                        values: new { area = "Identity", userId, code, returnUrl },
                         protocol: Request.Scheme);
 
                     ComposeEmailModel payload = new ComposeEmailModel
@@ -222,11 +207,12 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                         Subject = "Confirm your email",
                         Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
                     };
+
                     await _emailService.SendEmailAsync(payload);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
                     }
                     else
                     {
@@ -234,13 +220,15 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
                 }
-                foreach (var error in result.Errors)
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error occurred during registration for email {Email}.", Input.Email); 
+                    ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
+                    return Page();
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
 
