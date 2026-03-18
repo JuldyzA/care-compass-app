@@ -134,8 +134,9 @@ public class SubscriptionController : Controller
 
             return Redirect(approvalUrl);
         }
-        catch (KeyNotFoundException)
+        catch (KeyNotFoundException ex)
         {
+            _logger.LogError(ex, "Key not found for user email {Email}. Redirecting to plan selection.", user.Email);
             return NotFound();
         }
         catch (Exception ex)
@@ -214,8 +215,9 @@ public class SubscriptionController : Controller
             };
             return View("Success", vm);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error completing subscription for order {OrderId}.", orderId);
             TempData["Message"] = "Payment failed. Please try again.";
             TempData["MessageType"] = "danger";
             return RedirectToAction("Index", "Plan");
