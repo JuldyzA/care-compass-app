@@ -137,6 +137,8 @@ public class SubscriptionController : Controller
         catch (KeyNotFoundException ex)
         {
             _logger.LogError(ex, "Key not found for user email {Email}. Redirecting to plan selection.", user.Email);
+            TempData["Message"] = "We couldn't find the requested subscription information. Please select a plan again.";
+            TempData["MessageType"] = "error";
             return RedirectToAction("Index", "Plan");
         }
         catch (Exception ex)
@@ -146,6 +148,8 @@ public class SubscriptionController : Controller
                 "Error processing subscription payment for user {UserId} and plan {PlanId}.",
                 user.Id,
                 planId);
+            TempData["Message"] = "An unexpected error occurred while processing your subscription. Please try again.";
+            TempData["MessageType"] = "error";
             return RedirectToAction("Index", "Plan");
         }
     }
