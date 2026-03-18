@@ -79,50 +79,56 @@ public class SubscriptionController : Controller
         try
         {
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
-            if (counsellor == null)
+
+            // Only check active subscription if counsellor already exists
+            if (counsellor != null)
             {
-                string licenceId;
-                var random = new Random();
-                do
+                var existingSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
+                if (existingSubscription?.PlanId == planId)
                 {
-                    licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
+                    TempData["Message"] = "You are already subscribed to this plan.";
+                    TempData["MessageType"] = "info";
+                    return RedirectToAction("Index", "Plan");
                 }
-                while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
-                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                var displayName = string.Join(" ", new[]
-                {
-                    profile?.FirstName,
-                    profile?.LastName
-                }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                if (string.IsNullOrWhiteSpace(displayName))
-                {
-                    displayName = user.UserName ?? user.Email ?? "Unknown";
-                }
-
-                counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
-                {
-                    UserId = user.Id,
-                    DisplayName = displayName,
-                    PractitionerLicenceId = licenceId,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
-            var existingSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
-            if (existingSubscription?.PlanId == planId)
-            {
-                TempData["Message"] = "You are already subscribed to this plan.";
-                TempData["MessageType"] = "info";
-                return RedirectToAction("Index", "Plan");
             }
 
             var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, returnUrl, cancelUrl);
 
+            // Free plan path
             if (approvalUrl == string.Empty)
             {
+                if (counsellor == null)
+                {
+                    string licenceId;
+                    var random = new Random();
+                    do
+                    {
+                        licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
+                    }
+                    while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+                    var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+
+                    var displayName = string.Join(" ", new[]
+                                    {
+                                        profile?.FirstName,
+                                        profile?.LastName
+                                    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                    if (string.IsNullOrWhiteSpace(displayName))
+                    {
+                        displayName = user.UserName ?? user.Email ?? "Unknown";
+                    }
+
+                    counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
+                    {
+                        UserId = user.Id,
+                        DisplayName = displayName,
+                        PractitionerLicenceId = licenceId,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
                 var result = await _subscriptionService.SubscribeFree(counsellor.CounsellorId, user.UserName ?? "Unknown", planId);
                 try
                 {
@@ -194,16 +200,44 @@ public class SubscriptionController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
-        if (counsellor == null)
-        {
-            TempData["Message"] = "Counsellor profile not found.";
-            TempData["MessageType"] = "danger";
-            return RedirectToAction("Index", "Plan");
-        }
-
         try
         {
+            var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+
+            if (counsellor == null)
+            {
+                string licenceId;
+                var random = new Random();
+
+                do
+                {
+                    licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
+                }
+                while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+
+                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+
+                var displayName = string.Join(" ", new[]
+                                {
+                                    profile?.FirstName,
+                                    profile?.LastName
+                                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = user.UserName ?? user.Email ?? "Unknown";
+                }
+
+                counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
+                {
+                    UserId = user.Id,
+                    DisplayName = displayName,
+                    PractitionerLicenceId = licenceId,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
             var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
             if (result == SubscriptionResult.AlreadySubscribed)
             {
