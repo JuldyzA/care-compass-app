@@ -64,6 +64,11 @@ public class PlanController : Controller
                 }
             }
         }
+        // Copy TempData message (if any) into ViewData so the view can render it
+        if (TempData.ContainsKey("Message"))
+            ViewData["Message"] = TempData["Message"];
+        if (TempData.ContainsKey("MessageType"))
+            ViewData["MessageType"] = TempData["MessageType"];
 
         return View(plans.Select(MapToPlanVM).ToList());
     }
@@ -87,12 +92,21 @@ public class PlanController : Controller
             return NotFound();
 
         if (User.IsInRole("Free_Counselor") && plan.Price == 0)
-            return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+        {
+
+            TempData["Message"] = "You are already subscribed to this plan.";
+            TempData["MessageType"] = "info";
+            return RedirectToAction(nameof(Index));
+        }
 
         if (User.IsInRole("Paid_Counselor"))
         {
             if (plan.Price == 0)
-                return RedirectToAction(nameof(Index), new { error = "You cannot downgrade to the Free plan from here." });
+            {
+                TempData["Message"] = "You cannot downgrade to the Free plan from here.";
+                TempData["MessageType"] = "warning";
+                return RedirectToAction(nameof(Index));
+            }
 
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
@@ -102,7 +116,11 @@ public class PlanController : Controller
                 {
                     var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
                     if (subscription?.PlanId == id)
-                        return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+                    {
+                        TempData["Message"] = "You are already subscribed to this plan.";
+                        TempData["MessageType"] = "info";
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
             }
         }
