@@ -2,26 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
+using TeamYellow.Data;
 using TeamYellow.Models;
 using TeamYellow.Services;
 using static TeamYellow.Services.ReCAPTCHA;
-using TeamYellow.Data;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
 {
@@ -159,25 +151,49 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-                    //create new userprofile record
-                    var userProfile = new UserProfile
+                    await using (var transaction = await _context.Database.BeginTransactionAsync())
                     {
-                        UserId = user.Id,
-                        FirstName = Input.FirstName,
-                        LastName = Input.LastName,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    //assign role to user
-                    var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+                        try
+                        {
+                            //create new userprofile record
+                            var userProfile = new UserProfile
+                            {
+                                UserId = user.Id,
+                                FirstName = Input.FirstName,
+                                LastName = Input.LastName,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            //assign role to user
+                            var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+                            if (!roleResult.Succeeded)
+                            {
+                                foreach (var error in roleResult.Errors)
+                                {
+                                    ModelState.AddModelError(string.Empty, error.Description);
+                                }
 
-                    if (!roleResult.Succeeded)
-                    {
-                        throw new Exception("Failed to assign role.");
+                                var deleteResult = await _userManager.DeleteAsync(user);
+                                if (!deleteResult.Succeeded)
+                                {
+                                    foreach (var error in deleteResult.Errors)
+                                    {
+                                        ModelState.AddModelError(string.Empty, error.Description);
+                                    }
+                                }
+                                return Page();
+                            }
+                            //add userprofile to database
+                            _context.UserProfiles.Add(userProfile);
+                            //save changes
+                            await _context.SaveChangesAsync();
+                            await transaction.CommitAsync();
+                        }
+                        catch
+                        {
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
                     }
-                    //add userprofile to database
-                    _context.UserProfiles.Add(userProfile);
-                    //save changes
-                    await _context.SaveChangesAsync();
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
