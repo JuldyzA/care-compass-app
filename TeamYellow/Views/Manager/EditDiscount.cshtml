@@ -1,0 +1,132 @@
+﻿@using System.Security.Claims
+@model TeamYellow.ViewModels.DiscountVM
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        @await Html.PartialAsync("_ManagerSidebar", Model)
+
+        <!-- Main Content -->
+        <main class="col-md-10 p-4">
+
+            <!-- Transactions Table -->
+            <div class="card p-3">
+                <h5 class="mb-3">Discounts</h5>
+
+                <form asp-action="EditDiscount" method="post">
+                    <input type="hidden" asp-for="DiscountId" />
+
+                    <div class="mb-3">
+                        <label>Discount Code</label>
+                        <input asp-for="DiscountCode" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Discount Type</label>
+                        <input asp-for="DiscountType" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Value</label>
+                        <input asp-for="Value" class="form-control" type="number" readonly />
+                    </div>
+
+                   
+                    <div class="mb-3">
+                        <label>Start Date</label>
+
+                        @if (Model.IsStarted && !Model.IsExpired)
+                        {
+                          
+                            <input asp-for="StartDateTime"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   readonly />
+
+                            <small class="text-warning">
+                                Start date cannot be changed because the discount has already started.
+                            </small>
+                        }
+                        else
+                        {
+                            
+                            <input asp-for="StartDateTime"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                        }
+
+                        
+                    </div>
+                    
+               
+                    <div class="mb-3">
+                        <label>End Date</label>
+
+                        <input asp-for="EndDateTime"
+                               type="datetime-local"
+                               class="form-control"
+                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")" /> 
+                    </div>
+
+                    @if (Model.IsExpired)
+                    {
+                        <div class="alert alert-warning">
+                            This discount has expired. To activate it again, please set new start and end dates.
+                        </div>
+                    }
+                    else if (Model.IsStarted)
+                    {
+                        <div class="alert alert-warning">
+                            This discount is currently active. You can only modify the end date.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            You can modify the start and end dates of this discount.
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label">Plans</label>
+
+                        @if (Model.AvailablePlans != null)
+                        {
+                            foreach (var plan in Model.AvailablePlans)
+                            {
+                                <div class="form-check">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="PlanIds"
+                                           value="@plan.Value"
+                                           id="plan_@plan.Value"
+                                           @(plan.Selected ? "checked" : "")
+                                            />
+
+                                    <label class="form-check-label" for="plan_@plan.Value">
+                                        @plan.Text
+                                    </label>
+
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                           >
+                        Save
+                    </button>
+
+
+                </form>
+
+            </div>
+
+        </main>
+    </div>
+</div>

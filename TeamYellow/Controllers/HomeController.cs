@@ -33,7 +33,6 @@ namespace TeamYellow.Controllers
                     return RedirectToAction("Index", "Manager");
                 }
             }
-
             return View();
         }
 

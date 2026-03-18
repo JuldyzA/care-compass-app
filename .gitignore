@@ -124,6 +124,7 @@ src/.vs/config/applicationhost.config
 # Personal notes  
 .notes.md
 
-# DB files
+#Database files
 *.db-shm
 *.db-wal
+*.db

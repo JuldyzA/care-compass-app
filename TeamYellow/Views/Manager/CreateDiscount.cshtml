@@ -1,0 +1,86 @@
+﻿@using System.Security.Claims
+@model TeamYellow.ViewModels.DiscountVM
+
+@{
+    
+    var now = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        @await Html.PartialAsync("_ManagerSidebar", Model)
+
+        <!-- Main Content -->
+        <main class="col-md-10 p-4">
+
+            <!-- Transactions Table -->
+            <div class="card p-3">
+                <h5 class="mb-3">Discounts</h5>
+
+                <form asp-action="CreateDiscount" method="post">
+                <div class="mb-3">
+                    <label>Discount Code</label>
+                    <small class="form-text text-muted">
+                        Note: Discount code must be 3–40 uppercase letters or numbers.
+                    </small>
+                        <input asp-for="DiscountCode" class="form-control" pattern="^[A-Z0-9]{3,40}$" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Discount Type</label>
+
+                    <select asp-for="DiscountType"
+                            asp-items="Html.GetEnumSelectList<DiscountType>()"
+                            class="form-select">
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+                    <label>Value</label>
+                    <input asp-for="Value" class="form-control" type="number" step="0.01" min="0" pattern="^\d+(\.\d{1,2})?$" title="Please enter a value with up to 2 decimal places."/>
+                </div>
+
+                    <div class="mb-3">
+
+                        <label>Start Date</label>
+                            <input asp-for="StartDateTime"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   min="@now"
+                               value="@Model.StartDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                               placeholder="Select start date and time" />
+                        <span asp-validation-for="StartDateTime" class="text-danger"></span>
+                    </div>
+
+                <div class="mb-3">
+                    <label>End Date</label>
+                        @if (Model.EndDateTime <= Model.StartDateTime && Model.EndDateTime != DateTime.MinValue)
+                        {
+                            <div class="alert alert-danger">
+                                End date must be after start date.
+                            </div>
+                        }
+
+                    <input asp-for="EndDateTime"
+                                type="datetime-local"
+                               value="@Model.EndDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                                min="@now"
+                               max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")"
+                           class="form-control" />
+                        <span asp-validation-for="EndDateTime" class="text-danger"></span>
+                    </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Create Discount
+                </button>
+
+                </form>
+
+            </div>
+
+        </main>
+    </div>
+</div>
