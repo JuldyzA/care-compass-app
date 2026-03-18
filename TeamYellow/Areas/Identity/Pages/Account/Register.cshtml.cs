@@ -21,6 +21,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
@@ -30,6 +31,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
@@ -38,6 +40,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ApplicationDbContext context)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
@@ -165,12 +168,29 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
                     _logger.LogInformation("User created a new account with password. UserId: {UserId}", user.Id);
 
+                    const string registeredVisitorRole = "Registered_Visitor";
+
+                    if (!await _roleManager.RoleExistsAsync(registeredVisitorRole))
+                    {
+                        _logger.LogError(
+                            "Required role {Role} does not exist during registration for email {Email}.",
+                            registeredVisitorRole,
+                            Input.Email);
+
+                        ModelState.AddModelError(
+                            string.Empty,
+                            "Registration is temporarily unavailable. Please try again later.");
+
+                        await transaction.RollbackAsync();
+                        return Page();
+                    }
+
                     var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
                     if (!roleResult.Succeeded)
                     {
                         var roleErrors = string.Join("; ", roleResult.Errors.Select(e => $"[{e.Code}] {e.Description}"));
 
-                        _logger.LogWarning("Failed to add user {UserId} to role {Role}. Errors: {Errors}", user.Id, "Registered_Visitor", roleErrors);
+                        _logger.LogWarning("Failed to add user {UserId} to role {Role}. Errors: {Errors}", user.Id, registeredVisitorRole, roleErrors);
 
                         foreach (var error in roleResult.Errors)
                         {
