@@ -158,7 +158,7 @@ public class SubscriptionController : Controller
     /// from the PayPal approval redirect.
     /// </param>
     /// <returns>
-    /// The success view with a confirmation message, or a redirect to the home page with an error
+    /// The success view with a confirmation message, or a redirect to the plan page with an error
     /// if the payment token is missing, the counsellor profile is not found, or the payment fails.
     /// </returns>
     [HttpGet]
@@ -168,7 +168,7 @@ public class SubscriptionController : Controller
         {
             TempData["Message"] = "Payment token is missing. Please try again.";
             TempData["MessageType"] = "danger";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Plan");
         }
 
         var user = await _userManager.GetUserAsync(User);
@@ -179,7 +179,7 @@ public class SubscriptionController : Controller
         {
             TempData["Message"] = "Counsellor profile not found.";
             TempData["MessageType"] = "danger";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Plan");
         }
 
         try
@@ -218,7 +218,7 @@ public class SubscriptionController : Controller
         {
             TempData["Message"] = "Payment failed. Please try again.";
             TempData["MessageType"] = "danger";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Plan");
         }
     }
 
