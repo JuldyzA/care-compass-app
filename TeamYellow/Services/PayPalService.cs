@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -156,7 +157,7 @@ public class PayPalService : IPayPalService
     /// <exception cref="Exception">
     /// Thrown if the PayPal response is missing <c>custom_id</c>, or if the payment capture status is not <c>COMPLETED</c>.
     /// </exception>
-    public async Task<(string CaptureId, string CustomId)> CaptureOrder(string token)
+    public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();
 
@@ -181,8 +182,15 @@ public class PayPalService : IPayPalService
             ?? json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
             ?? throw new Exception("PayPal response missing custom_id");
 
+        var capturedAmountText = json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["amount"]?["value"]?.ToString()
+            ?? json?["purchase_units"]?[0]?["amount"]?["value"]?.ToString()
+            ?? throw new Exception("PayPal response missing captured amount.");
+
+        if (!decimal.TryParse(capturedAmountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var capturedAmount))
+            throw new Exception("PayPal response contained an invalid captured amount.");
+
         if (status == "COMPLETED")
-            return (captureId, customId);
+            return (captureId, customId, capturedAmount);
 
         throw new Exception($"Payment capture failed. Status: {status}");
     }

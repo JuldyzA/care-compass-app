@@ -12,11 +12,13 @@ public class SubscriptionService(
     IPlanRepository planRepository,
     ISubscriptionRepository subscriptionRepository,
     ITransactionRepository transactionRepository,
+    DiscountRepository discountRepository,
     IPayPalService payPalService) : ISubscriptionService
 {
     private readonly IPlanRepository _planRepository = planRepository;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
+    private readonly DiscountRepository _discountRepository = discountRepository;
     private readonly IPayPalService _payPalService = payPalService;
 
     /// <summary>
@@ -80,7 +82,7 @@ public class SubscriptionService(
     /// The PayPal buyer approval URL for paid plans, or <see cref="string.Empty"/> for free plans.
     /// </returns>
     /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
-    public async Task<string> CreatePayPalOrder(int planId, string returnUrl, string cancelUrl)
+    public async Task<string> CreatePayPalOrder(int planId, string? discountCode, string returnUrl, string cancelUrl)
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
@@ -88,7 +90,23 @@ public class SubscriptionService(
         if (plan.Price == 0)
             return string.Empty;
 
-        return await _payPalService.CreateOrder(plan.Price, "CAD", returnUrl, cancelUrl, planId.ToString());
+        int? discountId = null;
+        decimal finalAmount = plan.Price;
+
+        if (!string.IsNullOrWhiteSpace(discountCode))
+        {
+            var discount = await _discountRepository.GetValidDiscountForPlanAsync(planId, discountCode);
+            if (discount != null)
+            {
+                discountId = discount.DiscountId;
+                var discountAmount = CalculateDiscountAmount(plan.Price, discount);
+                finalAmount = plan.Price - discountAmount;
+            }
+        }
+
+        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
+
+        return await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
     }
 
     /// <summary>
@@ -109,10 +127,18 @@ public class SubscriptionService(
     /// <exception cref="Exception">Thrown if the PayPal custom ID cannot be parsed as a valid plan identifier.</exception>
     public async Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string userName)
     {
-        var (captureId, customId) = await _payPalService.CaptureOrder(token);
+        var (captureId, customId, capturedAmount) = await _payPalService.CaptureOrder(token);
 
-        if (!int.TryParse(customId, out var planId))
+        var parts = customId.Split('|', StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0 || !int.TryParse(parts[0], out var planId))
             throw new Exception("PayPal response contained an invalid plan identifier.");
+
+        int? discountId = null;
+        if (parts.Length > 1 && int.TryParse(parts[1], out var parsedDiscountId) && parsedDiscountId > 0)
+        {
+            discountId = parsedDiscountId;
+        }
 
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
@@ -142,12 +168,28 @@ public class SubscriptionService(
         {
             SubscriptionId = subscription.SubscriptionId,
             PayerName = userName,
-            Amount = plan.Price,
+            Amount = capturedAmount,
             Currency = "CAD",
             Provider = "PayPal",
-            ProviderOrderId = captureId
+            ProviderOrderId = captureId,
+            DiscountId = discountId
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+    }
+
+    private static decimal CalculateDiscountAmount(decimal originalPrice, Models.Discount discount)
+    {
+        decimal discountAmount = discount.DiscountType == Models.DiscountType.Percent
+            ? originalPrice * (discount.Value / 100m)
+            : discount.Value;
+
+        if (discountAmount < 0)
+            discountAmount = 0;
+
+        if (discountAmount > originalPrice)
+            discountAmount = originalPrice;
+
+        return decimal.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
     }
 }

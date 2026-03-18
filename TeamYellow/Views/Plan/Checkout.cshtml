@@ -1,27 +1,98 @@
-﻿@model TeamYellow.ViewModels.PlanVM
+﻿@model TeamYellow.ViewModels.CheckoutVM
 
 @{
     ViewData["Title"] = "Checkout";
 }
 
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Checkout</h3>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">Your Cart</h3>
+
+                    <div class="border rounded p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4 class="mb-1">@Model.BillingType subscription</h4>
+                                <p class="text-muted mb-2">@Model.PlanDescription</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-semibold fs-5">CAD @Model.OriginalPrice.ToString("F2")</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h4 class="card-title">@Model.PlanName</h4>
-                    <p class="card-text">@Model.PlanDescription</p>
+            </div>
+
+            @if (Model.PlanFeatures.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">Plan Features</h4>
+                        <ul class="mb-0">
+                            @foreach (var feature in Model.PlanFeatures)
+                            {
+                                <li class="mb-2">
+                                    <strong>@feature.FeatureName</strong><br />
+                                    <span class="text-muted">@feature.FeatureDescription</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>CAD @Model.OriginalPrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Discount</span>
+                        <span class="text-success">- CAD @Model.DiscountAmount.ToString("F2")</span>
+                    </div>
+
+                    @if (Model.OriginalPrice > 0)
+                    {
+                        <form asp-controller="Plan" asp-action="ApplyDiscount" method="post" class="mb-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="PlanId" />
+
+                            <div class="input-group">
+                                <input asp-for="DiscountCode" class="form-control" placeholder="Discount code" />
+                                <button type="submit" class="btn btn-outline-secondary">Apply</button>
+                            </div>
+                        </form>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.DiscountMessage))
+                    {
+                        <div class="alert @(Model.DiscountApplied ? "alert-success" : "alert-warning") py-2">
+                            @Model.DiscountMessage
+                        </div>
+                    }
+
                     <hr />
+
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="h5">Total:</span>
-                        <span class="h4 text-primary">CAD @Model.Price.ToString("F2")</span>
+                        <span class="h5 mb-0">Total</span>
+                        <span class="h4 text-primary mb-0">CAD @Model.FinalAmount.ToString("F2")</span>
                     </div>
 
                     <form asp-controller="Subscription" asp-action="Subscribe" method="post">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="planId" value="@Model.PlanId" />
+                        <input type="hidden" name="discountCode" value="@Model.DiscountCode" />
+
                         <button type="submit" class="btn btn-warning w-100 btn-lg">
                             Pay with PayPal
                         </button>

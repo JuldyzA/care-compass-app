@@ -19,6 +19,7 @@ public class PlanController : Controller
     private readonly IPlanService _planService;
     private readonly CounsellorRepository _counsellorRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly DiscountRepository _discountRepository;
     private readonly UserManager<IdentityUser> _userManager;
 
     /// <summary>
@@ -32,11 +33,13 @@ public class PlanController : Controller
         IPlanService planService,
         CounsellorRepository counsellorRepository,
         ISubscriptionRepository subscriptionRepository,
+        DiscountRepository discountRepository,
         UserManager<IdentityUser> userManager)
     {
         _planService = planService;
         _counsellorRepository = counsellorRepository;
         _subscriptionRepository = subscriptionRepository;
+        _discountRepository = discountRepository;
         _userManager = userManager;
     }
 
@@ -84,7 +87,7 @@ public class PlanController : Controller
     /// if the plan is unavailable or the user is already subscribed.
     /// </returns>
     [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
-    public async Task<IActionResult> Checkout(int id)
+    public async Task<IActionResult> Checkout(int id, string? discountCode = null)
     {
         var plan = await _planService.GetPlanById(id);
 
@@ -93,7 +96,6 @@ public class PlanController : Controller
 
         if (User.IsInRole("Free_Counselor") && plan.Price == 0)
         {
-
             TempData["Message"] = "You are already subscribed to this plan.";
             TempData["MessageType"] = "info";
             return RedirectToAction(nameof(Index));
@@ -125,7 +127,47 @@ public class PlanController : Controller
             }
         }
 
-        return View(MapToPlanVM(plan));
+        var vm = MapToCheckoutVM(plan);
+
+        if (plan.Price == 0)
+        {
+            vm.FinalAmount = 0;
+            return View(vm);
+        }
+
+        if (!string.IsNullOrWhiteSpace(discountCode))
+        {
+            vm.DiscountCode = discountCode.Trim().ToUpperInvariant();
+
+            var discount = await _discountRepository.GetValidDiscountForPlanAsync(plan.PlanId, vm.DiscountCode);
+
+            if (discount == null)
+            {
+                vm.DiscountMessage = "Invalid, expired, or ineligible discount code.";
+            }
+            else
+            {
+                vm.AppliedDiscountId = discount.DiscountId;
+                vm.DiscountAmount = CalculateDiscountAmount(plan.Price, discount);
+                vm.FinalAmount = plan.Price - vm.DiscountAmount;
+                vm.DiscountApplied = true;
+                vm.DiscountMessage = "Discount code applied successfully.";
+            }
+        }
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
+    public IActionResult ApplyDiscount(CheckoutVM vm)
+    {
+        return RedirectToAction(nameof(Checkout), new
+        {
+            id = vm.PlanId,
+            discountCode = vm.DiscountCode
+        });
     }
 
     /// <summary>
@@ -147,4 +189,34 @@ public class PlanController : Controller
                 FeatureDescription = f.FeatureDescription
             })]
     };
+
+    private static CheckoutVM MapToCheckoutVM(Plan plan) => new()
+    {
+        PlanId = plan.PlanId,
+        PlanName = plan.PlanName,
+        PlanDescription = plan.PlanDescription,
+        BillingType = plan.BillingType,
+        OriginalPrice = plan.Price,
+        FinalAmount = plan.Price,
+        PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
+    {
+        FeatureName = f.FeatureName,
+        FeatureDescription = f.FeatureDescription
+    })]
+    };
+
+    private static decimal CalculateDiscountAmount(decimal originalPrice, Discount discount)
+    {
+        decimal discountAmount = discount.DiscountType == DiscountType.Percent
+            ? originalPrice * (discount.Value / 100m)
+            : discount.Value;
+
+        if (discountAmount < 0)
+            discountAmount = 0;
+
+        if (discountAmount > originalPrice)
+            discountAmount = originalPrice;
+
+        return decimal.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
+    }
 }

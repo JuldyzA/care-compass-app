@@ -65,7 +65,7 @@ public class SubscriptionController : Controller
     /// </returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Subscribe(int planId)
+    public async Task<IActionResult> Subscribe(int planId, string? discountCode)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
@@ -92,7 +92,7 @@ public class SubscriptionController : Controller
                 }
             }
 
-            var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, returnUrl, cancelUrl);
+            var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, discountCode, returnUrl, cancelUrl);
 
             // Free plan path
             if (approvalUrl == string.Empty)
