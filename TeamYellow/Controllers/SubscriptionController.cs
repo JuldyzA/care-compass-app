@@ -137,7 +137,7 @@ public class SubscriptionController : Controller
         catch (KeyNotFoundException ex)
         {
             _logger.LogError(ex, "Key not found for user email {Email}. Redirecting to plan selection.", user.Email);
-            return NotFound();
+            return RedirectToAction("Index", "Plan");
         }
         catch (Exception ex)
         {
