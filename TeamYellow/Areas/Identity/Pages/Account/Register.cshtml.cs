@@ -172,6 +172,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                                     ModelState.AddModelError(string.Empty, error.Description);
                                 }
 
+                                await transaction.RollbackAsync();
+
                                 var deleteResult = await _userManager.DeleteAsync(user);
                                 if (!deleteResult.Succeeded)
                                 {
@@ -188,10 +190,20 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                             await _context.SaveChangesAsync();
                             await transaction.CommitAsync();
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             await transaction.RollbackAsync();
-                            throw;
+                            _logger.LogError(ex, "Error occurred while creating user profile or assigning role for user {UserId}.", user.Id);
+                            var deleteResult = await _userManager.DeleteAsync(user);
+                            if (!deleteResult.Succeeded)
+                            {
+                                foreach (var error in deleteResult.Errors)
+                                {
+                                    ModelState.AddModelError(string.Empty, error.Description);
+                                }
+                            }
+                            ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
+                            return Page();
                         }
                     }
 
