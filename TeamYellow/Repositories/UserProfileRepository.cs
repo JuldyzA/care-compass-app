@@ -22,6 +22,7 @@ namespace TeamYellow.Repositories
         public async Task<UserProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.UserProfiles
+                .AsNoTracking()
                 .FirstOrDefaultAsync(up => up.UserId == userId);
         }
     }

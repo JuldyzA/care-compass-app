@@ -97,42 +97,12 @@ public class SubscriptionController : Controller
             // Free plan path
             if (approvalUrl == string.Empty)
             {
-                if (counsellor == null)
-                {
-                    string licenceId;
-                    var random = new Random();
-                    do
-                    {
-                        licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
-                    }
-                    while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
-                    var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                    var displayName = string.Join(" ", new[]
-                                    {
-                                        profile?.FirstName,
-                                        profile?.LastName
-                                    }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                    if (string.IsNullOrWhiteSpace(displayName))
-                    {
-                        displayName = user.UserName ?? user.Email ?? "Unknown";
-                    }
-
-                    counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
-                    {
-                        UserId = user.Id,
-                        DisplayName = displayName,
-                        PractitionerLicenceId = licenceId,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    });
-                }
+                counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
                 var result = await _subscriptionService.SubscribeFree(counsellor.CounsellorId, user.UserName ?? "Unknown", planId);
                 try
                 {
-                    await AssignCounsellorRole(user.Id, "Free_Counselor");
+                    await AssignCounsellorRoleAsync(user.Id, "Free_Counselor");
                 }
                 catch (Exception ex)
                 {
@@ -204,39 +174,7 @@ public class SubscriptionController : Controller
         {
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
 
-            if (counsellor == null)
-            {
-                string licenceId;
-                var random = new Random();
-
-                do
-                {
-                    licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
-                }
-                while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
-
-                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                var displayName = string.Join(" ", new[]
-                                {
-                                    profile?.FirstName,
-                                    profile?.LastName
-                                }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                if (string.IsNullOrWhiteSpace(displayName))
-                {
-                    displayName = user.UserName ?? user.Email ?? "Unknown";
-                }
-
-                counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
-                {
-                    UserId = user.Id,
-                    DisplayName = displayName,
-                    PractitionerLicenceId = licenceId,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+            counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
             var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
             if (result == SubscriptionResult.AlreadySubscribed)
@@ -247,7 +185,7 @@ public class SubscriptionController : Controller
             }
             try
             {
-                await AssignCounsellorRole(user.Id, "Paid_Counselor");
+                await AssignCounsellorRoleAsync(user.Id, "Paid_Counselor");
             }
             catch (Exception ex)
             {
@@ -295,19 +233,81 @@ public class SubscriptionController : Controller
     /// <param name="targetRole">
     /// The role to assign to the user. Expected values are <c>Free_Counselor</c> or <c>Paid_Counselor</c>.
     /// </param>
-    private async Task AssignCounsellorRole(string userId, string targetRole)
+    private async Task AssignCounsellorRoleAsync(string userId, string targetRole)
     {
         var user = await _userManager.FindByIdAsync(userId);
-        if (user == null) return;
-
+        if (user == null)
+        {
+            _logger.LogWarning("User {UserId} not found while assigning role {TargetRole}.", userId, targetRole);
+            return;
+        }
         var rolesToRemove = new[] { "Registered_Visitor", "Free_Counselor", "Paid_Counselor" };
         var currentRoles = await _userManager.GetRolesAsync(user);
         var toRemove = currentRoles.Intersect(rolesToRemove).ToList();
         if (toRemove.Count > 0)
-            await _userManager.RemoveFromRolesAsync(user, toRemove);
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, toRemove);
+            if (!removeResult.Succeeded)
+            {
+                var errors = string.Join("; ", removeResult.Errors.Select(e => e.Description));
+                _logger.LogError(
+                    "Failed to remove roles {Roles} from user {UserId}. Errors: {Errors}",
+                    string.Join(", ", toRemove),
+                    userId,
+                    errors);
+
+                throw new InvalidOperationException($"Failed to remove existing counsellor roles: {errors}");
+            }
+        }
         if (!await _userManager.IsInRoleAsync(user, targetRole))
-            await _userManager.AddToRoleAsync(user, targetRole);
+        {
+            var addResult = await _userManager.AddToRoleAsync(user, targetRole);
+            if (!addResult.Succeeded)
+            {
+                var errors = string.Join("; ", addResult.Errors.Select(e => e.Description));
+                _logger.LogError(
+                    "Failed to add role {TargetRole} to user {UserId}. Errors: {Errors}",
+                    targetRole,
+                    userId,
+                    errors);
+
+                throw new InvalidOperationException($"Failed to assign role {targetRole}: {errors}");
+            }
+        }
 
         await _signInManager.RefreshSignInAsync(user);
+    }
+
+    private async Task<Models.Counsellor> EnsureCounsellorAsync(string userId, string? userName, string? email, Models.Counsellor? existingCounsellor)
+    {
+        if (existingCounsellor != null)
+        {
+            return existingCounsellor;
+        }
+        string licenceId;
+        var random = new Random();
+        do
+        {
+            licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
+        }
+        while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+        var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+        var displayName = string.Join(" ", new[]
+                        {
+                             profile?.FirstName,
+                             profile?.LastName
+                         }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            displayName = userName ?? email ?? "Unknown";
+        }
+        return await _counsellorRepository.CreateAsync(new Models.Counsellor
+        {
+            UserId = userId,
+            DisplayName = displayName,
+            PractitionerLicenceId = licenceId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TeamYellow.Helpers;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
@@ -148,7 +149,7 @@ public class PlanController : Controller
             else
             {
                 vm.AppliedDiscountId = discount.DiscountId;
-                vm.DiscountAmount = CalculateDiscountAmount(plan.Price, discount);
+                vm.DiscountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
                 vm.FinalAmount = plan.Price - vm.DiscountAmount;
                 vm.DiscountApplied = true;
                 vm.DiscountMessage = "Discount code applied successfully.";
@@ -204,19 +205,4 @@ public class PlanController : Controller
         FeatureDescription = f.FeatureDescription
     })]
     };
-
-    private static decimal CalculateDiscountAmount(decimal originalPrice, Discount discount)
-    {
-        decimal discountAmount = discount.DiscountType == DiscountType.Percent
-            ? originalPrice * (discount.Value / 100m)
-            : discount.Value;
-
-        if (discountAmount < 0)
-            discountAmount = 0;
-
-        if (discountAmount > originalPrice)
-            discountAmount = originalPrice;
-
-        return decimal.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
-    }
 }

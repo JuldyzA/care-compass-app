@@ -1,4 +1,5 @@
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 using TeamYellow.Repositories;
 
 namespace TeamYellow.Services;
@@ -99,9 +100,15 @@ public class SubscriptionService(
             if (discount != null)
             {
                 discountId = discount.DiscountId;
-                var discountAmount = CalculateDiscountAmount(plan.Price, discount);
+                var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
                 finalAmount = plan.Price - discountAmount;
             }
+        }
+
+        // If the discount fully covers the plan price, treat this like a free plan and do not attempt to create a zero-amount PayPal order.
+        if (finalAmount <= 0)
+        {
+            return string.Empty;
         }
 
         var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
@@ -176,20 +183,5 @@ public class SubscriptionService(
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
-    }
-
-    private static decimal CalculateDiscountAmount(decimal originalPrice, Models.Discount discount)
-    {
-        decimal discountAmount = discount.DiscountType == Models.DiscountType.Percent
-            ? originalPrice * (discount.Value / 100m)
-            : discount.Value;
-
-        if (discountAmount < 0)
-            discountAmount = 0;
-
-        if (discountAmount > originalPrice)
-            discountAmount = originalPrice;
-
-        return decimal.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
     }
 }
