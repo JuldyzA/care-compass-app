@@ -46,7 +46,7 @@ namespace TeamYellow.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Brevo email failed: {error}");
+                throw new InvalidOperationException($"Brevo email failed: {error}");
             }
 
             return response;

@@ -162,7 +162,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                         return Page();
                     }
 
-                    _logger.LogInformation("User created a new account with password. UserId: {UserId}, Email: {Email}", user.Id, user.Email);
+                    _logger.LogInformation("User created a new account with password. UserId: {UserId}", user.Id);
 
                     var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
                     if (!roleResult.Succeeded)
@@ -199,24 +199,31 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
                     return Page();
                 }
-
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                var callbackUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId, code, returnUrl },
-                    protocol: Request.Scheme);
-
-                ComposeEmailModel payload = new ComposeEmailModel
+                try
                 {
-                    Email = Input.Email,
-                    Subject = "Confirm your email",
-                    Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
-                };
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId, code, returnUrl },
+                        protocol: Request.Scheme);
 
-                await _emailService.SendEmailAsync(payload);
+                    ComposeEmailModel payload = new ComposeEmailModel
+                    {
+                        Email = Input.Email,
+                        Subject = "Confirm your email",
+                        Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                    };
+
+                    await _emailService.SendEmailAsync(payload);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send confirmation email for user {UserId}", user.Id);
+                }
+                
 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
