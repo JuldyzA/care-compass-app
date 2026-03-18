@@ -123,6 +123,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {           
             returnUrl ??= Url.Content("~/");
+            ReturnUrl = returnUrl;
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
@@ -227,8 +228,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     if (!deleteResult.Succeeded)
                     {
                         _logger.LogError("Failed to delete user {UserId} after email send failure.", user.Id);
+                        ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email, and your account " +
+                            "may already exist. Please contact support for assistance.");
                     }
-                    ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try registering again later.");
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try registering again later.");
+                    }
                     return Page();
                 }
                 
