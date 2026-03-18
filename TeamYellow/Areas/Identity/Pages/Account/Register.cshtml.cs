@@ -123,6 +123,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {           
             returnUrl ??= Url.Content("~/");
+            ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             // Read the reCAPTCHA response posted from the form
@@ -135,7 +136,6 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             // Invalidate the form if the captcha is invalid.
             if (!resultCaptcha.Success)
             {
-                ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
                 ModelState.AddModelError(string.Empty,
                     "The ReCaptcha is invalid.");
             }
@@ -191,41 +191,41 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     _context.UserProfiles.Add(userProfile);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId, code, returnUrl },
-                        protocol: Request.Scheme);
-
-                    ComposeEmailModel payload = new ComposeEmailModel
-                    {
-                        Email = Input.Email,
-                        Subject = "Confirm your email",
-                        Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
-                    };
-
-                    await _emailService.SendEmailAsync(payload);
-
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    _logger.LogError(ex, "Error occurred during registration for email {Email}.", Input.Email); 
+                    _logger.LogError(ex, "Error occurred during registration for email {Email}.", Input.Email);
                     ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
                     return Page();
+                }
+
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId, code, returnUrl },
+                    protocol: Request.Scheme);
+
+                ComposeEmailModel payload = new ComposeEmailModel
+                {
+                    Email = Input.Email,
+                    Subject = "Confirm your email",
+                    Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                };
+
+                await _emailService.SendEmailAsync(payload);
+
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
+                }
+                else
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return LocalRedirect(returnUrl);
                 }
             }
 
