@@ -5,17 +5,18 @@
 }
 
 <!-- 1. Call to Action Banner -->
-<div class="bg-primary text-white py-5 mb-5">
+<section class="hero plan-hero">
     <div class="container-xl text-center">
         <h1 class="display-3 fw-bold mb-3">Start Growing Your Practice Today</h1>
-        <p class="lead mb-4">Choose a plan that works for you. Upgrade, downgrade, or cancel anytime.</p>
-        <a href="#pricing" class="btn btn-light btn-lg">View Plans</a>
+        <p class="lead mb-4 plan-hero-copy">Choose a plan that works for you. Upgrade, downgrade, or cancel anytime.</p>
+        @* <a href="#pricing" class="btn btn-light btn-lg plan-hero-btn">View Plans</a> *@
     </div>
-</div>
+</section>
 
 
 <!-- 2. Pricing Section -->
-<div id="pricing" class="container mb-5">
+<section id="pricing" class="plan-pricing-section">
+<div class="container mb-5">
     <div class="text-center mb-4">
         <h2 class="fw-bold">Choose Your Plan</h2>
         <p class="text-muted">Select the plan that best fits your needs.</p>
@@ -27,7 +28,7 @@
             var isPopular = plan.PlanName == "Monthly";
 
             <div class="col-sm-6 col-lg-4">
-                <div class="card h-100 shadow-sm position-relative @(isPopular ? "border-primary border-2" : "")">
+                <div class="card h-100 shadow-sm position-relative plan-product-card @(isPopular ? "border-primary border-2" : "")">
                     @if (isPopular)
                     {
                         <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-primary">
@@ -88,12 +89,34 @@
         }
     </div>
 </div>
+</section>
 
-<!-- 3. FAQ Section -->
+<!-- 3. Video Section -->
+<section class="video-section plan-video-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>See CareCompass in action</h2>
+            <p class="plan-section-copy">A quick walkthrough of the same calm, modern workflow your plan unlocks.</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="video-wrapper plan-video-wrapper">
+                    <video controls preload="metadata" poster="~/Images/video-poster.png" aria-label="CareCompass plan overview video">
+                        <source src="~/Images/care-compass-video2.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. FAQ Section -->
+<section class="plan-faq-section">
 <div class="container mb-5">
     <div class="text-center mb-4">
         <h2 class="fw-bold">Frequently Asked Questions</h2>
-        <p class="text-muted">Everything you need to know about our platform.</p>
+        <p class="text-muted plan-section-copy">Everything you need to know about our platform.</p>
     </div>
 
     <div class="row justify-content-center">
@@ -192,3 +215,4 @@
         </div>
     </div>
 </div>
+</section>
