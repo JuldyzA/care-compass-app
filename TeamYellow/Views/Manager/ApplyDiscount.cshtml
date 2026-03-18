@@ -1,67 +1,51 @@
 ﻿@model TeamYellow.ViewModels.DiscountVM
 
-<div class="container-fluid">
-    <div class="row">
+<h4>Apply Discount</h4>
 
-        @await Html.PartialAsync("_ManagerSidebar")
+<form asp-action="ApplyDiscount" method="post">
 
-        <main class="col-md-10 p-4">
+    <div class="mb-3">
 
-            <div class="card p-4">
+        <label class="form-label">Select Discount</label>
 
-                <h4>Apply Discount</h4>
-
-                <form asp-action="ApplyDiscount" method="post">
-
-                    <div class="mb-3">
-
-                        <label class="form-label">Select Discount</label>
-
-                        <select asp-for="DiscountId"
-                                asp-items="Model.DiscountCodeOptions"
-                                class="form-select">
-                            <option value="">-- Select Discount --</option>
-                        </select>
-
-                    </div>
-
-
-                    <h5>Select Plans</h5>
-
-                    @if (Model.Plans != null)
-                    {
-                        foreach (var plan in Model.Plans)
-                        {
-                            if (!string.Equals(plan.PlanName, "Free", StringComparison.OrdinalIgnoreCase))
-                            {
-                                <div class="form-check mb-2">
-
-                                    <input type="checkbox"
-                                           name="PlanIds"
-                                           value="@plan.PlanId"
-                                           class="form-check-input" />
-
-                                    <label class="form-check-label">
-                                        @plan.PlanName - $@plan.Price.ToString("0.00")
-                                    </label>
-
-                                </div>
-                            }
-                        }
-                    }
-
-                    <button type="submit" class="btn btn-primary mt-3">
-                        Save
-                    </button>
-                    <a asp-action="Discounts" class="btn btn-secondary mt-3 ms-2">
-                        Cancel
-                    </a>
-
-                </form>
-
-            </div>
-
-        </main>
+        <select asp-for="DiscountId"
+                asp-items="Model.DiscountCodeOptions"
+                class="form-select">
+            <option value="">-- Select Discount --</option>
+        </select>
 
     </div>
-</div>
+
+
+    <h5>Select Plans</h5>
+
+    @if (Model.Plans != null)
+    {
+        foreach (var plan in Model.Plans)
+        {
+            if (!string.Equals(plan.PlanName, "Free", StringComparison.OrdinalIgnoreCase))
+            {
+                <div class="form-check mb-2">
+
+                    <input type="checkbox"
+                            name="PlanIds"
+                            value="@plan.PlanId"
+                            class="form-check-input" />
+
+                    <label class="form-check-label">
+                        @plan.PlanName - $@plan.Price.ToString("0.00")
+                    </label>
+
+                </div>
+            }
+        }
+    }
+
+    <button type="submit" class="btn btn-primary mt-3">
+        Save
+    </button>
+    <a asp-action="Discounts" class="btn btn-secondary mt-3 ms-2">
+        Cancel
+    </a>
+
+</form>
