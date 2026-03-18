@@ -20,7 +20,7 @@ public class PaymentTransaction
     [Required]
     [Column("payerName")]
     [MaxLength(100)]
-    public string PayerName { get; set; } = null!;
+    public string PayerName { get; set; } = string.Empty;
 
     [Column("amount", TypeName = "decimal(10,2)")]
     public decimal Amount { get; set; }
