@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/TeamYellow.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap&subset=cyrillic" rel="stylesheet">
+   
 
 
 </head>
@@ -19,7 +19,7 @@
             <div class="container-fluid m-0 align-items-center">
                 <div class="navbar-top-row w-100 d-flex align-items-center justify-content-between">
                     <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                        <img src="~/images/compass-logo.png" alt="CareCompass Logo" height="60" class="me-2">
+                        <img src='@Url.Content("~/Images/compass-logo.png")' alt="CareCompass Logo" height="60" class="me-2">
                         <span class="fw-bold brand-name header-logo-name">
                             <span>Care</span>
                             <span>Compass</span>
@@ -35,28 +35,24 @@
                     <ul class="navbar-nav flex-grow-1 gap-3">
                         <li class="nav-item">
                             <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                                <img src="~/Images/nav-home.svg" alt="" class="nav-icon" aria-hidden="true">
+                                <img src='@Url.Content("~/Images/nav-home.svg")' alt="" class="nav-icon" aria-hidden="true">
                                 <span>Home</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Solution">
-                                <img src="~/Images/nav-solution.svg" alt="" class="nav-icon" aria-hidden="true">
+                                <img src='@Url.Content("~/Images/nav-solution.svg")' alt="" class="nav-icon" aria-hidden="true">
                                 <span>Solution</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="" asp-controller="Plan" asp-action="Index">
-                                <img src="~/Images/nav-plan.svg" alt="" class="nav-icon" aria-hidden="true">
+                                <img src='@Url.Content("~/Images/nav-plan.svg")' alt="" class="nav-icon" aria-hidden="true">
                                 <span>Plan</span>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <partial name="_LoginPartial" />
-                        </li>
-                        
+                        </li>                      
                     </ul>
-                    
+                    <partial name="_LoginPartial" />
                     </div>
                 </div>
             </div>
@@ -73,7 +69,7 @@
         <div class="row g-4 align-items-start">
             <div class="col-12 col-md-6 col-lg-4 footer-brand-col">
                 <a href="/" class="footer-brand text-decoration-none">
-                    <img src="~/images/compass-logo-dark1.png" alt="CareCompass Logo" class="footer-brand-mark">
+                    <img src='@Url.Content("~/Images/compass-logo-dark1.png")' alt="CareCompass Logo" class="footer-brand-mark">
                     <span class="fw-bold brand-name header-logo-name footer-brand-name">
                         <span>Care</span>
                         <span>Compass</span>
