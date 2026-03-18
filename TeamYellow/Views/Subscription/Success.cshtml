@@ -16,6 +16,14 @@
         </div>
         <ul class="list-group list-group-flush text-start">
             <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Amount Received</span>
+                <strong>@Model.Currency @Model.Amount</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Order Received</span>
+                <strong>@Model.PaidAt</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan</span>
                 <strong>@Model.PlanName</strong>
             </li>
@@ -26,6 +34,10 @@
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan End Date</span>
                 <strong>@Model.CycleEnd.ToString("MMMM dd, yyyy")</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">PayPal Transaction ID</span>
+                <strong>@Model.ProviderOrderId</strong>
             </li>
         </ul>
     </div>

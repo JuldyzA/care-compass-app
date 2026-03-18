@@ -10,4 +10,12 @@ public class SubscriptionSuccessVM
     
     public DateTime CycleStart { get; set; }
     public DateTime CycleEnd { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public string Currency { get; set; } = "CAD";
+
+    public DateTime PaidAt { get; set; }
+
+    public string ProviderOrderId { get; set; } = string.Empty;
 }
