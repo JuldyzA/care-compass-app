@@ -185,7 +185,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                         return Page();
                     }
 
-                    var roleResult = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+                    var roleResult = await _userManager.AddToRoleAsync(user, registeredVisitorRole);
                     if (!roleResult.Succeeded)
                     {
                         var roleErrors = string.Join("; ", roleResult.Errors.Select(e => $"[{e.Code}] {e.Description}"));
