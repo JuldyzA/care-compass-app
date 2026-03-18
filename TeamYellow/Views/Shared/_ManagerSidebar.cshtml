@@ -1,0 +1,14 @@
+@using System.Security.Claims
+
+<nav class="col-md-2 bg-light vh-100 p-3 border-end">
+    <h5 class="fw-bold">Care Compass</h5>
+    <div class="mb-4">
+        <small>@(User.FindFirstValue(ClaimTypes.Email) ?? "Manager email")</small>
+    </div>
+    <h5>Manager Dashboard</h5>
+    <ul class="nav flex-column">
+        <li><a asp-controller="Manager" asp-action="Index">Transactions</a></li>
+        <li><a asp-controller="Manager" asp-action="Plans">Plan & Pricing</a></li>
+        <li><a asp-controller="Manager" asp-action="Discounts">Discounts</a></li>
+    </ul>
+</nav>

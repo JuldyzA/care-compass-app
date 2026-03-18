@@ -113,7 +113,11 @@ public class SubscriptionController : Controller
 
             var existingSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
             if (existingSubscription?.PlanId == planId)
-                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
+            {
+                TempData["Message"] = "You are already subscribed to this plan.";
+                TempData["MessageType"] = "info";
+                return RedirectToAction("Index", "Plan");
+            }
 
             var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, returnUrl, cancelUrl);
 
@@ -145,9 +149,12 @@ public class SubscriptionController : Controller
 
             return Redirect(approvalUrl);
         }
-        catch (KeyNotFoundException)
+        catch (KeyNotFoundException ex)
         {
-            return NotFound();
+            _logger.LogError(ex, "Key not found for user email {Email}. Redirecting to plan selection.", user.Email);
+            TempData["Message"] = "We couldn't find the requested subscription information. Please select a plan again.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Plan");
         }
         catch (Exception ex)
         {
@@ -156,6 +163,8 @@ public class SubscriptionController : Controller
                 "Error processing subscription payment for user {UserId} and plan {PlanId}.",
                 user.Id,
                 planId);
+            TempData["Message"] = "An unexpected error occurred while processing your subscription. Please try again.";
+            TempData["MessageType"] = "danger";
             return RedirectToAction("Index", "Plan");
         }
     }
@@ -169,27 +178,39 @@ public class SubscriptionController : Controller
     /// from the PayPal approval redirect.
     /// </param>
     /// <returns>
-    /// The success view with a confirmation message, or a redirect to the home page with an error
+    /// The success view with a confirmation message, or a redirect to the plan page with an error
     /// if the payment token is missing, the counsellor profile is not found, or the payment fails.
     /// </returns>
     [HttpGet]
     public async Task<IActionResult> Success([FromQuery(Name = "token")] string orderId)
     {
         if (string.IsNullOrEmpty(orderId))
-            return RedirectToAction("Index", "Home", new { error = "Payment token is missing. Please try again." });
+        {
+            TempData["Message"] = "Payment token is missing. Please try again.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Plan");
+        }
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
         var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
         if (counsellor == null)
-            return RedirectToAction("Index", "Home", new { error = "Counsellor profile not found." });
+        {
+            TempData["Message"] = "Counsellor profile not found.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Plan");
+        }
 
         try
         {
             var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
             if (result == SubscriptionResult.AlreadySubscribed)
-                return RedirectToAction("Index", "Plan", new { error = "You are already subscribed to this plan." });
+            {
+                TempData["Message"] = "You are already subscribed to this plan.";
+                TempData["MessageType"] = "info";
+                return RedirectToAction("Index", "Plan");
+            }
             try
             {
                 await AssignCounsellorRole(user.Id, "Paid_Counselor");
@@ -213,9 +234,12 @@ public class SubscriptionController : Controller
             };
             return View("Success", vm);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return RedirectToAction("Index", "Home", new { error = "Payment failed. Please try again." });
+            _logger.LogError(ex, "Error completing subscription for order {OrderId}.", orderId);
+            TempData["Message"] = "Payment failed. Please try again.";
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Index", "Plan");
         }
     }
 

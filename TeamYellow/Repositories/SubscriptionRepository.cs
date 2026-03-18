@@ -80,6 +80,7 @@ namespace TeamYellow.Repositories
         /// <param name="subscription">The subscription entity with updated values to persist.</param>
         public async Task UpdateSubscription(Subscription subscription)
         {
+            subscription.UpdatedAt = DateTime.UtcNow;
             _context.Subscriptions.Update(subscription);
             await _context.SaveChangesAsync();
         }
