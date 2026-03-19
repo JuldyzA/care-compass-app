@@ -2,6 +2,7 @@
 using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
+using TeamYellow.Models;
 
 namespace TeamYellow.Repositories;
 
@@ -19,25 +20,38 @@ public class ClientRepository
     /// <summary>
     /// Retrieves a paginated list of client data for a specific counsellor, including the total record count for pagination.
     /// Uses PaginatedList helper to produce pagination metadata.
+    /// Supports optional searchTerm which filters by first+last name or email.
     /// </summary>
     /// <param name="userId">The unique identifier of the counsellor.</param>
     /// <param name="page">The current page number to retrieve.</param>
     /// <param name="pageSize">The maximum number of client records to include in the result.</param>
+    /// <param name="searchTerm">Optional search text to filter by name or email.</param>
     /// <returns>A DTO containing the paginated client list and total record metadata.</returns>
-    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize)
+    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null)
     {
-        IQueryable<ClientDto> query = _context.Clients
-           .Where(c => c.Counsellor.UserId == userId)
-           .AsNoTracking()
-           .Select(c => new ClientDto
-           {
-               FirstName = c.FirstName,
-               LastName = c.LastName,
-               Email = c.Email,
-               Phone = c.Phone,
-               Status = c.Status,
-               CreatedAt = c.CreatedAt
-           });
+        // Start from entity query so we can filter before projection (EF Core can translate)
+        IQueryable<Client> clients = _context.Clients
+            .Include(c => c.Counsellor)
+            .Where(c => c.Counsellor.UserId == userId)
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string q = searchTerm.Trim().ToLower();
+            clients = clients.Where(c =>
+                (c.FirstName + " " + c.LastName).ToLower().Contains(q) ||
+                c.Email.ToLower().Contains(q));
+        }
+
+        IQueryable<ClientDto> query = clients.Select(c => new ClientDto
+        {
+            FirstName = c.FirstName,
+            LastName = c.LastName,
+            Email = c.Email,
+            Phone = c.Phone,
+            Status = c.Status,
+            CreatedAt = c.CreatedAt
+        });
 
         // Use PaginatedList to get items + metadata
         var paginated = await PaginatedList<ClientDto>.CreateAsync(query.OrderBy(c => c.FirstName), page, pageSize);
@@ -47,7 +61,8 @@ public class ClientRepository
             Clients = paginated,
             Page = paginated.PageIndex,
             PageSize = paginated.PageSize,
-            TotalCount = paginated.TotalCount
+            TotalCount = paginated.TotalCount,
+            SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim()
         };
 
         return dto;

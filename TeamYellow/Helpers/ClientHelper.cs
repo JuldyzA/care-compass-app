@@ -51,7 +51,8 @@ public class ClientHelper
             StartEntry = startEntry,
             EndEntry = endEntry,
             TotalCount = dto.TotalCount,
-            Clients = clientVMs
+            Clients = clientVMs,
+            SearchTerm = dto.SearchTerm
         };
     }
 

@@ -8,10 +8,13 @@
             <span class="input-group-text bg-white border-end-0">
                 <i class="bi bi-search"></i>
             </span>
-            <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients...">
+            <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
         </div>
-        <button class="btn btn-sm btn-outline-secondary" type="button" id="clientFilterBtn">
+        <button class="btn btn-sm btn-outline-primary" type="button" id="clientFilterBtn">
             <i class="bi bi-funnel"></i> Filter
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" id="clientClearBtn" title="Clear search">
+            <i class="bi bi-x-lg"></i> Clear
         </button>
     </div>
 </div>
@@ -61,12 +64,12 @@
                             <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
                         </td>
                         <td>
-                            <small>@c.Email</small>
+                            <div>@c.Email</div>
                         </td>
                         @if (!Model.IsDashboard)
                         {
                             <td>
-                                <small>@c.Phone</small>
+                                <div>@c.Phone</div>
                             </td>
                         }
                         <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>

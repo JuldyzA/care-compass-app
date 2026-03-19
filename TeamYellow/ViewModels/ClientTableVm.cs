@@ -20,5 +20,7 @@ public class ClientTableVm
 
     public bool HasNextPage => Page < TotalPages;
 
+    public string? SearchTerm { get; set; }
+
     public IEnumerable<ClientVM> Clients { get; set; } = new List<ClientVM>();
 }
