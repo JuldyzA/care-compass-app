@@ -8,4 +8,5 @@ public class AddTransactionDto
     public string ProviderOrderId { get; set; } = string.Empty;
     public string Currency { get; set; } = string.Empty;
     public string Provider { get; set; } = string.Empty;
+    public int? DiscountId { get; set; }
 }

@@ -139,5 +139,39 @@ namespace TeamYellow.Repositories
 
             return true;
         }
+
+        public async Task<Discount?> GetValidDiscountForPlanAsync(int planId, string discountCode)
+        {
+            if (string.IsNullOrWhiteSpace(discountCode))
+                return null;
+
+            var normalizedCode = discountCode.Trim().ToUpperInvariant();
+            var nowUtc = DateTime.UtcNow;
+
+            return await _context.PlanDiscounts
+                .AsNoTracking()
+                .Where(pd =>
+                    pd.PlanId == planId &&
+                    pd.Discount.StartDateTime <= nowUtc &&
+                    pd.Discount.EndDateTime >= nowUtc &&
+                    pd.Discount.DiscountCode == normalizedCode)
+                .Select(pd => pd.Discount)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Discount?> GetValidDiscountForPlanByIdAsync(int planId, int discountId)
+        {
+            var nowUtc = DateTime.UtcNow;
+
+            return await _context.PlanDiscounts
+                .AsNoTracking()
+                .Where(pd =>
+                    pd.PlanId == planId &&
+                    pd.DiscountId == discountId &&
+                    pd.Discount.StartDateTime <= nowUtc &&
+                    pd.Discount.EndDateTime >= nowUtc)
+                .Select(pd => pd.Discount)
+                .FirstOrDefaultAsync();
+        }
     }
 }
