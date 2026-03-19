@@ -29,6 +29,7 @@ public class TransactionRepository(ApplicationDbContext context) : ITransactionR
             Currency = addTransactionDto.Currency,
             Provider = addTransactionDto.Provider,
             ProviderOrderId = addTransactionDto.ProviderOrderId,
+            DiscountId = addTransactionDto.DiscountId,
             Status = PaymentTransactionStatus.Captured,
             PaidAt = DateTime.UtcNow
         };
