@@ -28,11 +28,12 @@
                 <div class="form-check mb-2">
 
                     <input type="checkbox"
-                            name="PlanIds"
-                            value="@plan.PlanId"
-                            class="form-check-input" />
+                           id="plan-@plan.PlanId"
+                           name="PlanIds"
+                           value="@plan.PlanId"
+                           class="form-check-input" />
 
-                    <label class="form-check-label">
+                    <label class="form-check-label" for="plan-@plan.PlanId">
                         @plan.PlanName - $@plan.Price.ToString("0.00")
                     </label>
 

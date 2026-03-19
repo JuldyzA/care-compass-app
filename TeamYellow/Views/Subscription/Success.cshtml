@@ -22,7 +22,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Order Received</span>
-                <strong>@Model.PaidAt.ToLocalTime().ToString("MMMM dd, yyyy hh:mm tt")</strong>
+                <strong>@Model.PaidAt.ToString("MMMM dd, yyyy hh:mm tt 'UTC'")</strong>
             </li>
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan</span>
