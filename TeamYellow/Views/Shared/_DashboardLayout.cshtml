@@ -146,6 +146,19 @@
                                         </a>
                                     </li>
                                 }
+                                else if (isRegisteredVisitor)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Counsellor" asp-action="Profile">
+                                            <i class="bi bi-person" aria-hidden="true"></i> My Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Plan" asp-action="Index">
+                                            <i class="bi bi-credit-card" aria-hidden="true"></i> View Plans
+                                        </a>
+                                    </li>
+                                }
                                 
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -160,9 +173,13 @@
                     </div>
                 }
 
-                @if (isCounsellor || isRegisteredVisitor)
+                @if (isCounsellor)
                 {
                     @await Html.PartialAsync("_CounsellorSidebar")
+                }
+                else if (isRegisteredVisitor)
+                {
+                    @await Html.PartialAsync("_RegisteredVisitorSidebar")
                 }
                 else if (isAdmin)
                 {
@@ -261,7 +278,19 @@
                                                 </a>
                                             </li>
                                         }
-
+                                        else if (isRegisteredVisitor)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Counsellor" asp-action="Profile">
+                                                    <i class="bi bi-person" aria-hidden="true"></i> My Profile
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Plan" asp-action="Index">
+                                                    <i class="bi bi-credit-card" aria-hidden="true"></i> View Plans
+                                                </a>
+                                            </li>
+                                        }
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <form method="post" asp-area="Identity" asp-page="/Account/Logout">

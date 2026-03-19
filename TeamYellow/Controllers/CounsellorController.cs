@@ -45,6 +45,7 @@ namespace TeamYellow.Controllers
         /// <param name="pageSize">The number of records per page (defaults to 5).</param>
         /// <returns>A partial view containing the client table data.</returns>
         [HttpGet]
+        [Authorize(Roles = "Free_Counselor,Paid_Counselor")]
         public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 5)
         {
             ClientTableVm clientTableVm = await _service.GetClientsAsync(User, page, pageSize);

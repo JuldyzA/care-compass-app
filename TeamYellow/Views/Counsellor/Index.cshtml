@@ -1266,5 +1266,8 @@
             });
         });
     </script>
-    <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
+@if (isLockedDashboard)
+    {
+        <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
+    }
 }
