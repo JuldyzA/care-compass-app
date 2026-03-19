@@ -201,9 +201,9 @@ public class PlanController : Controller
         OriginalPrice = plan.Price,
         FinalAmount = plan.Price,
         PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
-    {
-        FeatureName = f.FeatureName,
-        FeatureDescription = f.FeatureDescription
-    })]
+                                                            {
+                                                                FeatureName = f.FeatureName,
+                                                                FeatureDescription = f.FeatureDescription
+                                                            })]
     };
 }
