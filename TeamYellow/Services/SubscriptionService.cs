@@ -65,7 +65,48 @@ public class SubscriptionService(
             Amount = 0,
             Currency = "CAD",
             Provider = "Free",
-            ProviderOrderId = $"FREE-{counsellorId}-{DateTime.UtcNow:yyyyMMddHHmmss}"
+            ProviderOrderId = $"FREE-{counsellorId}-{1000 + subscription.SubscriptionId}",
+        });
+
+        return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+    }
+
+    public async Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
+    int counsellorId,
+    string userName,
+    int planId,
+    int? discountId)
+    {
+        var plan = await _planRepository.GetPlanById(planId)
+            ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
+
+        if (existing != null)
+        {
+            if (existing.PlanId == planId)
+                return SubscriptionResult.AlreadySubscribed;
+
+            existing.Status = Models.SubscriptionStatus.Cancelled;
+            await _subscriptionRepository.UpdateSubscription(existing);
+        }
+
+        var subscription = await _subscriptionRepository.CreateSubscription(new AddSubscriptionDto
+        {
+            CounsellorId = counsellorId,
+            PlanId = planId,
+            BillingType = plan.BillingType
+        });
+
+        await _transactionRepository.CreateTransaction(new AddTransactionDto
+        {
+            SubscriptionId = subscription.SubscriptionId,
+            PayerName = userName,
+            Amount = 0,
+            Currency = "CAD",
+            Provider = "Full Discount",
+            ProviderOrderId = $"DISCOUNT-{counsellorId}-{1000 + subscription.SubscriptionId}",
+            DiscountId = discountId
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
@@ -82,13 +123,25 @@ public class SubscriptionService(
     /// The PayPal buyer approval URL for paid plans, or <see cref="string.Empty"/> for free plans.
     /// </returns>
     /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
-    public async Task<string> CreatePayPalOrder(int planId, string? discountCode, string returnUrl, string cancelUrl)
+    public async Task<SubscriptionCheckoutResult> CreatePayPalOrder(
+    int planId,
+    string? discountCode,
+    string returnUrl,
+    string cancelUrl)
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
-        if (plan.Price == 0)
-            return string.Empty;
+        if (plan.Price == 0m)
+        {
+            return new SubscriptionCheckoutResult
+            {
+                RequiresPayPal = false,
+                IsActualFreePlan = true,
+                DiscountId = null,
+                ApprovalUrl = null
+            };
+        }
 
         int? discountId = null;
         decimal finalAmount = plan.Price;
@@ -101,12 +154,35 @@ public class SubscriptionService(
                 discountId = discount.DiscountId;
                 var discountAmount = CalculateDiscountAmount(plan.Price, discount);
                 finalAmount = plan.Price - discountAmount;
+
+                if (finalAmount < 0m)
+                {
+                    finalAmount = 0m;
+                }
             }
         }
 
-        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
+        if (finalAmount == 0m)
+        {
+            return new SubscriptionCheckoutResult
+            {
+                RequiresPayPal = false,
+                IsActualFreePlan = false,
+                DiscountId = discountId,
+                ApprovalUrl = null
+            };
+        }
 
-        return await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
+        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
+        var approvalUrl = await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
+
+        return new SubscriptionCheckoutResult
+        {
+            RequiresPayPal = true,
+            IsActualFreePlan = false,
+            DiscountId = discountId,
+            ApprovalUrl = approvalUrl
+        };
     }
 
     /// <summary>

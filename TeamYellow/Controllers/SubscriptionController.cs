@@ -92,10 +92,9 @@ public class SubscriptionController : Controller
                 }
             }
 
-            var approvalUrl = await _subscriptionService.CreatePayPalOrder(planId, discountCode, returnUrl, cancelUrl);
+            var checkout = await _subscriptionService.CreatePayPalOrder(planId, discountCode, returnUrl, cancelUrl);
 
-            // Free plan path
-            if (approvalUrl == string.Empty)
+            if (!checkout.RequiresPayPal)
             {
                 if (counsellor == null)
                 {
@@ -106,13 +105,14 @@ public class SubscriptionController : Controller
                         licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
                     }
                     while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+
                     var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
 
                     var displayName = string.Join(" ", new[]
                                     {
-                                        profile?.FirstName,
-                                        profile?.LastName
-                                    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                            profile?.FirstName,
+                            profile?.LastName
+                        }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
                     if (string.IsNullOrWhiteSpace(displayName))
                     {
@@ -129,22 +129,61 @@ public class SubscriptionController : Controller
                     });
                 }
 
-                var result = await _subscriptionService.SubscribeFree(counsellor.CounsellorId, user.UserName ?? "Unknown", planId);
+                SubscriptionResult result;
+                string successMessage;
+                string roleToAssign;
+
+                if (checkout.IsActualFreePlan)
+                {
+                    result = await _subscriptionService.SubscribeFree(
+                        counsellor.CounsellorId,
+                        user.UserName ?? "Unknown",
+                        planId);
+
+                    successMessage = result == SubscriptionResult.PlanChanged
+                        ? "Your plan has been updated successfully."
+                        : "You have successfully subscribed to the Free plan.";
+
+                    roleToAssign = "Free_Counselor";
+                }
+                else
+                {
+                    result = await _subscriptionService.SubscribeDiscountedZeroAmount(
+                        counsellor.CounsellorId,
+                        user.UserName ?? "Unknown",
+                        planId,
+                        checkout.DiscountId);
+
+                    successMessage = result == SubscriptionResult.PlanChanged
+                        ? "Your plan has been updated successfully."
+                        : "Your subscription has been activated successfully.";
+
+                    roleToAssign = "Paid_Counselor";
+                }
+
+                if (result == SubscriptionResult.AlreadySubscribed)
+                {
+                    TempData["Message"] = "You are already subscribed to this plan.";
+                    TempData["MessageType"] = "info";
+                    return RedirectToAction("Index", "Plan");
+                }
+
                 try
                 {
-                    await AssignCounsellorRole(user.Id, "Free_Counselor");
+                    await AssignCounsellorRole(user.Id, roleToAssign);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to assign Free_Counselor role to user {UserId} after free subscription.", user.Id);
+                    _logger.LogError(ex, "Failed to assign {Role} role to user {UserId}.", roleToAssign, user.Id);
+                    TempData["Message"] = "Subscription was created, but updating your account role failed. Please contact support or try again.";
+                    TempData["MessageType"] = "danger";
+                    return RedirectToAction("Index", "Plan");
                 }
 
                 var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
                 var vm = new SubscriptionSuccessVM
                 {
-                    Message = result == SubscriptionResult.PlanChanged
-                        ? "Your plan has been updated successfully."
-                        : "You have successfully subscribed to the Free plan.",
+                    Message = successMessage,
                     SubscriptionId = subscription?.SubscriptionId ?? 0,
                     PlanName = subscription?.Plan?.PlanName ?? string.Empty,
                     CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
@@ -153,7 +192,7 @@ public class SubscriptionController : Controller
                 return View("Success", vm);
             }
 
-            return Redirect(approvalUrl);
+            return Redirect(checkout.ApprovalUrl!);
         }
         catch (KeyNotFoundException ex)
         {
@@ -252,6 +291,9 @@ public class SubscriptionController : Controller
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to assign Paid_Counselor role to user {UserId} after PayPal subscription.", user.Id);
+                TempData["Message"] = "Your payment was completed, but updating your account role failed. Please contact support or try signing in again.";
+                TempData["MessageType"] = "danger";
+                return RedirectToAction("Index", "Plan");
             }
 
 
@@ -298,15 +340,49 @@ public class SubscriptionController : Controller
     private async Task AssignCounsellorRole(string userId, string targetRole)
     {
         var user = await _userManager.FindByIdAsync(userId);
-        if (user == null) return;
+        if (user == null)
+        {
+            _logger.LogWarning("User {UserId} not found while assigning role {TargetRole}.", userId, targetRole);
+            return;
+        }
 
         var rolesToRemove = new[] { "Registered_Visitor", "Free_Counselor", "Paid_Counselor" };
         var currentRoles = await _userManager.GetRolesAsync(user);
         var toRemove = currentRoles.Intersect(rolesToRemove).ToList();
+
         if (toRemove.Count > 0)
-            await _userManager.RemoveFromRolesAsync(user, toRemove);
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, toRemove);
+
+            if (!removeResult.Succeeded)
+            {
+                var errors = string.Join("; ", removeResult.Errors.Select(e => e.Description));
+                _logger.LogError(
+                    "Failed to remove roles {Roles} from user {UserId}. Errors: {Errors}",
+                    string.Join(", ", toRemove),
+                    userId,
+                    errors);
+
+                throw new InvalidOperationException($"Failed to remove existing counsellor roles: {errors}");
+            }
+        }
+
         if (!await _userManager.IsInRoleAsync(user, targetRole))
-            await _userManager.AddToRoleAsync(user, targetRole);
+        {
+            var addResult = await _userManager.AddToRoleAsync(user, targetRole);
+
+            if (!addResult.Succeeded)
+            {
+                var errors = string.Join("; ", addResult.Errors.Select(e => e.Description));
+                _logger.LogError(
+                    "Failed to add role {TargetRole} to user {UserId}. Errors: {Errors}",
+                    targetRole,
+                    userId,
+                    errors);
+
+                throw new InvalidOperationException($"Failed to assign role {targetRole}: {errors}");
+            }
+        }
 
         await _signInManager.RefreshSignInAsync(user);
     }

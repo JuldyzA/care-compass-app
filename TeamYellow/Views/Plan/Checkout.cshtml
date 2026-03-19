@@ -94,7 +94,14 @@
                         <input type="hidden" name="discountCode" value="@Model.DiscountCode" />
 
                         <button type="submit" class="btn btn-warning w-100 btn-lg">
-                            Pay with PayPal
+                            @if (Model.FinalAmount <= 0)
+                            {
+                                @:Complete purchase
+                            }
+                            else
+                            {
+                                @:Pay with PayPal
+                            }
                         </button>
                     </form>
                 </div>

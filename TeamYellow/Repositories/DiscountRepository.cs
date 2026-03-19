@@ -153,7 +153,7 @@ namespace TeamYellow.Repositories
                     pd.PlanId == planId &&
                     pd.Discount.StartDateTime <= nowUtc &&
                     pd.Discount.EndDateTime >= nowUtc &&
-                    pd.Discount.DiscountCode.ToUpper() == normalizedCode)
+                    pd.Discount.DiscountCode == normalizedCode)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
         }
