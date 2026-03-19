@@ -28,8 +28,8 @@
 }
 
 <div class="dashboard-preview-wrapper">
-    <div class="dashboard-content-area" @(isLockedDashboard ? "aria-hidden=\"true\" inert" : "")>
-        <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")">
+    <div class="dashboard-content-area">
+        <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")" @(isLockedDashboard ? "aria-hidden=\"true\" inert" : "")>
             <div class="stats-row">
                 <div class="stats-card">
                     <div class="card">
@@ -1266,7 +1266,7 @@
             });
         });
     </script>
-@if (isLockedDashboard)
+@if (!isLockedDashboard)
     {
         <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
     }
