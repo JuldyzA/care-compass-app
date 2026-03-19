@@ -1,4 +1,5 @@
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 using TeamYellow.Repositories;
 
 namespace TeamYellow.Services;
@@ -12,11 +13,13 @@ public class SubscriptionService(
     IPlanRepository planRepository,
     ISubscriptionRepository subscriptionRepository,
     ITransactionRepository transactionRepository,
+    DiscountRepository discountRepository,
     IPayPalService payPalService) : ISubscriptionService
 {
     private readonly IPlanRepository _planRepository = planRepository;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
+    private readonly DiscountRepository _discountRepository = discountRepository;
     private readonly IPayPalService _payPalService = payPalService;
 
     /// <summary>
@@ -37,6 +40,12 @@ public class SubscriptionService(
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (plan.Price != 0m)
+            throw new InvalidOperationException($"Plan {planId} is not a free plan.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -63,32 +72,161 @@ public class SubscriptionService(
             Amount = 0,
             Currency = "CAD",
             Provider = "Free",
-            ProviderOrderId = $"FREE-{counsellorId}-{DateTime.UtcNow:yyyyMMddHHmmss}"
+            ProviderOrderId = $"FREE-{counsellorId}-{1000 + subscription.SubscriptionId}",
+        });
+
+        return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+    }
+
+    public async Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
+    int counsellorId,
+    string userName,
+    int planId,
+    int? discountId)
+    {
+        var plan = await _planRepository.GetPlanById(planId)
+            ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!discountId.HasValue)
+            throw new InvalidOperationException(
+                "A discount is required for the zero-amount discounted subscription flow.");
+
+        var discount = await _discountRepository.GetValidDiscountForPlanByIdAsync(planId, discountId.Value);
+
+        if (discount == null)
+            throw new InvalidOperationException(
+                $"Discount {discountId.Value} is not valid for plan {planId}.");
+
+        var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+        var finalAmount = plan.Price - discountAmount;
+
+        if (finalAmount < 0m)
+        {
+            finalAmount = 0m;
+        }
+
+        finalAmount = decimal.Round(finalAmount, 2, MidpointRounding.AwayFromZero);
+
+        if (finalAmount != 0m)
+            throw new InvalidOperationException(
+                $"Discount {discountId.Value} does not reduce plan {planId} to zero.");
+
+        var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
+
+        if (existing != null)
+        {
+            if (existing.PlanId == planId)
+                return SubscriptionResult.AlreadySubscribed;
+
+            existing.Status = Models.SubscriptionStatus.Cancelled;
+            await _subscriptionRepository.UpdateSubscription(existing);
+        }
+
+        var subscription = await _subscriptionRepository.CreateSubscription(new AddSubscriptionDto
+        {
+            CounsellorId = counsellorId,
+            PlanId = planId,
+            BillingType = plan.BillingType
+        });
+
+        await _transactionRepository.CreateTransaction(new AddTransactionDto
+        {
+            SubscriptionId = subscription.SubscriptionId,
+            PayerName = userName,
+            Amount = 0,
+            Currency = "CAD",
+            Provider = "Full Discount",
+            ProviderOrderId = $"DISCOUNT-{counsellorId}-{1000 + subscription.SubscriptionId}",
+            DiscountId = discountId
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
     }
 
     /// <summary>
-    /// Creates a PayPal checkout order for the specified plan and returns the buyer approval URL.
-    /// Returns an empty string if the plan is free (price is 0), indicating that PayPal is not needed.
+    /// Creates a PayPal checkout order for the specified plan and returns checkout details.
+    /// For plans or discounts that result in a non-zero amount, a PayPal order is created so the
+    /// buyer can approve the payment. For free plans or plans that become zero after applying a
+    /// discount, no PayPal order is created and the subscription is handled as a zero-amount flow.
     /// </summary>
-    /// <param name="planId">The ID of the plan to create a PayPal order for.</param>
+    /// <param name="planId">The ID of the plan to start the checkout process for.</param>
+    /// <param name="discountCode">An optional discount code to apply before determining the final amount.</param>
     /// <param name="returnUrl">The URL PayPal redirects to after the buyer approves the payment.</param>
     /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels the payment.</param>
     /// <returns>
-    /// The PayPal buyer approval URL for paid plans, or <see cref="string.Empty"/> for free plans.
+    /// A <see cref="SubscriptionCheckoutResult"/> describing the checkout flow, including whether
+    /// PayPal approval is required and, for paid plans, the buyer approval URL to redirect the user to.
+    /// For free or zero-after-discount plans, the result indicates that no PayPal redirect is needed.
     /// </returns>
     /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
-    public async Task<string> CreatePayPalOrder(int planId, string returnUrl, string cancelUrl)
+    public async Task<SubscriptionCheckoutResult> CreatePayPalOrder(
+    int planId,
+    string? discountCode,
+    string returnUrl,
+    string cancelUrl)
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
-        if (plan.Price == 0)
-            return string.Empty;
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
 
-        return await _payPalService.CreateOrder(plan.Price, "CAD", returnUrl, cancelUrl, planId.ToString());
+        if (plan.Price == 0m)
+        {
+            return new SubscriptionCheckoutResult
+            {
+                RequiresPayPal = false,
+                IsActualFreePlan = true,
+                DiscountId = null,
+                ApprovalUrl = null
+            };
+        }
+
+        int? discountId = null;
+        decimal finalAmount = plan.Price;
+
+        if (!string.IsNullOrWhiteSpace(discountCode))
+        {
+            var discount = await _discountRepository.GetValidDiscountForPlanAsync(planId, discountCode);
+            if (discount != null)
+            {
+                discountId = discount.DiscountId;
+                var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+                finalAmount = plan.Price - discountAmount;
+
+                if (finalAmount < 0m)
+                {
+                    finalAmount = 0m;
+                }
+
+                finalAmount = decimal.Round(finalAmount, 2, MidpointRounding.AwayFromZero);
+            }
+        }
+
+        if (finalAmount == 0m)
+        {
+            return new SubscriptionCheckoutResult
+            {
+                RequiresPayPal = false,
+                IsActualFreePlan = false,
+                DiscountId = discountId,
+                ApprovalUrl = null
+            };
+        }
+
+        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
+        var approvalUrl = await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
+
+        return new SubscriptionCheckoutResult
+        {
+            RequiresPayPal = true,
+            IsActualFreePlan = false,
+            DiscountId = discountId,
+            ApprovalUrl = approvalUrl
+        };
     }
 
     /// <summary>
@@ -109,13 +247,24 @@ public class SubscriptionService(
     /// <exception cref="Exception">Thrown if the PayPal custom ID cannot be parsed as a valid plan identifier.</exception>
     public async Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string userName)
     {
-        var (captureId, customId) = await _payPalService.CaptureOrder(token);
+        var (captureId, customId, capturedAmount) = await _payPalService.CaptureOrder(token);
 
-        if (!int.TryParse(customId, out var planId))
+        var parts = customId.Split('|', StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0 || !int.TryParse(parts[0], out var planId))
             throw new Exception("PayPal response contained an invalid plan identifier.");
+
+        int? discountId = null;
+        if (parts.Length > 1 && int.TryParse(parts[1], out var parsedDiscountId) && parsedDiscountId > 0)
+        {
+            discountId = parsedDiscountId;
+        }
 
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -124,6 +273,35 @@ public class SubscriptionService(
 
         if (await _transactionRepository.ExistsByProviderOrderId(captureId))
             return SubscriptionResult.AlreadySubscribed;
+
+        decimal expectedAmount = plan.Price;
+
+        if (discountId.HasValue)
+        {
+            var discount = await _discountRepository.GetValidDiscountForPlanByIdAsync(planId, discountId.Value);
+
+            if (discount == null)
+                throw new InvalidOperationException(
+                    $"Discount {discountId.Value} is not valid for plan {planId}.");
+
+            var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+            expectedAmount = plan.Price - discountAmount;
+
+            if (expectedAmount < 0m)
+            {
+                expectedAmount = 0m;
+            }
+        }
+
+        expectedAmount = decimal.Round(expectedAmount, 2, MidpointRounding.AwayFromZero);
+
+        const decimal amountTolerance = 0.01m;
+
+        if (Math.Abs(expectedAmount - capturedAmount) > amountTolerance)
+        {
+            throw new InvalidOperationException(
+                $"Captured amount {capturedAmount:F2} does not match expected amount {expectedAmount:F2}.");
+        }
 
         if (existing != null)
         {
@@ -142,10 +320,11 @@ public class SubscriptionService(
         {
             SubscriptionId = subscription.SubscriptionId,
             PayerName = userName,
-            Amount = plan.Price,
+            Amount = capturedAmount,
             Currency = "CAD",
             Provider = "PayPal",
-            ProviderOrderId = captureId
+            ProviderOrderId = captureId,
+            DiscountId = discountId
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;

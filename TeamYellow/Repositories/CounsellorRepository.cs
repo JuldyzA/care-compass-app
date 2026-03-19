@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
+using TeamYellow.Models;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
-using TeamYellow.Models;
 
 namespace TeamYellow.Repositories;
 
@@ -117,4 +117,26 @@ public class CounsellorRepository
             DisplayName = string.Empty
         };
     }
+	
+	/// <summary>
+	/// Retrieves all counsellors including their associated user profiles.
+	/// </summary>
+	public async Task<IEnumerable<Counsellor>> GetAllAsync()
+	{
+		return await _context.Counsellors
+			.Include(c => c.User)
+			.ToListAsync();
+	}
+	
+	/// <summary>
+	/// Retrieves all counsellors with their user profiles, subscriptions, and related payment transactions.
+	/// </summary>
+	public async Task<IEnumerable<Counsellor>> GetCounsellorsWithPaymentsAsync()
+	{
+		return await _context.Counsellors
+			.Include(c => c.User)
+			.Include(c => c.Subscriptions)
+			.ThenInclude(s => s.PaymentTransaction)
+			.ToListAsync();
+	}
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -113,7 +114,7 @@ public class PayPalService : IPayPalService
                     amount = new
                     {
                         currency_code = currency,
-                        value = amount.ToString("F2")
+                        value = amount.ToString("F2", CultureInfo.InvariantCulture)
                     }
                 }
             },
@@ -143,7 +144,8 @@ public class PayPalService : IPayPalService
 
     /// <summary>
     /// Captures a previously approved PayPal order using its approval token.
-    /// Returns the PayPal capture ID and the custom ID that was embedded when the order was created.
+    /// Returns the PayPal capture ID, the custom ID embedded when the order was created,
+    /// and the total captured amount for the single purchase unit used by this application.
     /// </summary>
     /// <param name="token">The PayPal order approval token (returned by PayPal as the <c>token</c> query parameter).</param>
     /// <returns>
@@ -151,12 +153,15 @@ public class PayPalService : IPayPalService
     /// <list type="bullet">
     ///   <item><description><c>CaptureId</c> – the PayPal capture transaction identifier.</description></item>
     ///   <item><description><c>CustomId</c> – the application-defined value set when the order was created (e.g., plan ID).</description></item>
+    ///   <item><description><c>CapturedAmount</c> – the total monetary amount captured for the single purchase unit
+    ///   used by this application, parsed from PayPal's capture response using invariant culture.</description></item>
     /// </list>
     /// </returns>
     /// <exception cref="Exception">
-    /// Thrown if the PayPal response is missing <c>custom_id</c>, or if the payment capture status is not <c>COMPLETED</c>.
+    /// Thrown if the PayPal response is missing <c>custom_id</c>, does not contain exactly one purchase unit,
+    /// is missing capture amounts, or if the payment capture status is not <c>COMPLETED</c>.
     /// </exception>
-    public async Task<(string CaptureId, string CustomId)> CaptureOrder(string token)
+    public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();
 
@@ -173,16 +178,41 @@ public class PayPalService : IPayPalService
 
         var status = json?["status"]?.ToString();
 
-        var captureId = json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["id"]?.ToString()
+        var purchaseUnitsNode = json?["purchase_units"];
+        if (purchaseUnitsNode is not JsonArray purchaseUnitsArray || purchaseUnitsArray.Count != 1)
+            throw new Exception("PayPal response must contain exactly one purchase unit.");
+
+        var purchaseUnit = purchaseUnitsArray[0];
+
+        var captureId = purchaseUnit?["payments"]?["captures"]?[0]?["id"]?.ToString()
             ?? json?["id"]?.ToString()
             ?? token;
 
-        var customId = json?["purchase_units"]?[0]?["custom_id"]?.ToString()
-            ?? json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
+        var customId = purchaseUnit?["custom_id"]?.ToString()
+            ?? purchaseUnit?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
             ?? throw new Exception("PayPal response missing custom_id");
 
+        var capturesNode = purchaseUnit?["payments"]?["captures"];
+        if (capturesNode is not JsonArray capturesArray || capturesArray.Count == 0)
+            throw new Exception("PayPal response missing captured amount.");
+
+        decimal capturedAmount = 0m;
+
+        foreach (var capture in capturesArray)
+        {
+            var amountText = capture?["amount"]?["value"]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(amountText) ||
+                !decimal.TryParse(amountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            {
+                throw new Exception("PayPal response contained an invalid captured amount.");
+            }
+
+            capturedAmount += amount;
+        }
+
         if (status == "COMPLETED")
-            return (captureId, customId);
+            return (captureId, customId, capturedAmount);
 
         throw new Exception($"Payment capture failed. Status: {status}");
     }

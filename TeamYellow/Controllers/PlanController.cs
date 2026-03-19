@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TeamYellow.Helpers;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
@@ -19,6 +20,7 @@ public class PlanController : Controller
     private readonly IPlanService _planService;
     private readonly CounsellorRepository _counsellorRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly DiscountRepository _discountRepository;
     private readonly UserManager<IdentityUser> _userManager;
 
     /// <summary>
@@ -27,16 +29,19 @@ public class PlanController : Controller
     /// <param name="planService">Service used to retrieve and manage plans.</param>
     /// <param name="counsellorRepository">Repository for counsellor data access.</param>
     /// <param name="subscriptionRepository">Repository for subscription data access.</param>
+    /// <param name="discountRepository">Repository for discount data access.</param>
     /// <param name="userManager">ASP.NET Identity user manager.</param>
     public PlanController(
         IPlanService planService,
         CounsellorRepository counsellorRepository,
         ISubscriptionRepository subscriptionRepository,
+        DiscountRepository discountRepository,
         UserManager<IdentityUser> userManager)
     {
         _planService = planService;
         _counsellorRepository = counsellorRepository;
         _subscriptionRepository = subscriptionRepository;
+        _discountRepository = discountRepository;
         _userManager = userManager;
     }
 
@@ -64,6 +69,11 @@ public class PlanController : Controller
                 }
             }
         }
+        // Copy TempData message (if any) into ViewData so the view can render it
+        if (TempData.ContainsKey("Message"))
+            ViewData["Message"] = TempData["Message"];
+        if (TempData.ContainsKey("MessageType"))
+            ViewData["MessageType"] = TempData["MessageType"];
 
         return View(plans.Select(MapToPlanVM).ToList());
     }
@@ -79,7 +89,7 @@ public class PlanController : Controller
     /// if the plan is unavailable or the user is already subscribed.
     /// </returns>
     [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
-    public async Task<IActionResult> Checkout(int id)
+    public async Task<IActionResult> Checkout(int id, string? discountCode = null)
     {
         var plan = await _planService.GetPlanById(id);
 
@@ -87,12 +97,20 @@ public class PlanController : Controller
             return NotFound();
 
         if (User.IsInRole("Free_Counselor") && plan.Price == 0)
-            return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+        {
+            TempData["Message"] = "You are already subscribed to this plan.";
+            TempData["MessageType"] = "info";
+            return RedirectToAction(nameof(Index));
+        }
 
         if (User.IsInRole("Paid_Counselor"))
         {
             if (plan.Price == 0)
-                return RedirectToAction(nameof(Index), new { error = "You cannot downgrade to the Free plan from here." });
+            {
+                TempData["Message"] = "You cannot downgrade to the Free plan from here.";
+                TempData["MessageType"] = "warning";
+                return RedirectToAction(nameof(Index));
+            }
 
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
@@ -102,12 +120,56 @@ public class PlanController : Controller
                 {
                     var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
                     if (subscription?.PlanId == id)
-                        return RedirectToAction(nameof(Index), new { error = "You are already subscribed to this plan." });
+                    {
+                        TempData["Message"] = "You are already subscribed to this plan.";
+                        TempData["MessageType"] = "info";
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
             }
         }
 
-        return View(MapToPlanVM(plan));
+        var vm = MapToCheckoutVM(plan);
+
+        if (plan.Price == 0)
+        {
+            vm.FinalAmount = 0;
+            return View(vm);
+        }
+
+        if (!string.IsNullOrWhiteSpace(discountCode))
+        {
+            vm.DiscountCode = discountCode.Trim().ToUpperInvariant();
+
+            var discount = await _discountRepository.GetValidDiscountForPlanAsync(plan.PlanId, vm.DiscountCode);
+
+            if (discount == null)
+            {
+                vm.DiscountMessage = "Invalid, expired, or ineligible discount code.";
+            }
+            else
+            {
+                vm.AppliedDiscountId = discount.DiscountId;
+                vm.DiscountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+                vm.FinalAmount = plan.Price - vm.DiscountAmount;
+                vm.DiscountApplied = true;
+                vm.DiscountMessage = "Discount code applied successfully.";
+            }
+        }
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
+    public IActionResult ApplyDiscount(CheckoutVM vm)
+    {
+        return RedirectToAction(nameof(Checkout), new
+        {
+            id = vm.PlanId,
+            discountCode = vm.DiscountCode
+        });
     }
 
     /// <summary>
@@ -128,5 +190,20 @@ public class PlanController : Controller
                 FeatureName = f.FeatureName,
                 FeatureDescription = f.FeatureDescription
             })]
+    };
+
+    private static CheckoutVM MapToCheckoutVM(Plan plan) => new()
+    {
+        PlanId = plan.PlanId,
+        PlanName = plan.PlanName,
+        PlanDescription = plan.PlanDescription,
+        BillingType = plan.BillingType,
+        OriginalPrice = plan.Price,
+        FinalAmount = plan.Price,
+        PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
+                                                            {
+                                                                FeatureName = f.FeatureName,
+                                                                FeatureDescription = f.FeatureDescription
+                                                            })]
     };
 }
