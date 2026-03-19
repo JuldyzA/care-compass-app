@@ -29,7 +29,8 @@
 
 <div class="dashboard-preview-wrapper">
     <div class="dashboard-content-area">
-        <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")" @(isLockedDashboard ? "aria-hidden=\"true\" inert" : "")>
+        <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")"
+             aria-hidden="@(isLockedDashboard ? "true" : null)" @(isLockedDashboard ? "inert" : "")>
             <div class="stats-row">
                 <div class="stats-card">
                     <div class="card">
