@@ -149,6 +149,7 @@ namespace TeamYellow.Repositories
             var nowUtc = DateTime.UtcNow;
 
             return await _context.PlanDiscounts
+                .AsNoTracking()
                 .Where(pd =>
                     pd.PlanId == planId &&
                     pd.Discount.StartDateTime <= nowUtc &&

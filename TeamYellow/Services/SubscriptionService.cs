@@ -1,4 +1,5 @@
 using TeamYellow.DTOs;
+using TeamYellow.Helpers;
 using TeamYellow.Repositories;
 
 namespace TeamYellow.Services;
@@ -152,13 +153,15 @@ public class SubscriptionService(
             if (discount != null)
             {
                 discountId = discount.DiscountId;
-                var discountAmount = CalculateDiscountAmount(plan.Price, discount);
+                var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
                 finalAmount = plan.Price - discountAmount;
 
                 if (finalAmount < 0m)
                 {
                     finalAmount = 0m;
                 }
+
+                finalAmount = decimal.Round(finalAmount, 2, MidpointRounding.AwayFromZero);
             }
         }
 
@@ -227,6 +230,34 @@ public class SubscriptionService(
         if (await _transactionRepository.ExistsByProviderOrderId(captureId))
             return SubscriptionResult.AlreadySubscribed;
 
+        decimal expectedAmount = plan.Price;
+
+        if (discountId.HasValue)
+        {
+            var discount = await _discountRepository.GetDiscountByIdAsync(discountId.Value);
+
+            if (discount == null)
+                throw new InvalidOperationException($"Discount {discountId.Value} not found.");
+
+            var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+            expectedAmount = plan.Price - discountAmount;
+
+            if (expectedAmount < 0m)
+            {
+                expectedAmount = 0m;
+            }
+        }
+
+        expectedAmount = decimal.Round(expectedAmount, 2, MidpointRounding.AwayFromZero);
+
+        const decimal amountTolerance = 0.01m;
+
+        if (Math.Abs(expectedAmount - capturedAmount) > amountTolerance)
+        {
+            throw new InvalidOperationException(
+                $"Captured amount {capturedAmount:F2} does not match expected amount {expectedAmount:F2}.");
+        }
+
         if (existing != null)
         {
             existing.Status = Models.SubscriptionStatus.Cancelled;
@@ -252,20 +283,5 @@ public class SubscriptionService(
         });
 
         return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
-    }
-
-    private static decimal CalculateDiscountAmount(decimal originalPrice, Models.Discount discount)
-    {
-        decimal discountAmount = discount.DiscountType == Models.DiscountType.Percent
-            ? originalPrice * (discount.Value / 100m)
-            : discount.Value;
-
-        if (discountAmount < 0)
-            discountAmount = 0;
-
-        if (discountAmount > originalPrice)
-            discountAmount = originalPrice;
-
-        return decimal.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
     }
 }
