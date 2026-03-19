@@ -185,12 +185,25 @@ public class PayPalService : IPayPalService
             ?? json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
             ?? throw new Exception("PayPal response missing custom_id");
 
-        var capturedAmountText = json?["purchase_units"]?[0]?["payments"]?["captures"]?[0]?["amount"]?["value"]?.ToString()
-            ?? json?["purchase_units"]?[0]?["amount"]?["value"]?.ToString()
-            ?? throw new Exception("PayPal response missing captured amount.");
+        var capturesNode = json?["purchase_units"]?[0]?["payments"]?["captures"];
 
-        if (!decimal.TryParse(capturedAmountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var capturedAmount))
-            throw new Exception("PayPal response contained an invalid captured amount.");
+        if (capturesNode is not JsonArray capturesArray || capturesArray.Count == 0)
+            throw new Exception("PayPal response missing captured amount.");
+
+        decimal capturedAmount = 0m;
+
+        foreach (var capture in capturesArray)
+        {
+            var amountText = capture?["amount"]?["value"]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(amountText) ||
+                !decimal.TryParse(amountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            {
+                throw new Exception("PayPal response contained an invalid captured amount.");
+            }
+
+            capturedAmount += amount;
+        }
 
         if (status == "COMPLETED")
             return (captureId, customId, capturedAmount);
