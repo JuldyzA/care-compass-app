@@ -27,8 +27,10 @@ public class ClientService
     /// <param name="page">The requested page number.</param>
     /// <param name="pageSize">The number of records to return, capped at 100.</param>
     /// <param name="searchTerm">Optional search term to filter by name or email.</param>
+    /// <param name="startDate">Optional start date (inclusive) to filter client CreatedAt.</param>
+    /// <param name="endDate">Optional end date (inclusive) to filter client CreatedAt.</param>
     /// <returns>A view model containing the paginated client data.</returns>
-    public async Task<ClientTableVm> GetClientsByPageAsync(ClaimsPrincipal user, int page, int pageSize, string? searchTerm = null)
+    public async Task<ClientTableVm> GetClientsByPageAsync(ClaimsPrincipal user, int page, int pageSize, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         string? userId = _userManager.GetUserId(user);
 
@@ -47,7 +49,15 @@ public class ClientService
             pageSize = maxPageSize;
         }
 
-        ClientTableDto dto = await _repository.GetClientsByPageAsync(userId, page, pageSize, searchTerm);
+        ClientTableDto dto = await _repository.GetClientsByPageAsync(userId, page, pageSize, searchTerm, startDate, endDate);
+
+        int totalPages = (pageSize > 0) ? (int)Math.Ceiling(dto.TotalCount / (double)pageSize) : 1;
+        totalPages = Math.Max(1, totalPages);
+
+        if (page > totalPages)
+        {
+            dto = await _repository.GetClientsByPageAsync(userId, totalPages, pageSize, searchTerm, startDate, endDate);
+        }
 
         ClientTableVm clientTableVm = ClientHelper.MapToVm(dto);
 

@@ -52,7 +52,9 @@ public class ClientHelper
             EndEntry = endEntry,
             TotalCount = dto.TotalCount,
             Clients = clientVMs,
-            SearchTerm = dto.SearchTerm
+            SearchTerm = dto.SearchTerm,
+            StartDate = dto.StartDate.HasValue ? dto.StartDate.Value.ToString("yyyy-MM-dd") : null,
+            EndDate = dto.EndDate.HasValue ? dto.EndDate.Value.ToString("yyyy-MM-dd") : null
         };
     }
 

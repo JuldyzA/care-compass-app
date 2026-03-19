@@ -63,12 +63,14 @@ public class CounsellorController : Controller
     /// <param name="pageSize">The number of records per page (defaults to 5).</param>
     /// <param name="isDashboard">Whether the request is from the dashboard.</param>
     /// <param name="searchTerm">An optional search term to filter clients.</param>
+    /// <param name="startDate">Optional filter start date (inclusive).</param>
+    /// <param name="endDate">Optional filter end date (inclusive).</param>
     /// <returns>A partial view containing the client table data.</returns>
     [HttpGet]
-    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false, string? searchTerm = null)
+    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         if (isDashboard) pageSize = 5;
-        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize, searchTerm);
+        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize, searchTerm, startDate, endDate);
         clientTableVm.IsDashboard = isDashboard;
 
         return PartialView("_ClientTable", clientTableVm);

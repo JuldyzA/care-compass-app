@@ -22,5 +22,9 @@ public class ClientTableVm
 
     public string? SearchTerm { get; set; }
 
+    public string? StartDate { get; set; }
+
+    public string? EndDate { get; set; }
+
     public IEnumerable<ClientVM> Clients { get; set; } = new List<ClientVM>();
 }

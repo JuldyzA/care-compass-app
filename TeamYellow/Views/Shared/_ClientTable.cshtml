@@ -1,14 +1,31 @@
 ﻿@using TeamYellow.ViewModels
 @model ClientTableVm
 
+@{
+    string today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
 <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">Client Details</h5>
     <div class="d-flex gap-2">
+        @if (!Model.IsDashboard)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-1">
+                    <label for="clientStartDate" class="form-label small mb-0 me-1">From</label>
+                    <input type="date" id="clientStartDate" class="form-control form-control-sm" value="@(Model.StartDate ?? "")" max="@today" />
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <label for="clientEndDate" class="form-label small mb-0 me-1">To</label>
+                    <input type="date" id="clientEndDate" class="form-control form-control-sm" value="@(Model.EndDate ?? "")" max="@today" />
+                </div>
+            </div>
+        }
         <div class="input-group input-group-sm" style="width: 250px;">
             <span class="input-group-text bg-white border-end-0">
                 <i class="bi bi-search"></i>
             </span>
-            <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
+            <input type="text" id="clientSearchInput" class="client-search-input form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
         </div>
         <button class="btn btn-sm btn-outline-primary" type="button" id="clientFilterBtn">
             <i class="bi bi-funnel"></i> Filter
@@ -18,9 +35,16 @@
         </button>
     </div>
 </div>
+
+<!-- transient error alert container (stacked vertically, centered at top) -->
+<div id="error-alert"
+     class="error-alert position-fixed top-0 start-50 translate-middle-x mt-3 w-100 d-flex flex-column align-items-center gap-2"
+     aria-live="assertive" aria-atomic="true">
+</div>
+
 <div class="card-body p-0">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" id="clientsTable">
+        <table id="clientsTable" class="clients-table table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th class="sortable" data-column="patient">

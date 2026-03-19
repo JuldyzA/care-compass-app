@@ -20,14 +20,16 @@ public class ClientRepository
     /// <summary>
     /// Retrieves a paginated list of client data for a specific counsellor, including the total record count for pagination.
     /// Uses PaginatedList helper to produce pagination metadata.
-    /// Supports optional searchTerm which filters by first+last name or email.
+    /// Supports optional searchTerm which filters by first+last name or email, and optional start/end dates (inclusive).
     /// </summary>
     /// <param name="userId">The unique identifier of the counsellor.</param>
     /// <param name="page">The current page number to retrieve.</param>
     /// <param name="pageSize">The maximum number of client records to include in the result.</param>
     /// <param name="searchTerm">Optional search text to filter by name or email.</param>
+    /// <param name="startDate">Optional start date (inclusive).</param>
+    /// <param name="endDate">Optional end date (inclusive).</param>
     /// <returns>A DTO containing the paginated client list and total record metadata.</returns>
-    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null)
+    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         // Start from entity query so we can filter before projection (EF Core can translate)
         IQueryable<Client> clients = _context.Clients
@@ -41,6 +43,19 @@ public class ClientRepository
             clients = clients.Where(c =>
                 (c.FirstName + " " + c.LastName).ToLower().Contains(q) ||
                 c.Email.ToLower().Contains(q));
+        }
+
+        if (startDate.HasValue)
+        {
+            var s = startDate.Value.Date;
+            clients = clients.Where(c => c.CreatedAt >= s);
+        }
+
+        if (endDate.HasValue)
+        {
+            // treat end date as inclusive by comparing to next day (exclusive)
+            var e = endDate.Value.Date.AddDays(1);
+            clients = clients.Where(c => c.CreatedAt < e);
         }
 
         IQueryable<ClientDto> query = clients.Select(c => new ClientDto
@@ -62,7 +77,9 @@ public class ClientRepository
             Page = paginated.PageIndex,
             PageSize = paginated.PageSize,
             TotalCount = paginated.TotalCount,
-            SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim()
+            SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim(),
+            StartDate = startDate,
+            EndDate = endDate
         };
 
         return dto;
