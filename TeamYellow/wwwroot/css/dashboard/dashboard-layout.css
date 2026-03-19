@@ -685,48 +685,6 @@ body.locked-page-scroll {
 }
 
 /* ========================================
-   Dashboard Layout Styles
-   ======================================== */
-
-:root {
-    --sidebar-width: 280px;
-    --sidebar-collapsed-width: 70px;
-    --primary-color: #0d6efd;
-    --secondary-color: #6c757d;
-    --success-color: #198754;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
-    --dark-color: #212529;
-    --light-color: #f8f9fa;
-    --sidebar-bg: #1e293b;
-    --sidebar-text: #cbd5e1;
-    --sidebar-hover: #334155;
-    --sidebar-active: #0d6efd;
-    --content-bg: #f1f5f9;
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--content-bg);
-    overflow-x: hidden;
-}
-
-
-    body.locked-page-scroll {
-        overflow: hidden;
-        height: 100vh;
-    }
-
-/* ========================================
    Dashboard Wrapper
    ======================================== */
 

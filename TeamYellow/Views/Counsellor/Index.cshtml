@@ -28,7 +28,7 @@
 }
 
 <div class="dashboard-preview-wrapper">
-    <div class="dashboard-content-area">
+    <div class="dashboard-content-area" @(isLockedDashboard ? "aria-hidden=\"true\" inert" : "")>
         <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")">
             <div class="stats-row">
                 <div class="stats-card">
@@ -148,8 +148,13 @@
         @if (isLockedDashboard)
         {
             <div class="dashboard-lock-overlay">
-                <div class="dashboard-lock-modal">
-                    <h5>Please activate your plan / renew your subscription</h5>
+                <div class="dashboard-lock-modal"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="dashboard-lock-title"
+                     tabindex="-1"
+                     id="dashboard-lock-modal">
+                    <h5 id="dashboard-lock-title">Please activate your plan / renew your subscription</h5>
 
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mt-4">
                         <a asp-controller="Plan" asp-action="Index" class="btn btn-primary">
@@ -183,6 +188,14 @@
 
 @section Scripts {
     <script>
+        (function () {
+            var modal = document.getElementById('dashboard-lock-modal');
+
+            if (modal && typeof modal.focus === 'function') 
+            {
+                modal.focus();
+            }
+        })();
 
         const now = new Date();
         const currentMonthFull = now.toLocaleString('default', { month: 'long' });

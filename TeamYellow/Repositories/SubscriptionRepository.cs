@@ -71,6 +71,7 @@ namespace TeamYellow.Repositories
             return await _context.Subscriptions
                 .Include(s => s.Plan)
                 .Include(s => s.PaymentTransaction)
+                .Include(s => s.Counsellor)
                 .FirstOrDefaultAsync(s => s.CounsellorId == counsellorId && s.Status == SubscriptionStatus.Active);
         }
 
