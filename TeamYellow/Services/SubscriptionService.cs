@@ -41,6 +41,9 @@ public class SubscriptionService(
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
+
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
         if (existing != null)
@@ -80,6 +83,9 @@ public class SubscriptionService(
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -137,6 +143,9 @@ public class SubscriptionService(
     {
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
 
         if (plan.Price == 0m)
         {
@@ -226,6 +235,9 @@ public class SubscriptionService(
 
         var plan = await _planRepository.GetPlanById(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!plan.IsActive)
+            throw new KeyNotFoundException($"Plan {planId} not found.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
