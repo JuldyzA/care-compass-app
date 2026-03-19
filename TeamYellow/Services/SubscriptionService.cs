@@ -114,14 +114,19 @@ public class SubscriptionService(
     }
 
     /// <summary>
-    /// Creates a PayPal checkout order for the specified plan and returns the buyer approval URL.
-    /// Returns an empty string if the plan is free (price is 0), indicating that PayPal is not needed.
+    /// Creates a PayPal checkout order for the specified plan and returns checkout details.
+    /// For plans or discounts that result in a non-zero amount, a PayPal order is created so the
+    /// buyer can approve the payment. For free plans or plans that become zero after applying a
+    /// discount, no PayPal order is created and the subscription is handled as a zero-amount flow.
     /// </summary>
-    /// <param name="planId">The ID of the plan to create a PayPal order for.</param>
+    /// <param name="planId">The ID of the plan to start the checkout process for.</param>
+    /// <param name="discountCode">An optional discount code to apply before determining the final amount.</param>
     /// <param name="returnUrl">The URL PayPal redirects to after the buyer approves the payment.</param>
     /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels the payment.</param>
     /// <returns>
-    /// The PayPal buyer approval URL for paid plans, or <see cref="string.Empty"/> for free plans.
+    /// A <see cref="SubscriptionCheckoutResult"/> describing the checkout flow, including whether
+    /// PayPal approval is required and, for paid plans, the buyer approval URL to redirect the user to.
+    /// For free or zero-after-discount plans, the result indicates that no PayPal redirect is needed.
     /// </returns>
     /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
     public async Task<SubscriptionCheckoutResult> CreatePayPalOrder(

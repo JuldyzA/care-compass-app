@@ -114,7 +114,7 @@ public class PayPalService : IPayPalService
                     amount = new
                     {
                         currency_code = currency,
-                        value = amount.ToString("F2")
+                        value = amount.ToString("F2", CultureInfo.InvariantCulture)
                     }
                 }
             },
