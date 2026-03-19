@@ -1,7 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-
-@{
+﻿@{
     bool isAdmin = User.IsInRole("Administrator");
     bool isManager = User.IsInRole("Manager");
     bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
@@ -57,7 +54,7 @@ else if (isCounsellor)
         </a>
     </li>
     <li>
-        <a class="dropdown-item" href="#" id="notificationsLink">
+        <a class="dropdown-item notifications-link" href="#">
             <i class="bi bi-bell" aria-hidden="true"></i> Notifications
             <span class="badge bg-danger ms-2">3</span>
         </a>
@@ -80,7 +77,6 @@ else if (isRegisteredVisitor)
 <li><hr class="dropdown-divider"></li>
 <li>
     <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-        @Html.AntiForgeryToken()
         <button type="submit" class="dropdown-item">
             <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
         </button>
