@@ -531,7 +531,7 @@
     user-select: none;
 }
 
-@media (max-width: 767.98px) {
+@media (min-width: 577px) and (max-width: 767.98px) {
     .dashboard-preview-wrapper {
         padding-bottom: 0;
     }
