@@ -2,6 +2,18 @@
 
 @{
     ViewData["Title"] = "Plan";
+    var message = ViewData["Message"] as string;
+    var messageType = ViewData["MessageType"] as string ?? "warning";
+}
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="container mt-3">
+        <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
 }
 
 <!-- 1. Call to Action Banner -->
@@ -54,7 +66,7 @@
                             {
                                 <li class="mb-2">
                                     <span class="text-success me-2">&#10003;</span>
-                                    @feature.FeatureName
+                                    @feature.FeatureDescription
                                 </li>
                             }
                         </ul>

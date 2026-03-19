@@ -2,33 +2,19 @@
 @using System.Security.Claims
 @model TeamYellow.ViewModels.ManagerDashboardVM
 
-<div class="container-fluid">
-    <div class="row">
 
-        <!-- Sidebar -->
-        @await Html.PartialAsync("_ManagerSidebar", Model)
-
-        <!-- Main Content -->
-        <main class="col-md-10 p-4">
-            <!-- Transactions Table -->
-            <div class="card p-3">
-                <h5 class="mb-3">Transaction Details</h5>
-                <div>
-                    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
-                    <p><strong>Paid Date:</strong> @Model.PaidAt</p>
-                    <p><strong>Amount:</strong> @Model.Amount</p>
-                    <p><strong>Status:</strong> @Model.SOP</p>
-                    <p><strong>Practitioner Licence ID:</strong> @Model.PractitionerLicenceId</p>
-                    <p>
-                        <strong>Counsellor:</strong>
-                        @Model.CounsellorName
-                    </p>
-                    <p><strong>Email:</strong> @Model.Email</p>
-                    <p><strong>Registration Date:</strong> @Model.RegistrationDate</p>
-                </div>
-                <a asp-action="Index" class="btn btn-secondary">Back</a>
-            </div>
-
-        </main>
-    </div>
+<h4>Transaction Details</h4>
+<div>
+    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
+    <p><strong>Paid Date:</strong> @Model.PaidAt</p>
+    <p><strong>Amount:</strong> @Model.Amount</p>
+    <p><strong>Status:</strong> @Model.SOP</p>
+    <p><strong>Practitioner Licence ID:</strong> @Model.PractitionerLicenceId</p>
+    <p>
+        <strong>Counsellor:</strong>
+        @Model.CounsellorName
+    </p>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Registration Date:</strong> @Model.RegistrationDate</p>
 </div>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

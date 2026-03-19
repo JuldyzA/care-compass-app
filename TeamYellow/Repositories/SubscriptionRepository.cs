@@ -57,19 +57,22 @@ namespace TeamYellow.Repositories
 
         /// <summary>
         /// Retrieves the active subscription for the specified counsellor,
-        /// including the associated <see cref="Plan"/> navigation property so that
-        /// <see cref="Plan.PlanName"/> and other plan details are available without
-        /// an additional query.
+        /// including the associated <see cref="Plan"/>, <see cref="Subscription.PaymentTransaction"/>,
+        /// and <see cref="Subscription.Counsellor"/> navigation properties so that related details
+        /// are available without additional queries.
         /// </summary>
         /// <param name="counsellorId">The primary key of the counsellor to look up.</param>
         /// <returns>
-        /// The counsellor's active <see cref="Subscription"/> with its <see cref="Plan"/> loaded,
+        /// The counsellor's active <see cref="Subscription"/> with its <see cref="Plan"/>,
+        /// <see cref="Subscription.PaymentTransaction"/>, and <see cref="Subscription.Counsellor"/> loaded,
         /// or <c>null</c> if no active subscription exists.
         /// </returns>
         public async Task<Subscription?> GetActiveSubscriptionWithPlanByCounsellorId(int counsellorId)
         {
             return await _context.Subscriptions
                 .Include(s => s.Plan)
+                .Include(s => s.PaymentTransaction)
+                .Include(s => s.Counsellor)
                 .FirstOrDefaultAsync(s => s.CounsellorId == counsellorId && s.Status == SubscriptionStatus.Active);
         }
 
@@ -80,6 +83,7 @@ namespace TeamYellow.Repositories
         /// <param name="subscription">The subscription entity with updated values to persist.</param>
         public async Task UpdateSubscription(Subscription subscription)
         {
+            subscription.UpdatedAt = DateTime.UtcNow;
             _context.Subscriptions.Update(subscription);
             await _context.SaveChangesAsync();
         }
