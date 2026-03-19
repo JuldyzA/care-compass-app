@@ -36,7 +36,7 @@ public class PaymentTransaction
     [Required]
     [Column("providerOrderId")]
     [MaxLength(100)]
-    public string ProviderOrderId { get; set; } = String.Empty;
+    public string ProviderOrderId { get; set; } = null!;
 
     [Column("status")]
     public PaymentTransactionStatus Status { get; set; } = PaymentTransactionStatus.Captured;

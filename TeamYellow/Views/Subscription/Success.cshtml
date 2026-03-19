@@ -1,6 +1,7 @@
 ﻿@model TeamYellow.ViewModels.SubscriptionSuccessVM
+@using System.Globalization
 @{
-    ViewData["Title"] = "Payment Successful";
+    ViewData["Title"] = "Subscription Successful";
 }
 
 <div class="container mt-5 text-center">
@@ -12,9 +13,17 @@
 
     <div class="card mx-auto mb-5 shadow-sm" style="max-width: 480px;">
         <div class="card-header bg-success text-white fw-semibold">
-            Subscription Details
+            Thank you @Model.DisplayName!
         </div>
         <ul class="list-group list-group-flush text-start">
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Amount Received</span>
+                <strong>@string.Format(CultureInfo.InvariantCulture, "{0} {1:F2}", Model.Currency, Model.Amount)</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Order Received</span>
+                <strong>@Model.PaidAt.ToString("MMMM dd, yyyy hh:mm tt 'UTC'")</strong>
+            </li>
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan</span>
                 <strong>@Model.PlanName</strong>
@@ -26,6 +35,10 @@
             <li class="list-group-item d-flex justify-content-between">
                 <span class="text-muted">Plan End Date</span>
                 <strong>@Model.CycleEnd.ToString("MMMM dd, yyyy")</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span class="text-muted">Transaction ID</span>
+                <strong>@Model.ProviderOrderId</strong>
             </li>
         </ul>
     </div>
