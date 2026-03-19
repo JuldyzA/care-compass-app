@@ -152,6 +152,9 @@ public class PayPalService : IPayPalService
     /// <list type="bullet">
     ///   <item><description><c>CaptureId</c> – the PayPal capture transaction identifier.</description></item>
     ///   <item><description><c>CustomId</c> – the application-defined value set when the order was created (e.g., plan ID).</description></item>
+    ///   <item><description><c>CapturedAmount</c> – the total monetary amount captured for the order, as a <see cref="decimal"/> 
+    ///   parsed from PayPal's <c>amount.value</c> using invariant culture. The value is expressed in the order's currency and 
+    ///   uses that currency's standard minor-unit precision (typically two decimal places).</description></item>
     /// </list>
     /// </returns>
     /// <exception cref="Exception">

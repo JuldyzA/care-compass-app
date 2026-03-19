@@ -29,6 +29,7 @@ public class PlanController : Controller
     /// <param name="planService">Service used to retrieve and manage plans.</param>
     /// <param name="counsellorRepository">Repository for counsellor data access.</param>
     /// <param name="subscriptionRepository">Repository for subscription data access.</param>
+    /// <param name="discountRepository">Repository for discount data access.</param>
     /// <param name="userManager">ASP.NET Identity user manager.</param>
     public PlanController(
         IPlanService planService,

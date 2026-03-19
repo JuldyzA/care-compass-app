@@ -158,5 +158,20 @@ namespace TeamYellow.Repositories
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Discount?> GetValidDiscountForPlanByIdAsync(int planId, int discountId)
+        {
+            var nowUtc = DateTime.UtcNow;
+
+            return await _context.PlanDiscounts
+                .AsNoTracking()
+                .Where(pd =>
+                    pd.PlanId == planId &&
+                    pd.DiscountId == discountId &&
+                    pd.Discount.StartDateTime <= nowUtc &&
+                    pd.Discount.EndDateTime >= nowUtc)
+                .Select(pd => pd.Discount)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -44,6 +44,9 @@ public class SubscriptionService(
         if (!plan.IsActive)
             throw new KeyNotFoundException($"Plan {planId} not found.");
 
+        if (plan.Price != 0m)
+            throw new InvalidOperationException($"Plan {planId} is not a free plan.");
+
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
         if (existing != null)
@@ -86,6 +89,30 @@ public class SubscriptionService(
 
         if (!plan.IsActive)
             throw new KeyNotFoundException($"Plan {planId} not found.");
+
+        if (!discountId.HasValue)
+            throw new InvalidOperationException(
+                "A discount is required for the zero-amount discounted subscription flow.");
+
+        var discount = await _discountRepository.GetValidDiscountForPlanByIdAsync(planId, discountId.Value);
+
+        if (discount == null)
+            throw new InvalidOperationException(
+                $"Discount {discountId.Value} is not valid for plan {planId}.");
+
+        var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
+        var finalAmount = plan.Price - discountAmount;
+
+        if (finalAmount < 0m)
+        {
+            finalAmount = 0m;
+        }
+
+        finalAmount = decimal.Round(finalAmount, 2, MidpointRounding.AwayFromZero);
+
+        if (finalAmount != 0m)
+            throw new InvalidOperationException(
+                $"Discount {discountId.Value} does not reduce plan {planId} to zero.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -251,10 +278,11 @@ public class SubscriptionService(
 
         if (discountId.HasValue)
         {
-            var discount = await _discountRepository.GetDiscountByIdAsync(discountId.Value);
+            var discount = await _discountRepository.GetValidDiscountForPlanByIdAsync(planId, discountId.Value);
 
             if (discount == null)
-                throw new InvalidOperationException($"Discount {discountId.Value} not found.");
+                throw new InvalidOperationException(
+                    $"Discount {discountId.Value} is not valid for plan {planId}.");
 
             var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
             expectedAmount = plan.Price - discountAmount;
