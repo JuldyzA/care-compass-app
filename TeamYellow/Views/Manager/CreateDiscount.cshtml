@@ -36,11 +36,11 @@
 
             <label>Start Date</label>
                 <input asp-for="StartDateTime"
-                        type="datetime-local"
-                        class="form-control"
-                        min="@now"
-                    value="@Model.StartDateTime.ToString("yyyy-MM-ddTHH:mm")"
-                    placeholder="Select start date and time" />
+                type="datetime-local"
+                class="form-control"
+                min="@now"
+                asp-format="{0:yyyy-MM-ddTHH:mm}"
+                placeholder="Select start date and time" />
             <span asp-validation-for="StartDateTime" class="text-danger"></span>
         </div>
 
@@ -54,13 +54,13 @@
             }
 
         <input asp-for="EndDateTime"
-                    type="datetime-local"
-                    value="@Model.EndDateTime.ToString("yyyy-MM-ddTHH:mm")"
-                    min="@now"
-                    max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")"
-                class="form-control" />
+        type="datetime-local"
+        min="@now"
+        max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")"
+        asp-format="{0:yyyy-MM-ddTHH:mm}"
+        class="form-control" />
             <span asp-validation-for="EndDateTime" class="text-danger"></span>
-        </div>
+    </div>
 
     <button type="submit" class="btn btn-primary">
         Create Discount
