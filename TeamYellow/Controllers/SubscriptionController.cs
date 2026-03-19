@@ -32,6 +32,7 @@ public class SubscriptionController : Controller
     /// <param name="userManager">ASP.NET Identity user manager.</param>
     /// <param name="counsellorRepository">Repository for counsellor data access.</param>
     /// <param name="subscriptionRepository">Repository for subscription data access.</param>
+    /// <param name="userProfileRepository">Repository for user profile data access.</param>
     /// <param name="signInManager">ASP.NET Identity sign-in manager used to refresh user claims.</param>
     /// <param name="logger">Logger for recording error and diagnostic information.</param>
     public SubscriptionController(
@@ -55,13 +56,16 @@ public class SubscriptionController : Controller
     /// <summary>
     /// Initiates the subscription process for the specified plan.
     /// Creates a counsellor profile if one does not yet exist for the current user.
-    /// For free plans, completes the subscription immediately and assigns the <c>Free_Counselor</c> role.
-    /// For paid plans, creates a PayPal order and redirects the user to the PayPal approval page.
+    /// True free plans and paid plans discounted to zero are completed immediately without PayPal.
+    /// Paid plans with a remaining balance create a PayPal order and redirect the user
+    /// to the PayPal approval page.
     /// </summary>
     /// <param name="planId">The ID of the plan the user wants to subscribe to.</param>
+    /// <param name="discountCode">Optional discount code applied during checkout.</param>
     /// <returns>
-    /// Redirects to the PayPal approval URL for paid plans,
-    /// returns a success view for free plans, or returns an error result for invalid requests.
+    /// Redirects to the PayPal approval URL for paid plans requiring payment,
+    /// returns a success view for zero-amount flows,
+    /// or returns an error result for invalid requests.
     /// </returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -80,10 +84,11 @@ public class SubscriptionController : Controller
         {
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
 
-            // Only check active subscription if counsellor already exists
             if (counsellor != null)
             {
-                var existingSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
+                var existingSubscription =
+                    await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
+
                 if (existingSubscription?.PlanId == planId)
                 {
                     TempData["Message"] = "You are already subscribed to this plan.";
@@ -92,42 +97,12 @@ public class SubscriptionController : Controller
                 }
             }
 
-            var checkout = await _subscriptionService.CreatePayPalOrder(planId, discountCode, returnUrl, cancelUrl);
+            var checkout =
+                await _subscriptionService.CreatePayPalOrder(planId, discountCode, returnUrl, cancelUrl);
 
             if (!checkout.RequiresPayPal)
             {
-                if (counsellor == null)
-                {
-                    string licenceId;
-                    var random = new Random();
-                    do
-                    {
-                        licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
-                    }
-                    while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
-
-                    var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                    var displayName = string.Join(" ", new[]
-                                    {
-                            profile?.FirstName,
-                            profile?.LastName
-                        }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                    if (string.IsNullOrWhiteSpace(displayName))
-                    {
-                        displayName = user.UserName ?? user.Email ?? "Unknown";
-                    }
-
-                    counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
-                    {
-                        UserId = user.Id,
-                        DisplayName = displayName,
-                        PractitionerLicenceId = licenceId,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    });
-                }
+                counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
                 SubscriptionResult result;
                 string successMessage;
@@ -170,17 +145,24 @@ public class SubscriptionController : Controller
 
                 try
                 {
-                    await AssignCounsellorRole(user.Id, roleToAssign);
+                    await AssignCounsellorRoleAsync(user.Id, roleToAssign);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to assign {Role} role to user {UserId}.", roleToAssign, user.Id);
-                    TempData["Message"] = "Subscription was created, but updating your account role failed. Please contact support or try again.";
+                    _logger.LogError(ex,
+                        "Failed to assign {Role} role to user {UserId}.",
+                        roleToAssign,
+                        user.Id);
+
+                    TempData["Message"] =
+                        "Subscription was created, but updating your account role failed. Please contact support or try again.";
                     TempData["MessageType"] = "danger";
                     return RedirectToAction("Index", "Plan");
                 }
 
-                var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
+                var subscription =
+                    await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
+
                 var vm = new SubscriptionSuccessVM
                 {
                     Message = successMessage,
@@ -189,6 +171,7 @@ public class SubscriptionController : Controller
                     CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
                     CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
                 };
+
                 return View("Success", vm);
             }
 
@@ -196,8 +179,12 @@ public class SubscriptionController : Controller
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, "Key not found for user email {Email}. Redirecting to plan selection.", user.Email);
-            TempData["Message"] = "We couldn't find the requested subscription information. Please select a plan again.";
+            _logger.LogError(ex,
+                "Key not found for user email {Email}. Redirecting to plan selection.",
+                user.Email);
+
+            TempData["Message"] =
+                "We couldn't find the requested subscription information. Please select a plan again.";
             TempData["MessageType"] = "danger";
             return RedirectToAction("Index", "Plan");
         }
@@ -208,7 +195,9 @@ public class SubscriptionController : Controller
                 "Error processing subscription payment for user {UserId} and plan {PlanId}.",
                 user.Id,
                 planId);
-            TempData["Message"] = "An unexpected error occurred while processing your subscription. Please try again.";
+
+            TempData["Message"] =
+                "An unexpected error occurred while processing your subscription. Please try again.";
             TempData["MessageType"] = "danger";
             return RedirectToAction("Index", "Plan");
         }
@@ -242,62 +231,39 @@ public class SubscriptionController : Controller
         try
         {
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+            counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
-            if (counsellor == null)
-            {
-                string licenceId;
-                var random = new Random();
+            var result = await _subscriptionService.CompletePayPalSubscription(
+                orderId,
+                counsellor.CounsellorId,
+                user.UserName ?? "Unknown");
 
-                do
-                {
-                    licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
-                }
-                while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
-
-                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                var displayName = string.Join(" ", new[]
-                                {
-                                    profile?.FirstName,
-                                    profile?.LastName
-                                }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                if (string.IsNullOrWhiteSpace(displayName))
-                {
-                    displayName = user.UserName ?? user.Email ?? "Unknown";
-                }
-
-                counsellor = await _counsellorRepository.CreateAsync(new Models.Counsellor
-                {
-                    UserId = user.Id,
-                    DisplayName = displayName,
-                    PractitionerLicenceId = licenceId,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
-            var result = await _subscriptionService.CompletePayPalSubscription(orderId, counsellor.CounsellorId, user.UserName ?? "Unknown");
             if (result == SubscriptionResult.AlreadySubscribed)
             {
                 TempData["Message"] = "You are already subscribed to this plan.";
                 TempData["MessageType"] = "info";
                 return RedirectToAction("Index", "Plan");
             }
+
             try
             {
-                await AssignCounsellorRole(user.Id, "Paid_Counselor");
+                await AssignCounsellorRoleAsync(user.Id, "Paid_Counselor");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to assign Paid_Counselor role to user {UserId} after PayPal subscription.", user.Id);
-                TempData["Message"] = "Your payment was completed, but updating your account role failed. Please contact support or try signing in again.";
+                _logger.LogError(ex,
+                    "Failed to assign Paid_Counselor role to user {UserId} after PayPal subscription.",
+                    user.Id);
+
+                TempData["Message"] =
+                    "Your payment was completed, but updating your account role failed. Please contact support or try signing in again.";
                 TempData["MessageType"] = "danger";
                 return RedirectToAction("Index", "Plan");
             }
 
+            var subscription =
+                await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
 
-            var subscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
             var vm = new SubscriptionSuccessVM
             {
                 Message = result == SubscriptionResult.PlanChanged
@@ -308,6 +274,7 @@ public class SubscriptionController : Controller
                 CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
                 CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
             };
+
             return View("Success", vm);
         }
         catch (Exception ex)
@@ -337,13 +304,17 @@ public class SubscriptionController : Controller
     /// <param name="targetRole">
     /// The role to assign to the user. Expected values are <c>Free_Counselor</c> or <c>Paid_Counselor</c>.
     /// </param>
-    private async Task AssignCounsellorRole(string userId, string targetRole)
+    private async Task AssignCounsellorRoleAsync(string userId, string targetRole)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            _logger.LogWarning("User {UserId} not found while assigning role {TargetRole}.", userId, targetRole);
-            return;
+            _logger.LogWarning(
+                "User {UserId} not found while assigning role {TargetRole}.",
+                userId,
+                targetRole);
+
+            throw new InvalidOperationException("User not found while assigning counsellor role.");
         }
 
         var rolesToRemove = new[] { "Registered_Visitor", "Free_Counselor", "Paid_Counselor" };
@@ -363,7 +334,8 @@ public class SubscriptionController : Controller
                     userId,
                     errors);
 
-                throw new InvalidOperationException($"Failed to remove existing counsellor roles: {errors}");
+                throw new InvalidOperationException(
+                    $"Failed to remove existing counsellor roles: {errors}");
             }
         }
 
@@ -385,5 +357,48 @@ public class SubscriptionController : Controller
         }
 
         await _signInManager.RefreshSignInAsync(user);
+    }
+
+    private async Task<Models.Counsellor> EnsureCounsellorAsync(
+        string userId,
+        string? userName,
+        string? email,
+        Models.Counsellor? existingCounsellor)
+    {
+        if (existingCounsellor != null)
+        {
+            return existingCounsellor;
+        }
+
+        string licenceId;
+        var random = new Random();
+
+        do
+        {
+            licenceId = $"{(char)('A' + random.Next(0, 26))}{random.Next(100000, 1000000)}";
+        }
+        while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
+
+        var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+
+        var displayName = string.Join(" ", new[]
+        {
+            profile?.FirstName,
+            profile?.LastName
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            displayName = userName ?? email ?? "Unknown";
+        }
+
+        return await _counsellorRepository.CreateAsync(new Models.Counsellor
+        {
+            UserId = userId,
+            DisplayName = displayName,
+            PractitionerLicenceId = licenceId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
     }
 }

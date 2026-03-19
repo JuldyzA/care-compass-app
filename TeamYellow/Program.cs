@@ -45,7 +45,7 @@ builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UserRoleRepository>();
 builder.Services.AddScoped<UserLogRepository>();
 builder.Services.AddScoped<DiscountRepository>();
-builder.Services.AddScoped<UserProfileRepository>(); 
+builder.Services.AddScoped<UserProfileRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
