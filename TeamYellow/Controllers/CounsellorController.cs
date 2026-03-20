@@ -65,12 +65,14 @@ public class CounsellorController : Controller
     /// <param name="searchTerm">An optional search term to filter clients.</param>
     /// <param name="startDate">Optional filter start date (inclusive).</param>
     /// <param name="endDate">Optional filter end date (inclusive).</param>
+    /// <param name="sortColumn">Optional column to sort by (patient, datetime, email).</param>
+    /// <param name="sortDir">Optional sort direction (asc or desc).</param>
     /// <returns>A partial view containing the client table data.</returns>
     [HttpGet]
-    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? sortColumn = null, string? sortDir = null)
     {
         if (isDashboard) pageSize = 5;
-        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize, searchTerm, startDate, endDate);
+        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize, searchTerm, startDate, endDate, sortColumn, sortDir);
         clientTableVm.IsDashboard = isDashboard;
 
         return PartialView("_ClientTable", clientTableVm);

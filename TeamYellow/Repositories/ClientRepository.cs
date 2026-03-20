@@ -28,8 +28,10 @@ public class ClientRepository
     /// <param name="searchTerm">Optional search text to filter by name or email.</param>
     /// <param name="startDate">Optional start date (inclusive).</param>
     /// <param name="endDate">Optional end date (inclusive).</param>
+    /// <param name="sortColumn">Optional column to sort by ("patient", "datetime", "email").</param>
+    /// <param name="sortDir">Optional sort direction ("asc" or "desc").</param>
     /// <returns>A DTO containing the paginated client list and total record metadata.</returns>
-    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? sortColumn = null, string? sortDir = null)
     {
         // Start from entity query so we can filter before projection (EF Core can translate)
         IQueryable<Client> clients = _context.Clients
@@ -47,15 +49,15 @@ public class ClientRepository
 
         if (startDate.HasValue)
         {
-            var s = startDate.Value.Date;
-            clients = clients.Where(c => c.CreatedAt >= s);
+            DateTime begin = startDate.Value.Date;
+            clients = clients.Where(c => c.CreatedAt >= begin);
         }
 
         if (endDate.HasValue)
         {
             // treat end date as inclusive by comparing to next day (exclusive)
-            var e = endDate.Value.Date.AddDays(1);
-            clients = clients.Where(c => c.CreatedAt < e);
+            DateTime end = endDate.Value.Date.AddDays(1);
+            clients = clients.Where(c => c.CreatedAt < end);
         }
 
         IQueryable<ClientDto> query = clients.Select(c => new ClientDto
@@ -68,8 +70,30 @@ public class ClientRepository
             CreatedAt = c.CreatedAt
         });
 
+        // Determine ordering
+        string col = (sortColumn ?? "").ToLower();
+        string direction = (sortDir ?? "asc").ToLower();
+        direction = direction == "desc" ? "desc" : "asc";
+
+        IQueryable<ClientDto> orderedQuery = col switch
+        {
+            "patient" => direction == "desc"
+                ? query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName)
+                : query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName),
+
+            "datetime" => direction == "desc"
+                ? query.OrderByDescending(c => c.CreatedAt)
+                : query.OrderBy(c => c.CreatedAt),
+
+            "email" => direction == "desc"
+                ? query.OrderByDescending(c => c.Email)
+                : query.OrderBy(c => c.Email),
+
+            _ => query.OrderBy(c => c.FirstName).ThenBy(c => c.LastName)
+        };
+
         // Use PaginatedList to get items + metadata
-        var paginated = await PaginatedList<ClientDto>.CreateAsync(query.OrderBy(c => c.FirstName), page, pageSize);
+        PaginatedList<ClientDto> paginated = await PaginatedList<ClientDto>.CreateAsync(orderedQuery, page, pageSize);
 
         ClientTableDto dto = new ClientTableDto
         {

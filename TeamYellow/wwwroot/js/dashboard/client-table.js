@@ -149,6 +149,69 @@ function attachFilterHandler() {
             }
         };
     }
+
+    // sort the column and change the arrow
+    attachSortHandlers();
+    updateSortIcons();
+}
+
+function attachSortHandlers() {
+    const container = document.getElementById("clientTableContainer");
+    if (!container) return;
+
+    const headers = Array.from(document.querySelectorAll("#clientsTable thead th.sortable"));
+    headers.forEach(th => {
+        // remove previous handler if any
+        th.onclick = null;
+        th.style.cursor = 'pointer';
+        th.onclick = (ev) => {
+            ev.preventDefault();
+            const column = th.dataset.column;
+            if (!column) return;
+
+            const currentColumn = container.dataset.sortColumn || "";
+            const currentDir = (container.dataset.sortDir || "asc").toLowerCase();
+
+            let nextDir = "asc";
+            if (currentColumn === column) {
+                nextDir = currentDir === "asc" ? "desc" : "asc";
+            } else {
+                nextDir = "asc";
+            }
+
+            container.dataset.sortColumn = column;
+            container.dataset.sortDir = nextDir;
+
+            // go to first page when sort changes
+            loadClients(1);
+        };
+    });
+}
+
+function updateSortIcons() {
+    const container = document.getElementById("clientTableContainer");
+    if (!container) return;
+
+    const sortColumn = container.dataset.sortColumn;
+    const sortDir = (container.dataset.sortDir || "asc").toLowerCase();
+
+    const headers = Array.from(document.querySelectorAll("#clientsTable thead th"));
+    headers.forEach(th => {
+        const icon = th.querySelector("i");
+        if (!icon) return;
+        const column = th.dataset.column;
+
+        // reset to neutral
+        icon.className = "bi bi-chevron-expand text-muted";
+
+        if (column && sortColumn && column === sortColumn) {
+            if (sortDir === "asc") {
+                icon.className = "bi bi-chevron-up text-primary";
+            } else {
+                icon.className = "bi bi-chevron-down text-primary";
+            }
+        }
+    });
 }
 
 async function loadClients(page = 1) {
@@ -164,11 +227,15 @@ async function loadClients(page = 1) {
     const searchTerm = input ? encodeURIComponent(input.value.trim()) : "";
     const startDate = startInput && startInput.value ? encodeURIComponent(startInput.value) : "";
     const endDate = endInput && endInput.value ? encodeURIComponent(endInput.value) : "";
+    const sortColumn = container.dataset.sortColumn || "";
+    const sortDir = container.dataset.sortDir || "";
 
     const params = [];
     if (searchTerm) params.push(`searchTerm=${searchTerm}`);
     if (startDate) params.push(`startDate=${startDate}`);
     if (endDate) params.push(`endDate=${endDate}`);
+    if (sortColumn) params.push(`sortColumn=${encodeURIComponent(sortColumn)}`);
+    if (sortDir) params.push(`sortDir=${encodeURIComponent(sortDir)}`);
 
     const query = params.length ? `&${params.join("&")}` : "";
     const url = `/Counsellor/ClientTable?page=${page}&isDashboard=${isDashboard}${query}`;
