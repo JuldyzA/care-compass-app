@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace TeamYellow.ViewModels;
 
@@ -9,14 +10,15 @@ public class ClientVM
     [Required]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be between 2 and 50 characters.")]
     [RegularExpression(@"^[A-Za-zÀ-ÖØ-öø-ÿ'’\-\s]+$", ErrorMessage = "First name can contain letters, spaces, hyphens and apostrophes only.")]
+    [DisplayName("First Name")]
     public string FirstName { get; set; } = null!;
 
     [Required]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters.")]
     [RegularExpression(@"^[A-Za-zÀ-ÖØ-öø-ÿ'’\-\s]+$", ErrorMessage = "Last name can contain letters, spaces, hyphens and apostrophes only.")]
+    [DisplayName("Last Name")]
     public string LastName { get; set; } = null!;
 
-    [Required]
     [StringLength(5, MinimumLength = 1, ErrorMessage = "Initials must be 1 to 5 characters.")]
     [RegularExpression(@"^[A-Z]{1,5}$", ErrorMessage = "Initials must be uppercase letters without spaces.")]
     public string Initials { get; set; } = null!;
@@ -32,6 +34,7 @@ public class ClientVM
     [StringLength(20, MinimumLength = 7, ErrorMessage = "Phone must be between 7 and 20 characters.")]
     public string Phone { get; set; } = null!;
 
+    [DisplayName("Client Status")]
     public bool Status { get; set; }
 
     [DataType(DataType.DateTime)]

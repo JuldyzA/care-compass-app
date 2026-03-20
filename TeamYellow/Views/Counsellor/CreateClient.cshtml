@@ -1,0 +1,68 @@
+@model TeamYellow.ViewModels.ClientVM
+
+@{
+    ViewData["Title"] = "Create Client";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-3">New Client</h4>
+
+        <form asp-action="CreateClient" asp-controller="Counsellor" method="post" class="client-form row g-3">
+            @Html.AntiForgeryToken()
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <label asp-for="FirstName" class="form-label"></label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger field-validation"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="LastName" class="form-label"></label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <label class="form-label">Client Status</label>
+                    <div class="btn-group" role="group" aria-label="Status toggle">
+                        <input asp-for="Status" class="btn-check" type="radio" id="StatusTrue" value="true" autocomplete="off" />
+                        <label class="btn btn-outline-primary" for="Active">Active</label>
+
+                        <input asp-for="Status" class="btn-check" type="radio" id="StatusFalse" value="false" autocomplete="off" />
+                        <label class="btn btn-outline-secondary" for="Inactive">Inactive</label>
+                    </div>
+                    <span asp-validation-for="Status" class="text-danger field-validation"></span>
+                </div>
+            </div>
+
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-action="Clients" asp-controller="Counsellor" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

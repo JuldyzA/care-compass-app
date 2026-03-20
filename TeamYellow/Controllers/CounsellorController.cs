@@ -52,6 +52,29 @@ public class CounsellorController : Controller
         return View();
     }
 
+    [HttpGet]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public IActionResult CreateClient()
+    {
+        var vm = new ClientVM();
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public IActionResult CreateClient(ClientVM model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        // TODO: persist the new client (call _clientService / repository)
+        // For now redirect back to the clients list after a successful post
+        return RedirectToAction(nameof(Clients));
+    }
+
     /// <summary>
     /// Retrieves a paginated list of clients for the counsellor and returns a partial view.
     /// </summary>
