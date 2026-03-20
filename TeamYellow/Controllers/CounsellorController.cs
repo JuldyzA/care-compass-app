@@ -33,7 +33,7 @@ public class CounsellorController : Controller
     {
         CounsellorDashboardVM dashboardVM = await _counsellorService.GetCounsellorDashboardAsync(User);
 
-        //TODO: Store these data to seesion for other controllers to access
+        //TODO: Store these data to session for other controllers to access
         if (!string.IsNullOrEmpty(dashboardVM.ProfilePhotoUrl))
             ViewData["UserProfilePicture"] = dashboardVM.ProfilePhotoUrl;
         if (!string.IsNullOrEmpty(dashboardVM.DisplayName))
