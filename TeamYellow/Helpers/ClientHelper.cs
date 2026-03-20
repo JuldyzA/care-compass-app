@@ -24,7 +24,7 @@ public class ClientHelper
                 Email = c.Email,
                 Phone = c.Phone,
                 Status = c.Status == ClientStatus.Active ? true : false,
-                CreatedAt = c.CreatedAt
+                CreatedAt = c.CreatedAt.ToLocalTime()
             }).ToList();
 
         int startEntry;
@@ -75,7 +75,7 @@ public class ClientHelper
             Email = client.Email,
             Phone = client.Phone,
             Status = client.Status == ClientStatus.Active ? true : false,
-            CreatedAt = client.CreatedAt
+            CreatedAt = client.CreatedAt.ToLocalTime()
         };
     }
 

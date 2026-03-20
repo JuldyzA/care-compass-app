@@ -139,10 +139,10 @@ public class ClientService
     public async Task<bool> CreateClientAsync(ClientVM vm, ClaimsPrincipal user, int counsellorId)
     {
         // Check for duplicate email
-        bool emailExists = await _repository.EmailExistsAsync(vm.Email, counsellorId);
+        bool emailExists = await _repository.EmailExistsAsync(vm.Email);
         if (emailExists)
         {
-            _logger.LogWarning("Attempted to create client with duplicate email {Email} for Counsellor ID {CounsellorId}.", vm.Email, counsellorId);
+            _logger.LogWarning("Attempted to create client with duplicate client email {Email}.", vm.Email);
             return false;
         }
 
@@ -160,5 +160,91 @@ public class ClientService
         }
 
         return saved;
+    }
+
+    /// <summary>
+    /// Updates an existing client's information if it belongs to the authenticated counsellor.
+    /// Performs authorization verification and duplicate email validation (excluding current client).
+    /// </summary>
+    /// <param name="vm">The client view model containing updated client data.</param>
+    /// <param name="user">The current authenticated user (counsellor).</param>
+    /// <returns>True if the client was successfully updated; false if not found, authorization failed, or email already exists.</returns>
+    public async Task<bool> UpdateClientAsync(ClientVM vm, ClaimsPrincipal user)
+    {
+        string? userId = _userManager.GetUserId(user);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from claims for client update.");
+            return false;
+        }
+
+        Client? existingClient = await _repository.GetClientByIdAsync(vm.ClientId, userId);
+        if (existingClient == null)
+        {
+            _logger.LogWarning("Client ID {ClientId} not found or does not belong to user {UserId}.", vm.ClientId, userId);
+            return false;
+        }
+
+        // Check for duplicate email if email was changed
+        if (!existingClient.Email.Equals(vm.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            bool emailExists = await _repository.EmailExistsAsync(vm.Email);
+            if (emailExists)
+            {
+                _logger.LogWarning("Attempted to update client {ClientId} with duplicate email {Email}.", vm.ClientId, vm.Email);
+                return false;
+            }
+        }
+
+        existingClient.FirstName = vm.FirstName;
+        existingClient.LastName = vm.LastName;
+        existingClient.Email = vm.Email;
+        existingClient.Phone = vm.Phone;
+        existingClient.Status = vm.Status ? ClientStatus.Active : ClientStatus.Inactive;
+
+        bool updated = await _repository.UpdateClientAsync(existingClient);
+
+        if (updated)
+        {
+            _logger.LogInformation("Client {ClientId} updated successfully by user {UserId}.", vm.ClientId, userId);
+        }
+        else
+        {
+            _logger.LogError("Failed to update client {ClientId} for user {UserId}.", vm.ClientId, userId);
+        }
+
+        return updated;
+    }
+
+    /// <summary>
+    /// Deletes a specific client if it belongs to the authenticated counsellor.
+    /// Performs authorization verification before deletion.
+    /// </summary>
+    /// <param name="clientId">The client ID to delete.</param>
+    /// <param name="user">The current authenticated user (counsellor).</param>
+    /// <returns>True if the client was successfully deleted; false if the client was not found or authorization failed.</returns>
+    public async Task<bool> DeleteClientAsync(int clientId, ClaimsPrincipal user)
+    {
+        string? userId = _userManager.GetUserId(user);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from claims for client deletion.");
+            return false;
+        }
+
+        bool deleted = await _repository.DeleteClientAsync(clientId, userId);
+
+        if (deleted)
+        {
+            _logger.LogInformation("Client ID {ClientId} deleted successfully by user {UserId}.", clientId, userId);
+        }
+        else
+        {
+            _logger.LogWarning("Failed to delete client ID {ClientId} for user {UserId}.", clientId, userId);
+        }
+
+        return deleted;
     }
 }

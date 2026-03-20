@@ -149,4 +149,79 @@ public class CounsellorController : Controller
 
         return View(client);
     }
+
+    /// <summary>
+    /// Displays the edit form for a specific client.
+    /// </summary>
+    /// <param name="id">The client ID.</param>
+    /// <returns>A view with the client edit form or a not found result if the client doesn't exist.</returns>
+    [HttpGet]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public async Task<IActionResult> EditClient(int id)
+    {
+        var client = await _clientService.GetClientByIdAsync(id, User);
+
+        if (client == null)
+        {
+            return NotFound();
+        }
+
+        return View(client);
+    }
+
+    /// <summary>
+    /// Updates the client information and redirects back to the client detail view.
+    /// </summary>
+    /// <param name="id">The client ID.</param>
+    /// <param name="vm">The updated client view model.</param>
+    /// <returns>Redirects to ClientDetail on success or returns the edit view on failure.</returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public async Task<IActionResult> EditClient(int id, ClientVM vm)
+    {
+        if (id != vm.ClientId)
+        {
+            return BadRequest();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
+        bool updated = await _clientService.UpdateClientAsync(vm, User);
+
+        if (!updated)
+        {
+            ModelState.AddModelError("Email", "A client with this email already exists, or the client could not be found.");
+            return View(vm);
+        }
+
+        TempData["SuccessMessage"] = $"Client {vm.FirstName} {vm.LastName} has been updated successfully.";
+        return RedirectToAction(nameof(ClientDetail), new { id = vm.ClientId });
+    }
+
+    /// <summary>
+    /// Deletes a specific client and redirects back to the clients list.
+    /// Performs authorization checks to ensure the client belongs to the authenticated counsellor.
+    /// </summary>
+    /// <param name="id">The client ID to delete.</param>
+    /// <returns>Redirects to the Clients action with a success or error message.</returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public async Task<IActionResult> DeleteClient(int id)
+    {
+        bool deleted = await _clientService.DeleteClientAsync(id, User);
+
+        if (!deleted)
+        {
+            TempData["ErrorMessage"] = "Unable to delete the client. The client may not exist or you do not have permission to delete it.";
+            return RedirectToAction(nameof(ClientDetail), new { id = id });
+        }
+
+        TempData["SuccessMessage"] = "Client has been deleted successfully.";
+        return RedirectToAction(nameof(Clients));
+    }
 }

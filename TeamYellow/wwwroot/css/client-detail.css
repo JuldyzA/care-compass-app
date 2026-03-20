@@ -250,6 +250,95 @@
 }
 
 /* ========================================
+       Edit Input Styles
+       ======================================== */
+
+.edit-input {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-normal);
+    font-family: inherit;
+    background-color: var(--background-white);
+}
+
+.edit-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.1);
+    background-color: var(--background-white);
+}
+
+.edit-input::placeholder {
+    color: var(--text-light);
+}
+
+.edit-input:disabled {
+    background-color: var(--background-light);
+    color: var(--text-light);
+    cursor: not-allowed;
+}
+
+/* ========================================
+       Edit Switch Styles
+       ======================================== */
+
+.edit-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--background-light);
+    transition: all var(--transition-normal);
+}
+
+.edit-switch:has(.form-check-input:checked) {
+    border-color: var(--primary-color);
+    background-color: rgba(47, 111, 115, 0.05);
+}
+
+.edit-switch .form-check-input {
+    margin: 0;
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+}
+
+.edit-switch .form-check-input:checked {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.edit-switch .form-check-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.1);
+}
+
+.edit-switch .form-check-label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-label {
+    display: inline-block;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    min-width: 5rem;
+}
+
+/* ========================================
        Status Badge Styling
        ======================================== */
 
@@ -342,6 +431,23 @@
 .detail-action-primary:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(47, 111, 115, 0.3);
+}
+
+.detail-action-secondary {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+}
+
+.detail-action-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--background-white);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+}
+
+.detail-action-secondary:active {
+    transform: translateY(0);
 }
 
 .detail-action-danger {
@@ -447,6 +553,19 @@
 }
 
 /* ========================================
+       Validation Error Styling
+       ======================================== */
+
+.text-danger {
+    color: var(--danger-color);
+}
+
+.text-danger.small {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* ========================================
        Responsive Design
        ======================================== */
 
@@ -505,6 +624,10 @@
     }
 
     .detail-field-value {
+        font-size: 1rem;
+    }
+
+    .edit-input {
         font-size: 1rem;
     }
 
@@ -567,6 +690,15 @@
 
     .detail-field-value {
         font-size: 0.95rem;
+    }
+
+    .edit-input {
+        font-size: 0.95rem;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .edit-switch {
+        padding: 0.75rem 0.85rem;
     }
 
     .detail-card-footer {

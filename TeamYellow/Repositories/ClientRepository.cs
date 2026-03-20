@@ -136,16 +136,15 @@ public class ClientRepository
     }
 
     /// <summary>
-    /// Checks if a client with the given email already exists for the specified counsellor.
+    /// Checks if a client with the given email already exists in the database.
     /// </summary>
     /// <param name="email">The email address to check.</param>
-    /// <param name="counsellorId">The counsellor ID to scope the check.</param>
-    /// <returns>True if a client with this email exists for the counsellor; otherwise, false.</returns>
-    public async Task<bool> EmailExistsAsync(string email, int counsellorId)
+    /// <returns>True if a client with this email exists in the database; otherwise, false.</returns>
+    public async Task<bool> EmailExistsAsync(string email)
     {
         return await _context.Clients
             .AsNoTracking()
-            .AnyAsync(c => c.Email.ToLower() == email.ToLower() && c.CounsellorId == counsellorId);
+            .AnyAsync(c => c.Email.ToLower() == email.ToLower());
     }
 
     /// <summary>
@@ -165,6 +164,60 @@ public class ClientRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while creating a client for Counsellor ID {CounsellorId}.", client.CounsellorId);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing client entity in the database.
+    /// </summary>
+    /// <param name="client">The client entity with updated values to persist.</param>
+    /// <returns>True if the update was successful; otherwise, false.</returns>
+    public async Task<bool> UpdateClientAsync(Client client)
+    {
+        try
+        {
+            _context.Clients.Update(client);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Client ID {ClientId} updated successfully.", client.ClientId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating client ID {ClientId}.", client.ClientId);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific client by ID if it belongs to the specified counsellor's user.
+    /// Performs verification to ensure the client belongs to the authorized counsellor before deletion.
+    /// </summary>
+    /// <param name="clientId">The client ID to delete.</param>
+    /// <param name="userId">The user ID of the counsellor to verify ownership.</param>
+    /// <returns>True if the client was successfully deleted; false if the client was not found or does not belong to the counsellor.</returns>
+    public async Task<bool> DeleteClientAsync(int clientId, string userId)
+    {
+        try
+        {
+            Client? client = await _context.Clients
+                .Include(c => c.Counsellor)
+                .FirstOrDefaultAsync(c => c.ClientId == clientId && c.Counsellor.UserId == userId);
+
+            if (client == null)
+            {
+                _logger.LogWarning("Attempted to delete client ID {ClientId} that does not belong to user {UserId}.", clientId, userId);
+                return false;
+            }
+
+            _context.Clients.Remove(client);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Client ID {ClientId} deleted successfully for Counsellor with User ID {UserId}.", clientId, userId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while deleting client ID {ClientId} for user {UserId}.", clientId, userId);
             return false;
         }
     }
