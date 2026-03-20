@@ -2,7 +2,7 @@
 @model ClientTableVm
 
 @{
-    string today = DateTime.Today.ToString("yyyy-MM-dd");
+    string today = DateTime.Today.ToLocalTime().ToString("yyyy-MM-dd");
 }
 
 <div class="card-header d-flex justify-content-between align-items-center">
