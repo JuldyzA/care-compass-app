@@ -9,4 +9,10 @@ public class ClientTableDto
     public int PageSize { get; set; }
 
     public int TotalCount { get; set; }
+
+    public string? SearchTerm { get; set; }
+
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
 }

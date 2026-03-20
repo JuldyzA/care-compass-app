@@ -12,13 +12,16 @@ public class CounsellorService
 {
     private readonly CounsellorRepository _repository;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly ILogger<CounsellorService> _logger;
 
     public CounsellorService(
         CounsellorRepository repository,
-        UserManager<IdentityUser> userManager
+        UserManager<IdentityUser> userManager,
+        ILogger<CounsellorService> logger
     ) {
         _repository = repository;
         _userManager = userManager;
+        _logger = logger;
     }
 
     /// <summary>
@@ -26,10 +29,16 @@ public class CounsellorService
     /// </summary>
     /// <param name="user">The ClaimsPrincipal representing the currently logged-in user.</param>
     /// <returns>A view model containing mapped dashboard statistics and user status.</returns>
-
     public async Task<CounsellorDashboardVM> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from claims.");
+            return new CounsellorDashboardVM();
+        }
+
         CounsellorDashboardDto dto = await _repository.GetCounsellorDashboardDtoAsync(userId);
 
         dto.IsSubscriptionActive = dto.CycleEnd > DateTime.UtcNow && dto.Status == SubscriptionStatus.Active;
@@ -40,36 +49,27 @@ public class CounsellorService
     }
 
     /// <summary>
-    /// Fetches a validated and paginated list of clients for the current user.
+    /// Retrieves the counsellor information for the authenticated user based on their claims.
     /// </summary>
-    /// <param name="user">The current user's claims.</param>
-    /// <param name="page">The requested page number.</param>
-    /// <param name="pageSize">The number of records to return, capped at 100.</param>
-    /// <returns>A view model containing the paginated client data.</returns>
-
-    public async Task<ClientTableVm> GetClientsAsync(ClaimsPrincipal user, int page, int pageSize)
+    /// <param name="user">The ClaimsPrincipal representing the currently logged-in user.</param>
+    /// <returns>The Counsellor entity if found; otherwise null.</returns>
+    public async Task<Counsellor?> GetCounsellorByUser(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
 
-        if (page < 1)
+        if (string.IsNullOrEmpty(userId))
         {
-            page = 1;
+            _logger.LogWarning("Unable to extract user ID from claims.");
+            return null;
         }
 
-        const int maxPageSize = 100;
-        if (pageSize < 1)
+        Counsellor? counsellor = await _repository.GetByUserIdAsync(userId);
+
+        if (counsellor == null)
         {
-            pageSize = 1;
-        }
-        else if (pageSize > maxPageSize)
-        {
-            pageSize = maxPageSize;
+            _logger.LogWarning("No counsellor record found for user ID {UserId}.", userId);
         }
 
-        ClientTableDto dto = await _repository.GetClientsAsync(userId, page, pageSize);
-
-        ClientTableVm clientTableVm = CounsellorDashboardHelper.MapToVm(dto);
-
-        return clientTableVm;
+        return counsellor;
     }
 }

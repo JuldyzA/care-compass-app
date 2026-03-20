@@ -18,25 +18,18 @@ public class Client
     public int ClientId { get; set; }
 
     [Column("firstName")]
-    [Required, MaxLength(50)]
     public string FirstName { get; set; } = string.Empty;
 
     [Column("lastName")]
-    [Required, MaxLength(50)]
     public string LastName { get; set; } = string.Empty;
 
     [Column("email")]
-    [Required, MaxLength(255)]
-    [EmailAddress(ErrorMessage = "Invalid Email Address")]
     public string Email { get; set; } = string.Empty;
 
     [Column("phone")]
-    [Required, MaxLength(20)]
-    [Phone(ErrorMessage = "Invalid phone format")]
     public string Phone { get; set; } = string.Empty;
 
     [Column("status")]
-    [EnumDataType(typeof(ClientStatus), ErrorMessage = "Invalid status selected.")]
     public ClientStatus Status { get; set; } = ClientStatus.Active;
 
     [Column("createdAt")]

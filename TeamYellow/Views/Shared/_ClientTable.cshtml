@@ -1,32 +1,65 @@
-﻿@using TeamYellow.DTOs
-@using TeamYellow.ViewModels
+﻿@using TeamYellow.ViewModels
 @model ClientTableVm
 
 @{
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action = ViewContext.RouteData.Values["action"]?.ToString();
-
-    bool isMainPage = controller == "Counsellor" && action == "Index";
+    string today = DateTime.Today.ToLocalTime().ToString("yyyy-MM-dd");
 }
 
-<div id="clientTableContainer">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Client Details</h5>
-        <div class="d-flex gap-2">
-            <div class="input-group input-group-sm" style="width: 250px;">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" id="clientSearchInput" class="form-control border-start-0" placeholder="Search clients...">
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Client List</h5>
+    <div class="d-flex gap-2">
+        @if (!Model.IsDashboard)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-1">
+                    <label for="clientStartDate" class="form-label small mb-0 me-1">From</label>
+                    <input type="date" id="clientStartDate" class="form-control form-control-sm" value="@(Model.StartDate ?? "")" max="@today" />
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <label for="clientEndDate" class="form-label small mb-0 me-1">To</label>
+                    <input type="date" id="clientEndDate" class="form-control form-control-sm" value="@(Model.EndDate ?? "")" max="@today" />
+                </div>
             </div>
-            <button class="btn btn-sm btn-outline-secondary" type="button" id="clientFilterBtn">
-                <i class="bi bi-funnel"></i> Filter
-            </button>
+        }
+        <div class="input-group input-group-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" id="clientSearchInput" class="client-search-input form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
         </div>
+        <button class="btn btn-sm btn-outline-primary" type="button" id="clientFilterBtn">
+            <i class="bi bi-funnel"></i> Filter
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" id="clientClearBtn" title="Clear search">
+            <i class="bi bi-x-lg"></i> Clear
+        </button>
     </div>
-    <div class="card-body p-0">
+</div>
+
+<div class="card-body p-0">
+    @if (Model.TotalCount == 0)
+    {
+        <div class="empty-state-container">
+            <div class="empty-state-content">
+                <i class="bi bi-inbox empty-state-icon"></i>
+                <h5 class="empty-state-title">No Clients Found</h5>
+                <p class="empty-state-message">
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.StartDate) || !string.IsNullOrEmpty(Model.EndDate))
+                    {
+                        <span>No clients match your search criteria. Try adjusting your filters.</span>
+                    }
+                    else
+                    {
+                        <span>You haven't added any clients yet. Start by creating your first client.</span>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="clientsTable">
+            <table id="clientsTable" class="clients-table table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th class="sortable" data-column="patient">
@@ -38,16 +71,16 @@
                         <th class="sortable" data-column="email">
                             Email <i class="bi bi-chevron-expand text-muted"></i>
                         </th>
-                        @if (isMainPage)
+                        @if (!Model.IsDashboard)
                         {
-                            <th class="sortable" data-column="phone">
-                                Phone <i class="bi bi-chevron-expand text-muted"></i>
+                            <th data-column="phone">
+                                Phone
                             </th>
                         }
-                        <th class="sortable" data-column="status">
-                            Status <i class="bi bi-chevron-expand text-muted"></i>
+                        <th data-column="status">
+                            Status
                         </th>
-                        @if (isMainPage)
+                        @if (!Model.IsDashboard)
                         {
                             <th class="text-end">Actions</th>
                         }
@@ -70,21 +103,21 @@
                                 <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
                             </td>
                             <td>
-                                <small>@c.Email</small>
+                                <div>@c.Email</div>
                             </td>
-                            @if (isMainPage)
+                            @if (!Model.IsDashboard)
                             {
                                 <td>
-                                    <small>@c.Phone</small>
+                                    <div>@c.Phone</div>
                                 </td>
                             }
                             <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
-                            @if (isMainPage)
+                            @if (!Model.IsDashboard)
                             {
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <a href="@Url.Action("ClientDetail", "Counsellor", new { id = c.ClientId })" class="btn btn-sm btn-outline-primary" title="View Details">
                                         <i class="bi bi-eye"></i>
-                                    </button>
+                                    </a>
                                 </td>
                             }
                         </tr>
@@ -92,26 +125,47 @@
                 </tbody>
             </table>
         </div>
+    }
+</div>
+
+<div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <div class="text-muted small">
+        Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
     </div>
-    <div class="d-flex justify-content-between align-items-center p-3 border-top">
-        <div class="text-muted small">
-            Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
-        </div>
+    @if (Model.TotalCount > 0)
+    {
         <nav aria-label="Clients pagination">
             <ul class="pagination pagination-sm mb-0" id="clientsPagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                @{
+                    var current = Model.Page <= 0 ? 1 : Model.Page;
+                    var total = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
+                    var startPage = Math.Max(1, current - 2);
+                    var endPage = Math.Min(total, startPage + 4);
+                    if (endPage - startPage < 4)
+                    {
+                        startPage = Math.Max(1, endPage - 4);
+                    }
+                }
+
+                <li class="page-item @(current == 1 ? "disabled" : "")">
+                    <a class="page-link client-page-link" href="#" data-page="@(Math.Max(1, current - 1))" tabindex="@(current == 1 ? "-1" : "0")" aria-disabled="@(current == 1 ? "true" : "false")">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">
+
+                @for (int p = startPage; p <= endPage; p++)
+                {
+                    <li class="page-item @(p == current ? "active" : "")">
+                        <a class="page-link client-page-link" href="#" data-page="@p">@p</a>
+                    </li>
+                }
+
+                <li class="page-item @(current == total ? "disabled" : "")">
+                    <a class="page-link client-page-link" href="#" data-page="@(Math.Min(total, current + 1))" tabindex="-1" aria-disabled="@(current == total ? "true" : "false")">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
             </ul>
         </nav>
-    </div>
+    }
 </div>

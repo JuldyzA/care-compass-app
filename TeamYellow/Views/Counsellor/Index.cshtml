@@ -9,7 +9,6 @@
     ViewData["DisplayName"] = Model.DisplayName;
     ViewData["DisablePageScroll"] = isLockedDashboard;
     
-    // To VM
     int total = Model.TotalSubscriptionDays;
     int remainder = Model.RemainingSubscriptionDays;
     double percentageRemaining = 0;
@@ -25,6 +24,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/dashboard/index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/client/client-table.css" asp-append-version="true" />
 }
 
 <div class="dashboard-preview-wrapper">
@@ -119,7 +119,9 @@
                         }
                         else
                         {
-                            @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+                            <div id="clientTableContainer" data-is-dashboard="true">
+                                @await Html.PartialAsync("_ClientTable", new ClientTableVm())
+                            </div>
                         }
                     </div>
                 </div>
@@ -180,7 +182,6 @@
         </p>
     </div>
 </div>
-
 
 <!-- Back to Top Button -->
 <button class="back-to-top" id="backToTopBtn" aria-label="Back to top" title="Back to top">
@@ -1269,6 +1270,6 @@
     </script>
 @if (!isLockedDashboard)
     {
-        <script src="~/js/dashboard/client-table.js" asp-append-version="true"></script>
+        <script src="~/js/client/client-table.js" asp-append-version="true"></script>
     }
 }
