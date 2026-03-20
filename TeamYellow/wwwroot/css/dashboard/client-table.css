@@ -278,3 +278,9 @@
     transform: none !important;
   }
 }
+
+#clientTableContainer .card-header {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    overflow: hidden;
+}
