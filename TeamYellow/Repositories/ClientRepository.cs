@@ -31,9 +31,18 @@ public class ClientRepository
     /// <param name="sortColumn">Optional column to sort by ("patient", "datetime", "email").</param>
     /// <param name="sortDir">Optional sort direction ("asc" or "desc").</param>
     /// <returns>A DTO containing the paginated client list and total record metadata.</returns>
-    public async Task<ClientTableDto> GetClientsByPageAsync(string? userId, int page, int pageSize, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? sortColumn = null, string? sortDir = null)
-    {
-        // Start from entity query so we can filter before projection (EF Core can translate)
+    public async Task<ClientTableDto> GetClientsByPageAndFilterAsync
+    (
+        string? userId,
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string? sortColumn = null,
+        string? sortDir = null
+    ) {
+
         IQueryable<Client> clients = _context.Clients
             .Include(c => c.Counsellor)
             .Where(c => c.Counsellor.UserId == userId)

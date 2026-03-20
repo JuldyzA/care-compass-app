@@ -12,11 +12,8 @@ public class CounsellorController : Controller
     private readonly CounsellorService _counsellorService;
     private readonly ClientService _clientService;
 
-    public CounsellorController (
-        CounsellorService counsellorService,
-        ClientService clientService,
-        IConfiguration configuration
-    ) {
+    public CounsellorController(CounsellorService counsellorService, ClientService clientService)
+    {
         _counsellorService = counsellorService;
         _clientService = clientService;
     }
@@ -55,7 +52,6 @@ public class CounsellorController : Controller
         return View();
     }
 
-
     /// <summary>
     /// Retrieves a paginated list of clients for the counsellor and returns a partial view.
     /// </summary>
@@ -69,10 +65,30 @@ public class CounsellorController : Controller
     /// <param name="sortDir">Optional sort direction (asc or desc).</param>
     /// <returns>A partial view containing the client table data.</returns>
     [HttpGet]
-    public async Task<IActionResult> ClientTable(int page = 1, int pageSize = 10, bool isDashboard = false, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? sortColumn = null, string? sortDir = null)
-    {
+    public async Task<IActionResult> ClientTable
+    (
+        int page = 1,
+        int pageSize = 10,
+        bool isDashboard = false,
+        string? searchTerm = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string? sortColumn = null,
+        string? sortDir = null
+    ) {
+
         if (isDashboard) pageSize = 5;
-        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAsync(User, page, pageSize, searchTerm, startDate, endDate, sortColumn, sortDir);
+        ClientTableVm clientTableVm = await _clientService.GetClientsByPageAndFilterAsync 
+        (
+            User,
+            page,
+            pageSize,
+            searchTerm,
+            startDate,
+            endDate,
+            sortColumn,
+            sortDir
+        );
         clientTableVm.IsDashboard = isDashboard;
 
         return PartialView("_ClientTable", clientTableVm);
