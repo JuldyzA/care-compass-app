@@ -76,7 +76,6 @@ body.locked-page-scroll {
 .sidebar.collapsed .logo-text,
 .sidebar.collapsed .nav-link span,
 .sidebar.collapsed .user-details,
-.sidebar.collapsed .sidebar-footer-content span,
 .sidebar.collapsed .user-info-dropdown i.bi-chevron-down {
     display: none;
 }
@@ -92,10 +91,6 @@ body.locked-page-scroll {
 
 .sidebar.collapsed .user-info {
     justify-content: center;
-}
-
-.sidebar.collapsed .sidebar-footer-content {
-    text-align: center;
 }
 
 /* Sidebar Header */
@@ -369,35 +364,6 @@ body.locked-page-scroll {
     margin: 1rem 0.5rem;
 }
 
-.sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-footer-content {
-    text-align: center;
-}
-
-.sidebar-footer-content a {
-    color: var(--sidebar-text);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.sidebar-footer-content a:hover {
-    color: white;
-}
-
-.sidebar-footer-content a:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-    border-radius: 4px;
-}
-
-.sidebar-footer-content i {
-    margin-right: 0.25rem;
-}
-
 /* ========================================
    Main Content Area
    ======================================== */
@@ -466,8 +432,7 @@ body.locked-page-scroll {
     }
 
     .sidebar-header,
-    .sidebar-user-section,
-    .sidebar-footer {
+    .sidebar-user-section {
         flex-shrink: 0;
     }
 }

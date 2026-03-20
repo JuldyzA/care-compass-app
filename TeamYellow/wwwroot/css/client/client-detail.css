@@ -45,14 +45,6 @@
     min-height: 100vh;
 }
 
-.detail-wrapper {
-    width: 100%;
-    max-width: 100%;
-    padding: 2rem;
-    background-color: var(--background-white);
-    flex: 1;
-}
-
 .detail-header {
     display: flex;
     align-items: center;
@@ -570,10 +562,6 @@
        ======================================== */
 
 @media (max-width: 768px) {
-    .detail-wrapper {
-        padding: 1.5rem;
-    }
-
     .detail-header {
         flex-direction: column;
         align-items: flex-start;
@@ -643,10 +631,6 @@
 }
 
 @media (max-width: 576px) {
-    .detail-wrapper {
-        padding: 1rem;
-    }
-
     .detail-card-header {
         padding: 1.5rem;
     }
@@ -728,10 +712,6 @@
 }
 
 @media (max-width: 400px) {
-    .detail-wrapper {
-        padding: 0.75rem;
-    }
-
     .detail-back-button {
         width: 100%;
         justify-content: center;

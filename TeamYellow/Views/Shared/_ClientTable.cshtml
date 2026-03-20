@@ -37,109 +37,135 @@
 </div>
 
 <div class="card-body p-0">
-    <div class="table-responsive">
-        <table id="clientsTable" class="clients-table table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th class="sortable" data-column="patient">
-                        Patient Name <i class="bi bi-chevron-expand text-muted"></i>
-                    </th>
-                    <th class="sortable" data-column="datetime">
-                        Date & Time <i class="bi bi-chevron-expand text-muted"></i>
-                    </th>
-                    <th class="sortable" data-column="email">
-                        Email <i class="bi bi-chevron-expand text-muted"></i>
-                    </th>
-                    @if (!Model.IsDashboard)
+    @if (Model.TotalCount == 0)
+    {
+        <div class="empty-state-container">
+            <div class="empty-state-content">
+                <i class="bi bi-inbox empty-state-icon"></i>
+                <h5 class="empty-state-title">No Clients Found</h5>
+                <p class="empty-state-message">
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.StartDate) || !string.IsNullOrEmpty(Model.EndDate))
                     {
-                        <th data-column="phone">
-                            Phone
-                        </th>
+                        <span>No clients match your search criteria. Try adjusting your filters.</span>
                     }
-                    <th data-column="status">
-                        Status
-                    </th>
-                    @if (!Model.IsDashboard)
+                    else
                     {
-                        <th class="text-end">Actions</th>
+                        <span>You haven't added any clients yet. Start by creating your first client.</span>
                     }
-                </tr>
-            </thead>
-            <tbody id="clientsTableBody">
-                @foreach (ClientVM c in Model.Clients)
-                {
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table id="clientsTable" class="clients-table table table-hover align-middle mb-0">
+                <thead class="table-light">
                     <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-sm me-2">
-                                    <span class="avatar-initial rounded-circle bg-primary">@c.Initials</span>
-                                </div>
-                                <span class="fw-medium">@c.FirstName @c.LastName</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div>@c.CreatedAt.ToShortDateString()</div>
-                            <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
-                        </td>
-                        <td>
-                            <div>@c.Email</div>
-                        </td>
+                        <th class="sortable" data-column="patient">
+                            Patient Name <i class="bi bi-chevron-expand text-muted"></i>
+                        </th>
+                        <th class="sortable" data-column="datetime">
+                            Date & Time <i class="bi bi-chevron-expand text-muted"></i>
+                        </th>
+                        <th class="sortable" data-column="email">
+                            Email <i class="bi bi-chevron-expand text-muted"></i>
+                        </th>
                         @if (!Model.IsDashboard)
                         {
-                            <td>
-                                <div>@c.Phone</div>
-                            </td>
+                            <th data-column="phone">
+                                Phone
+                            </th>
                         }
-                        <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
+                        <th data-column="status">
+                            Status
+                        </th>
                         @if (!Model.IsDashboard)
                         {
-                            <td class="text-end">
-                                <a href="@Url.Action("ClientDetail", "Counsellor", new { id = c.ClientId })" class="btn btn-sm btn-outline-primary" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
+                            <th class="text-end">Actions</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody id="clientsTableBody">
+                    @foreach (ClientVM c in Model.Clients)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2">
+                                        <span class="avatar-initial rounded-circle bg-primary">@c.Initials</span>
+                                    </div>
+                                    <span class="fw-medium">@c.FirstName @c.LastName</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div>@c.CreatedAt.ToShortDateString()</div>
+                                <small class="text-muted">@c.CreatedAt.ToShortTimeString()</small>
+                            </td>
+                            <td>
+                                <div>@c.Email</div>
+                            </td>
+                            @if (!Model.IsDashboard)
+                            {
+                                <td>
+                                    <div>@c.Phone</div>
+                                </td>
+                            }
+                            <td><span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span></td>
+                            @if (!Model.IsDashboard)
+                            {
+                                <td class="text-end">
+                                    <a href="@Url.Action("ClientDetail", "Counsellor", new { id = c.ClientId })" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
+
 <div class="d-flex justify-content-between align-items-center p-3 border-top">
     <div class="text-muted small">
         Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
     </div>
-    <nav aria-label="Clients pagination">
-        <ul class="pagination pagination-sm mb-0" id="clientsPagination">
-            @{
-                var current = Model.Page <= 0 ? 1 : Model.Page;
-                var total = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
-                var startPage = Math.Max(1, current - 2);
-                var endPage = Math.Min(total, startPage + 4);
-                if (endPage - startPage < 4)
-                {
-                    startPage = Math.Max(1, endPage - 4);
+    @if (Model.TotalCount > 0)
+    {
+        <nav aria-label="Clients pagination">
+            <ul class="pagination pagination-sm mb-0" id="clientsPagination">
+                @{
+                    var current = Model.Page <= 0 ? 1 : Model.Page;
+                    var total = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
+                    var startPage = Math.Max(1, current - 2);
+                    var endPage = Math.Min(total, startPage + 4);
+                    if (endPage - startPage < 4)
+                    {
+                        startPage = Math.Max(1, endPage - 4);
+                    }
                 }
-            }
 
-            <li class="page-item @(current == 1 ? "disabled" : "")">
-                <a class="page-link client-page-link" href="#" data-page="@(Math.Max(1, current - 1))" tabindex="-1" aria-disabled="@(current == 1 ? "true" : "false")">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            </li>
-
-            @for (int p = startPage; p <= endPage; p++)
-            {
-                <li class="page-item @(p == current ? "active" : "")">
-                    <a class="page-link client-page-link" href="#" data-page="@p">@p</a>
+                <li class="page-item @(current == 1 ? "disabled" : "")">
+                    <a class="page-link client-page-link" href="#" data-page="@(Math.Max(1, current - 1))" tabindex="-1" aria-disabled="@(current == 1 ? "true" : "false")">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
                 </li>
-            }
 
-            <li class="page-item @(current == total ? "disabled" : "")">
-                <a class="page-link client-page-link" href="#" data-page="@(Math.Min(total, current + 1))">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-        </ul>
-    </nav>
+                @for (int p = startPage; p <= endPage; p++)
+                {
+                    <li class="page-item @(p == current ? "active" : "")">
+                        <a class="page-link client-page-link" href="#" data-page="@p">@p</a>
+                    </li>
+                }
+
+                <li class="page-item @(current == total ? "disabled" : "")">
+                    <a class="page-link client-page-link" href="#" data-page="@(Math.Min(total, current + 1))">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>
