@@ -486,6 +486,7 @@ namespace TeamYellow.Controllers
             return View(vm);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteDiscountConfirmed(int id)
         {
             var deleted = await _discountRepository.DeleteIfUnusedAsync(id);

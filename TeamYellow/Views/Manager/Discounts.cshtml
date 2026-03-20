@@ -1,98 +1,81 @@
 ﻿@using System.Security.Claims
 @model TeamYellow.ViewModels.DiscountVM
 
-<div class="container-fluid">
-    <div class="row">
+<h4>Discounts</h4>
 
-        <!-- Sidebar -->
-        @await Html.PartialAsync("_ManagerSidebar", Model)
+<div class="mb-3 d-flex gap-2">
+    <a href="@Url.Action("ApplyDiscount", "Manager")" class="btn btn-primary">Apply Code</a>
+    <a href="@Url.Action("CreateDiscount", "Manager")" class="btn btn-success">Create Code</a>
+</div>
 
-        <!-- Main Content -->
-        <main class="col-md-10 p-4">
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Discount Code</th>
+            <th>Discount Type</th>
+            <th>Value</th>
+            <th>Start Date</th>
+            <th>End Date</th>                          
+            <th>Applied To</th>
+            <th>Edit</th>
+            <th>Delete </th>
+        </tr>
+    </thead>
 
-            <!-- Transactions Table -->
-            <div class="card p-3">
-                <h5 class="mb-3">Discounts</h5>
-
-                <div class="mb-3 d-flex gap-2">
-                    <a href="@Url.Action("ApplyDiscount", "Manager")" class="btn btn-primary">Apply Code</a>
-                    <a href="@Url.Action("CreateDiscount", "Manager")" class="btn btn-success">Create Code</a>
-                </div>
-
-                <table class="table table-striped table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Discount Code</th>
-                            <th>Discount Type</th>
-                            <th>Value</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>                          
-                            <th>Applied To</th>
-                            <th>Edit</th>
-                            <th>Delete </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @if (Model.Discounts != null)
+    <tbody>
+        @if (Model.Discounts != null)
+        {
+            foreach (var d in Model.Discounts)
+            {
+                <tr>
+                    <td>@d.DiscountCode</td>
+                    <td>@d.DiscountType</td>
+                    <td>@d.Value</td>
+                    <td>@d.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@d.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    
+                    <td>
+                        @if (d.PlanDiscounts != null && d.PlanDiscounts.Any())
                         {
-                            foreach (var d in Model.Discounts)
+                            @foreach (var pd in d.PlanDiscounts)
                             {
-                                <tr>
-                                    <td>@d.DiscountCode</td>
-                                    <td>@d.DiscountType</td>
-                                    <td>@d.Value</td>
-                                    <td>@d.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td>@d.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                    
-                                    <td>
-                                        @if (d.PlanDiscounts != null && d.PlanDiscounts.Any())
-                                        {
-                                            @foreach (var pd in d.PlanDiscounts)
-                                            {
-                                                <span class="badge bg-info text-dark me-1">
-                                                    @pd.Plan.PlanName
-                                                </span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span>No plans</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (d.EndDateTime < DateTime.Now)
-                                        {
-                                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
-                                               class="btn btn-sm btn-warning">
-                                                Expired
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
-                                               class="btn btn-sm btn-warning">
-                                                Edit
-                                            </a>
-                                        }
-                                    
-                                    </td>
-                                    <td>
-                                        <a asp-action="DeleteDiscount"
-                                           asp-route-id="@d.DiscountId"
-                                           class="btn btn-sm btn-danger">
-                                            Delete
-                                        </a>
-                                    </td>
-                                </tr>
+                                <span class="badge bg-info text-dark me-1">
+                                    @pd.Plan.PlanName
+                                </span>
                             }
                         }
-                    </tbody>
-                </table>
+                        else
+                        {
+                            <span>No plans</span>
+                        }
+                    </td>
+                    <td>
+                        @if (d.EndDateTime < DateTime.Now)
+                        {
+                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
+                                class="btn btn-sm btn-warning">
+                                Expired
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
+                                class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+                        }
+                                    
+                    </td>
+                    <td>
+                        <a asp-action="DeleteDiscount"
+                            asp-route-id="@d.DiscountId"
+                            class="btn btn-sm btn-danger">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
 
-
-            </div>
-
-        </main>
-    </div>
-</div>

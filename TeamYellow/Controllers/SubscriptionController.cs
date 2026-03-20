@@ -169,7 +169,13 @@ public class SubscriptionController : Controller
                     SubscriptionId = subscription?.SubscriptionId ?? 0,
                     PlanName = subscription?.Plan?.PlanName ?? string.Empty,
                     CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
-                    CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
+                    CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow,
+                    DisplayName = counsellor.DisplayName ?? string.Empty,
+                    Amount = subscription?.PaymentTransaction?.Amount ?? 0,
+                    Currency = subscription?.PaymentTransaction?.Currency ?? "CAD",
+                    PaidAt = subscription?.PaymentTransaction?.PaidAt ?? DateTime.MinValue,
+                    ProviderOrderId = subscription?.PaymentTransaction?.ProviderOrderId ?? string.Empty
+
                 };
 
                 return View("Success", vm);
@@ -272,7 +278,12 @@ public class SubscriptionController : Controller
                 SubscriptionId = subscription?.SubscriptionId ?? 0,
                 PlanName = subscription?.Plan?.PlanName ?? string.Empty,
                 CycleStart = subscription?.CycleStart ?? DateTime.UtcNow,
-                CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow
+                CycleEnd = subscription?.CycleEnd ?? DateTime.UtcNow,
+                DisplayName = counsellor.DisplayName ?? string.Empty,
+                Amount = subscription?.PaymentTransaction?.Amount ?? 0,
+                Currency = subscription?.PaymentTransaction?.Currency ?? "CAD",
+                PaidAt = subscription?.PaymentTransaction?.PaidAt ?? DateTime.MinValue,
+                ProviderOrderId = subscription?.PaymentTransaction?.ProviderOrderId ?? string.Empty
             };
 
             return View("Success", vm);
