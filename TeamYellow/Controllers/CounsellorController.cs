@@ -77,7 +77,7 @@ public class CounsellorController : Controller
             return View(model);
         }
 
-        bool created = await _clientService.CreateClientAsync(model, User, counsellorInfo.CounsellorId);
+        bool created = await _clientService.CreateClientAsync(model, counsellorInfo.CounsellorId);
 
         if (!created)
         {

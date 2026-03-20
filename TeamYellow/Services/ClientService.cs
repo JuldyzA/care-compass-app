@@ -136,7 +136,7 @@ public class ClientService
     /// <param name="user">The current authenticated user (counsellor).</param>
     /// <param name="counsellorId">The counsellor ID to associate with the client.</param>
     /// <returns>True if the client was successfully created; otherwise, false.</returns>
-    public async Task<bool> CreateClientAsync(ClientVM vm, ClaimsPrincipal user, int counsellorId)
+    public async Task<bool> CreateClientAsync(ClientVM vm, int counsellorId)
     {
         // Check for duplicate email
         bool emailExists = await _repository.EmailExistsAsync(vm.Email);
