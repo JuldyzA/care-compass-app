@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
+using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
 
@@ -11,11 +12,13 @@ public class ClientService
 {
     private readonly ClientRepository _repository;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly ILogger<ClientService> _logger;
 
-    public ClientService(ClientRepository repository, UserManager<IdentityUser> userManager) 
+    public ClientService(ClientRepository repository, UserManager<IdentityUser> userManager, ILogger<ClientService> logger) 
     {
         _repository = repository;
         _userManager = userManager;
+        _logger = logger;
     }
 
     /// <summary>
@@ -42,6 +45,12 @@ public class ClientService
         string? sortDir = null
     ) {
         string? userId = _userManager.GetUserId(user);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from claims.");
+            return new ClientTableVm();
+        }
 
         if (page < 1)
         {
@@ -91,5 +100,38 @@ public class ClientService
         ClientTableVm clientTableVm = ClientHelper.MapToVm(dto);
 
         return clientTableVm;
+    }
+
+    /// <summary>
+    /// Creates a new client for the authenticated counsellor with duplicate email validation and logging.
+    /// </summary>
+    /// <param name="vm">The client view model containing the client data.</param>
+    /// <param name="user">The current authenticated user (counsellor).</param>
+    /// <param name="counsellorId">The counsellor ID to associate with the client.</param>
+    /// <returns>True if the client was successfully created; otherwise, false.</returns>
+    public async Task<bool> CreateClientAsync(ClientVM vm, ClaimsPrincipal user, int counsellorId)
+    {
+        // Check for duplicate email
+        bool emailExists = await _repository.EmailExistsAsync(vm.Email, counsellorId);
+        if (emailExists)
+        {
+            _logger.LogWarning("Attempted to create client with duplicate email {Email} for Counsellor ID {CounsellorId}.", vm.Email, counsellorId);
+            return false;
+        }
+
+        Client client = ClientHelper.MapVmToEntity(vm, counsellorId);
+
+        bool saved = await _repository.CreateClientAsync(client);
+
+        if (saved)
+        {
+            _logger.LogInformation("Client {FirstName} {LastName} created successfully for Counsellor ID {CounsellorId}.", vm.FirstName, vm.LastName, counsellorId);
+        }
+        else
+        {
+            _logger.LogError("Failed to create client {FirstName} {LastName} for Counsellor ID {CounsellorId}.", vm.FirstName, vm.LastName, counsellorId);
+        }
+
+        return saved;
     }
 }

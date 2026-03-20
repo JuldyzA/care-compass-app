@@ -19,9 +19,7 @@ public class ClientVM
     [DisplayName("Last Name")]
     public string LastName { get; set; } = null!;
 
-    [StringLength(5, MinimumLength = 1, ErrorMessage = "Initials must be 1 to 5 characters.")]
-    [RegularExpression(@"^[A-Z]{1,5}$", ErrorMessage = "Initials must be uppercase letters without spaces.")]
-    public string Initials { get; set; } = null!;
+    public string Initials { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress(ErrorMessage = "Invalid Email Address")]

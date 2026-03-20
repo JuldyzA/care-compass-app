@@ -13,6 +13,8 @@
         <div class="form-card-body">
             <h4 class="form-card-title">New Client</h4>
 
+            @await Html.PartialAsync("_AlertMessages")
+
             <form asp-action="CreateClient" asp-controller="Counsellor" method="post" class="create-client-form">
                 @Html.AntiForgeryToken()
 

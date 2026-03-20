@@ -63,15 +63,29 @@ public class CounsellorController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
-    public IActionResult CreateClient(ClientVM model)
+    public async Task<IActionResult> CreateClient(ClientVM model)
     {
         if (!ModelState.IsValid)
         {
             return View(model);
         }
 
-        // TODO: persist the new client (call _clientService / repository)
-        // For now redirect back to the clients list after a successful post
+        var counsellorInfo = await _counsellorService.GetCounsellorByUser(User);
+        if (counsellorInfo == null)
+        {
+            ModelState.AddModelError(string.Empty, "An error occurred while processing your request.");
+            return View(model);
+        }
+
+        bool created = await _clientService.CreateClientAsync(model, User, counsellorInfo.CounsellorId);
+
+        if (!created)
+        {
+            ModelState.AddModelError("Email", "A client with this email already exists.");
+            return View(model);
+        }
+
+        TempData["SuccessMessage"] = $"Client {model.FirstName} {model.LastName} has been created successfully.";
         return RedirectToAction(nameof(Clients));
     }
 

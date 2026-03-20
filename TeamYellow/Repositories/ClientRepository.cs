@@ -119,4 +119,38 @@ public class ClientRepository
 
         return dto;
     }
+
+    /// <summary>
+    /// Checks if a client with the given email already exists for the specified counsellor.
+    /// </summary>
+    /// <param name="email">The email address to check.</param>
+    /// <param name="counsellorId">The counsellor ID to scope the check.</param>
+    /// <returns>True if a client with this email exists for the counsellor; otherwise, false.</returns>
+    public async Task<bool> EmailExistsAsync(string email, int counsellorId)
+    {
+        return await _context.Clients
+            .AsNoTracking()
+            .AnyAsync(c => c.Email.ToLower() == email.ToLower() && c.CounsellorId == counsellorId);
+    }
+
+    /// <summary>
+    /// Creates and saves a new client to the database.
+    /// </summary>
+    /// <param name="client">The client entity to save.</param>
+    /// <returns>True if the save was successful; otherwise, false.</returns>
+    public async Task<bool> CreateClientAsync(Client client)
+    {
+        try
+        {
+            _context.Clients.Add(client);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Client created successfully with ID {ClientId} for Counsellor ID {CounsellorId}.", client.ClientId, client.CounsellorId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while creating a client for Counsellor ID {CounsellorId}.", client.CounsellorId);
+            return false;
+        }
+    }
 }

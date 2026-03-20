@@ -59,6 +59,26 @@ public class ClientHelper
     }
 
     /// <summary>
+    /// Maps a ClientVM to a Client model entity.
+    /// </summary>
+    /// <param name="vm">The view model containing client data.</param>
+    /// <param name="counsellorId">The ID of the counsellor creating the client.</param>
+    /// <returns>A Client model instance ready to be persisted.</returns>
+    public static Client MapVmToEntity(ClientVM vm, int counsellorId)
+    {
+        return new Client
+        {
+            FirstName = vm.FirstName,
+            LastName = vm.LastName,
+            Email = vm.Email,
+            Phone = vm.Phone,
+            Status = vm.Status ? ClientStatus.Active : ClientStatus.Inactive,
+            CreatedAt = DateTime.UtcNow,
+            CounsellorId = counsellorId
+        };
+    }
+
+    /// <summary>
     /// Extracts the first character of a string to be used as an initial.
     /// </summary>
     /// <param name="name">The string (e.g., first or last name) to process.</param>
