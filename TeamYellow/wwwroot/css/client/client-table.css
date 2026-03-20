@@ -52,8 +52,8 @@
 
 /* Search input styling */
 .client-search-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    border-color: #3E8A90;
+    box-shadow: 0 0 0 0.2rem rgba(62, 138, 144, 0.15);
 }
 
 .input-group-text {
@@ -95,13 +95,13 @@
 
     .pagination-sm .page-link:hover {
         background-color: #f1f5f9;
-        border-color: var(--primary-color);
-        color: var(--primary-color);
+        border-color: #3E8A90;
+        color: #3E8A90;
     }
 
 .pagination-sm .page-item.active .page-link {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #3E8A90;
+    border-color: #3E8A90;
     color: white;
 }
 

@@ -5,7 +5,7 @@
 :root {
     --sidebar-width: 280px;
     --sidebar-collapsed-width: 70px;
-    --primary-color: #0d6efd;
+    --primary-color: #3E8A90;
     --secondary-color: #6c757d;
     --success-color: #198754;
     --danger-color: #dc3545;
@@ -16,7 +16,7 @@
     --sidebar-bg: #1e293b;
     --sidebar-text: #cbd5e1;
     --sidebar-hover: #334155;
-    --sidebar-active: #0d6efd;
+    --sidebar-active: #3E8A90;
     --content-bg: #f1f5f9;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
@@ -155,7 +155,7 @@ body.locked-page-scroll {
     top: 0;
     bottom: 0;
     width: 1px;
-    background: linear-gradient(to bottom, transparent, rgba(13, 110, 253, 0.5), transparent);
+    background: linear-gradient(to bottom, transparent, rgba(62, 138, 144, 0.5), transparent);
     opacity: 0;
     transition: var(--transition);
 }

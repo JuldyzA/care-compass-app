@@ -3,9 +3,9 @@
        ======================================== */
 
 :root {
-    --primary-color: #2F6F73;
-    --primary-light: #4A9EA6;
-    --primary-dark: #1F4D51;
+    --primary-color: #3E8A90;
+    --primary-light: #5BA1A8;
+    --primary-dark: #2D6570;
     --secondary-color: #6c757d;
     --danger-color: #dc3545;
     --success-color: #28a745;
@@ -268,7 +268,7 @@
 .edit-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.1);
+    box-shadow: 0 0 0 3px rgba(62, 138, 144, 0.1);
     background-color: var(--background-white);
 }
 
@@ -300,7 +300,7 @@
 
 .edit-switch:has(.form-check-input:checked) {
     border-color: var(--primary-color);
-    background-color: rgba(47, 111, 115, 0.05);
+    background-color: rgba(62, 138, 144, 0.05);
 }
 
 .edit-switch .form-check-input {
@@ -318,7 +318,7 @@
 
 .edit-switch .form-check-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.1);
+    box-shadow: 0 0 0 3px rgba(62, 138, 144, 0.1);
 }
 
 .edit-switch .form-check-label {
@@ -418,19 +418,19 @@
 .detail-action-primary {
     background-color: var(--primary-color);
     color: var(--background-white);
-    box-shadow: 0 4px 15px rgba(47, 111, 115, 0.3);
+    box-shadow: 0 4px 15px rgba(62, 138, 144, 0.3);
 }
 
     .detail-action-primary:hover {
         color: var(--background-white);
         background-color: var(--primary-dark);
-        box-shadow: 0 6px 25px rgba(47, 111, 115, 0.5);
+        box-shadow: 0 6px 25px rgba(62, 138, 144, 0.5);
         transform: translateY(-2px);
     }
 
 .detail-action-primary:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(47, 111, 115, 0.3);
+    box-shadow: 0 2px 8px rgba(62, 138, 144, 0.3);
 }
 
 .detail-action-secondary {
