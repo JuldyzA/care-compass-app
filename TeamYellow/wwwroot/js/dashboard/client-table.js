@@ -11,58 +11,29 @@ document.addEventListener("click", (e) => {
     }
 });
 
-function showError(message, timeout = 5000) {
-    const container = document.getElementById("error-alert");
-    if (!container) {
-        alert(message);
-        return;
-    }
+function showDateError(message) {
+    const container = document.getElementById("date-filter-alert");
+    if (!container) return;
+
+    // Clear existing alerts
+    container.innerHTML = '';
 
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger alert-dismissible fade show';
     alertDiv.role = 'alert';
     alertDiv.innerHTML = `
-        <strong><span>${message}</span></strong>
-        <button type="button" class="btn-close" aria-label="Close"></button>
+        <i class="bi bi-exclamation-circle me-2"></i>
+        <strong>Error!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 
     container.appendChild(alertDiv);
-
-    const closeBtn = alertDiv.querySelector('.btn-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            if (window.bootstrap?.Alert) {
-                try { window.bootstrap.Alert.getOrCreateInstance(alertDiv).close(); }
-                catch { alertDiv.remove(); }
-            } else {
-                alertDiv.remove();
-            }
-        });
-    }
-
-    // Auto close after timeout
-    setTimeout(() => {
-        if (window.bootstrap?.Alert) {
-            try { window.bootstrap.Alert.getOrCreateInstance(alertDiv).close(); }
-            catch { if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); }
-        } else {
-            if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
-        }
-    }, timeout);
 }
 
-function hideDateError() {
-    const container = document.getElementById("error-alert");
+function clearDateError() {
+    const container = document.getElementById("date-filter-alert");
     if (!container) return;
-    const alerts = Array.from(container.querySelectorAll('.alert'));
-    alerts.forEach(a => {
-        if (window.bootstrap?.Alert) {
-            try { window.bootstrap.Alert.getOrCreateInstance(a).close(); }
-            catch { if (a.parentNode) a.parentNode.removeChild(a); }
-        } else {
-            if (a.parentNode) a.parentNode.removeChild(a);
-        }
-    });
+    container.innerHTML = '';
 }
 
 function validateDateRange() {
@@ -77,7 +48,7 @@ function validateDateRange() {
 
     // if one or both are empty, consider valid (allow open-ended ranges)
     if (!startVal || !endVal) {
-        hideDateError();
+        clearDateError();
         return true;
     }
 
@@ -85,14 +56,14 @@ function validateDateRange() {
     const end = new Date(endVal);
 
     if (end < start) {
-        showError("End date cannot be before Start date.", 5000);
+        showDateError("End date cannot be before Start date.");
         setTimeout(() => {
             endInput.focus();
         }, 300);
         return false;
     }
 
-    hideDateError();
+    clearDateError();
     return true;
 }
 
@@ -119,15 +90,15 @@ function attachFilterHandler() {
             const end = document.getElementById("clientEndDate");
             if (start) start.value = "";
             if (end) end.value = "";
-            hideDateError();
+            clearDateError();
             loadClients(1);
         };
     }
 
     const startInput = document.getElementById("clientStartDate");
     const endInput = document.getElementById("clientEndDate");
-    if (startInput) startInput.onchange = hideDateError;
-    if (endInput) endInput.onchange = hideDateError;
+    if (startInput) startInput.onchange = clearDateError;
+    if (endInput) endInput.onchange = clearDateError;
 
     const input = document.getElementById("clientSearchInput");
     if (input) {
@@ -144,7 +115,7 @@ function attachFilterHandler() {
                 const end = document.getElementById("clientEndDate");
                 if (start) start.value = "";
                 if (end) end.value = "";
-                hideDateError();
+                clearDateError();
                 loadClients(1);
             }
         };
