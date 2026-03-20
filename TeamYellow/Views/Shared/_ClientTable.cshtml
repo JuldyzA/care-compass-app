@@ -161,7 +161,7 @@
                 }
 
                 <li class="page-item @(current == total ? "disabled" : "")">
-                    <a class="page-link client-page-link" href="#" data-page="@(Math.Min(total, current + 1))">
+                    <a class="page-link client-page-link" href="#" data-page="@(Math.Min(total, current + 1))" tabindex="-1" aria-disabled="@(current == total ? "true" : "false")">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
