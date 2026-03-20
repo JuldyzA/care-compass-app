@@ -45,6 +45,13 @@ public class CounsellorController : Controller
         return View(dashboardVM);
     }
 
+    /// <summary>
+    /// Displays the list of clients accessible to authorized counselors.
+    /// </summary>
+    /// <returns>A view displaying the counselor's clients.</returns>
+    /// <remarks>
+    /// Access is restricted to users with the "Paid_Counselor" or "Free_Counselor" roles.
+    /// </remarks>
     [HttpGet]
     [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
     public IActionResult Clients()
@@ -52,6 +59,13 @@ public class CounsellorController : Controller
         return View();
     }
 
+    /// <summary>
+    /// Initializes and displays the view for creating a new client.
+    /// </summary>
+    /// <returns>A view containing a new <see cref="ClientVM"/> instance.</returns>
+    /// <remarks>
+    /// Access is restricted to users with the "Paid_Counselor" or "Free_Counselor" roles.
+    /// </remarks>
     [HttpGet]
     [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
     public IActionResult CreateClient()
@@ -60,6 +74,17 @@ public class CounsellorController : Controller
         return View(vm);
     }
 
+    /// <summary>
+    /// Processes the creation of a new client for the authenticated counselor.
+    /// </summary>
+    /// <param name="model">The view model containing the client's information.</param>
+    /// <returns>
+    /// A redirect to the clients list on success; otherwise, the create view with validation errors.
+    /// </returns>
+    /// <remarks>
+    /// Validates the model state, checks for counselor authorization, and ensures the client email is unique.
+    /// Access restricted to "Paid_Counselor" or "Free_Counselor" roles.
+    /// </remarks>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
@@ -102,6 +127,7 @@ public class CounsellorController : Controller
     /// <param name="sortDir">Optional sort direction (asc or desc).</param>
     /// <returns>A partial view containing the client table data.</returns>
     [HttpGet]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
     public async Task<IActionResult> ClientTable
     (
         int page = 1,
