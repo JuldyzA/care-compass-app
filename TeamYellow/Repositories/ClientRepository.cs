@@ -62,6 +62,8 @@ public class ClientRepository
 
         IQueryable<ClientDto> query = clients.Select(c => new ClientDto
         {
+            // map ClientId so DTO and later VM receive the identifier
+            ClientId = c.ClientId,
             FirstName = c.FirstName,
             LastName = c.LastName,
             Email = c.Email,
