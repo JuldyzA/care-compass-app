@@ -17,6 +17,7 @@ public class ClientHelper
         List<ClientVM> clientVMs = dto.Clients.Select(c =>
             new ClientVM
             {
+                ClientId = c.ClientId,
                 FirstName = c.FirstName,
                 LastName = c.LastName,
                 Initials = $"{GetInitial(c.FirstName)}{GetInitial(c.LastName)}",
@@ -59,6 +60,26 @@ public class ClientHelper
     }
 
     /// <summary>
+    /// Maps a Client model entity to a ClientVM view model.
+    /// </summary>
+    /// <param name="client">The client entity to map.</param>
+    /// <returns>A ClientVM instance ready for display.</returns>
+    public static ClientVM MapToVm(Client client)
+    {
+        return new ClientVM
+        {
+            ClientId = client.ClientId,
+            FirstName = client.FirstName,
+            LastName = client.LastName,
+            Initials = $"{GetInitial(client.FirstName)}{GetInitial(client.LastName)}",
+            Email = client.Email,
+            Phone = client.Phone,
+            Status = client.Status == ClientStatus.Active ? true : false,
+            CreatedAt = client.CreatedAt
+        };
+    }
+
+    /// <summary>
     /// Maps a ClientVM to a Client model entity.
     /// </summary>
     /// <param name="vm">The view model containing client data.</param>
@@ -89,6 +110,6 @@ public class ClientHelper
         {
             return string.Empty;
         }
-        return name.Substring(0, 1);
+        return name.Substring(0, 1).ToUpper();
     }
 }

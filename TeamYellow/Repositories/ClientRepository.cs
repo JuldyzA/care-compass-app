@@ -121,6 +121,21 @@ public class ClientRepository
     }
 
     /// <summary>
+    /// Retrieves a specific client by ID if it belongs to the specified counsellor's user.
+    /// </summary>
+    /// <param name="clientId">The client ID to retrieve.</param>
+    /// <param name="userId">The user ID of the counsellor to verify ownership.</param>
+    /// <returns>The client entity if found and belongs to the counsellor; otherwise, null.</returns>
+    public async Task<Client?> GetClientByIdAsync(int clientId, string userId)
+    {
+        return await _context.Clients
+            .Include(c => c.Counsellor)
+            .Where(c => c.ClientId == clientId && c.Counsellor.UserId == userId)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
     /// Checks if a client with the given email already exists for the specified counsellor.
     /// </summary>
     /// <param name="email">The email address to check.</param>

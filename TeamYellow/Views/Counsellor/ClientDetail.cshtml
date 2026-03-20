@@ -1,0 +1,113 @@
+@using TeamYellow.ViewModels
+@model ClientVM
+
+@{
+    ViewData["Title"] = $"{Model.FirstName} {Model.LastName} - Client Details";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+    <div class="detail-header">
+        <a href="@Url.Action("Clients", "Counsellor")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Clients
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <!-- Profile Header -->
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-avatar">@Model.Initials</div>
+                <div class="detail-header-info">
+                    <h1>@Model.FirstName @Model.LastName</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Body -->
+        <div class="detail-card-body">
+            <!-- Contact Information Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-envelope"></i> Contact Information
+                </div>
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Email Address</span>
+                        <span class="detail-field-value">
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Phone Number</span>
+                        <span class="detail-field-value">
+                            <a href="tel:@Model.Phone">@Model.Phone</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status & Registration Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-info-circle"></i> Status & Registration
+                </div>
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Client Status</span>
+                        <span class="detail-field-value">
+                            <span class="detail-status-badge @(Model.Status ? "detail-status-active" : "detail-status-inactive")">
+                                @(Model.Status ? "Active" : "Inactive")
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Registration Date</span>
+                        <span class="detail-field-value">@Model.CreatedAt.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Registration Time</span>
+                        <span class="detail-field-value">@Model.CreatedAt.ToString("hh:mm tt")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="detail-card-footer">
+            <a href="@Url.Action("EditClient", "Counsellor", new { id = Model.ClientId })" class="detail-action-button detail-action-primary">
+                <i class="bi bi-pencil-square"></i> Edit Client
+            </a>
+            <button type="button" class="detail-action-button detail-action-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                <i class="bi bi-trash"></i> Delete Client
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal-content">
+            <div class="modal-header delete-modal-header">
+                <h5 class="modal-title delete-modal-title" id="deleteConfirmLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body delete-modal-body">
+                Are you sure you want to delete <strong>@Model.FirstName @Model.LastName</strong>? This action cannot be undone and all associated data will be permanently removed.
+            </div>
+            <div class="modal-footer delete-modal-footer">
+                <button type="button" class="modal-cancel-button" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="@Url.Action("DeleteClient", "Counsellor", new { id = Model.ClientId })" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="modal-delete-button">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

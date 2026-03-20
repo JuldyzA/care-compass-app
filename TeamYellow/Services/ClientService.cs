@@ -103,6 +103,33 @@ public class ClientService
     }
 
     /// <summary>
+    /// Retrieves a specific client by ID if it belongs to the authenticated counsellor.
+    /// </summary>
+    /// <param name="clientId">The client ID to retrieve.</param>
+    /// <param name="user">The current authenticated user (counsellor).</param>
+    /// <returns>The client view model if found and belongs to the counsellor; otherwise, null.</returns>
+    public async Task<ClientVM?> GetClientByIdAsync(int clientId, ClaimsPrincipal user)
+    {
+        string? userId = _userManager.GetUserId(user);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from claims.");
+            return null;
+        }
+
+        Client? client = await _repository.GetClientByIdAsync(clientId, userId);
+
+        if (client == null)
+        {
+            _logger.LogWarning("Client ID {ClientId} not found or does not belong to user {UserId}.", clientId, userId);
+            return null;
+        }
+
+        return ClientHelper.MapToVm(client);
+    }
+
+    /// <summary>
     /// Creates a new client for the authenticated counsellor with duplicate email validation and logging.
     /// </summary>
     /// <param name="vm">The client view model containing the client data.</param>

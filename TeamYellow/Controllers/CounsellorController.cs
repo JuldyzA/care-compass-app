@@ -130,4 +130,23 @@ public class CounsellorController : Controller
 
         return PartialView("_ClientTable", clientTableVm);
     }
+
+    /// <summary>
+    /// Displays the details of a specific client.
+    /// </summary>
+    /// <param name="id">The client ID.</param>
+    /// <returns>A view with the client details or a not found result if the client doesn't exist.</returns>
+    [HttpGet]
+    [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+    public async Task<IActionResult> ClientDetail(int id)
+    {
+        var client = await _clientService.GetClientByIdAsync(id, User);
+        
+        if (client == null)
+        {
+            return NotFound();
+        }
+
+        return View(client);
+    }
 }
