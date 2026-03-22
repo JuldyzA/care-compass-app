@@ -38,7 +38,8 @@ namespace TeamYellow.Controllers
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
 
             var dashboardData = counsellors
-                .Select(c => GetManagerDashboardData(c))
+                .SelectMany(c => GetManagerDashboardData(c))
+                .OrderByDescending(x => x.PaidAt)
                 .ToList();
 
             // Filter by email
@@ -84,33 +85,26 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <param name="counsellor">The counsellor whose data is being aggregated.</param>
         /// <returns>A view model containing dashboard data for the counsellor.</returns>
-        private ManagerDashboardVM GetManagerDashboardData(Counsellor counsellor)
+        private List<ManagerDashboardVM> GetManagerDashboardData(Counsellor counsellor)
         {
-            var payments = counsellor.Subscriptions?
-                .Select(s => s.PaymentTransaction)
-                .Where(p => p != null)
+            return counsellor.Subscriptions?
+                .Where(s => s.PaymentTransaction != null)
+                .Select(s => new ManagerDashboardVM
+                {
+                    CounsellorId = counsellor.CounsellorId,
+                    PractitionerLicenceId = counsellor.PractitionerLicenceId,
+                    CounsellorName = counsellor.DisplayName,
+                    Email = counsellor.User?.Email ?? "No email",
+                    Amount = s.PaymentTransaction?.Amount ?? 0,
+                    PaymentTransactionId = s.PaymentTransaction?.PaymentTransactionId ?? 0,
+                    Currency = s.PaymentTransaction?.Currency ?? "CAD",
+                    SOP = s.PaymentTransaction?.Status == PaymentTransactionStatus.Failed ? "Failed" : "Paid",
+                    PaidAt = s.PaymentTransaction?.PaidAt,
+                    RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
+                    BillingType = s.Plan?.BillingType ?? "N/A"
+                })
+                .OrderByDescending(x => x.PaidAt)
                 .ToList() ?? [];
-
-            
-            bool anyPayments = payments.Any();
-            var latestPayment = payments.OrderByDescending(p => p.PaidAt).FirstOrDefault();
-            bool anyFailedPayments = payments.Any(p => p.Status == PaymentTransactionStatus.Failed);
-
-            return new ManagerDashboardVM
-            {
-                CounsellorId = counsellor.CounsellorId,
-                PractitionerLicenceId = counsellor.PractitionerLicenceId,
-                CounsellorName = counsellor.DisplayName,
-                Email = counsellor.User?.Email ?? "No email",
-                Amount = anyPayments ? payments.Sum(p => p?.Amount ?? 0) : 0,
-                PaymentTransactionId = anyPayments ? (latestPayment?.PaymentTransactionId ?? 0) : 0,
-                Currency = latestPayment?.Currency ?? "CAD",
-                SOP = anyPayments
-                ? (anyFailedPayments ? "Failed" : "Paid")
-                : "N/A",
-                 PaidAt = anyPayments ? latestPayment?.PaidAt : null,
-                RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
-            };
         }
 
         /// <summary>
@@ -122,7 +116,7 @@ namespace TeamYellow.Controllers
         {
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
             var detailsData = counsellors
-                .Select(c => GetManagerDashboardData(c))
+                .SelectMany(c => GetManagerDashboardData(c))
                 .FirstOrDefault(d => d.PaymentTransactionId == id);
 
             if (detailsData == null)
@@ -154,13 +148,12 @@ namespace TeamYellow.Controllers
         /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
         public async Task<IActionResult> PlanEdit(int id)
         {
-            var plan = await _planRepository.GetById(id);
+            var plan = await _planRepository.GetByIdWithFeaturesAsync(id);
 
             if (plan == null)
             {
                 return NotFound();
             }
-            ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
 
             var vm = new PlanVM
             {
@@ -169,7 +162,15 @@ namespace TeamYellow.Controllers
                 PlanDescription = plan.PlanDescription,
                 Price = plan.Price,
                 BillingType = plan.BillingType,
-                IsActive = plan.IsActive
+                IsActive = plan.IsActive,
+                PlanFeatures = plan.PlanFeatures
+                .OrderBy(f => f.SortOrder)
+                .Select(f => new PlanFeatureVM
+                {
+                    FeatureName = f.FeatureName,
+                    FeatureDescription = f.FeatureDescription
+                })
+                .ToList()
             };
             return View(vm);
         }
@@ -182,31 +183,60 @@ namespace TeamYellow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlanEdit(PlanVM vm)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
-                return View(vm);
-            }
-            var plan = await _planRepository.GetById(vm.PlanId);
-
+            var plan = await _planRepository.GetByIdWithFeaturesAsync(vm.PlanId);
             if (plan == null)
             {
                 return NotFound();
             }
-            //map VM -> Model
-            plan.PlanName = vm.PlanName;
-            plan.PlanDescription = vm.PlanDescription;
-            plan.Price = vm.Price;
-            plan.BillingType = vm.BillingType;
-            plan.IsActive = vm.IsActive;
 
-            var success = await _planRepository.UpdateAsync(plan);
+            var currentBillingType = plan.BillingType;
+
+            if (string.Equals(currentBillingType, "Free", StringComparison.OrdinalIgnoreCase))
+            {
+                if (vm.Price != 0m)
+                {
+                    ModelState.AddModelError(nameof(vm.Price), "Free plan must have a price of 0.00.");
+                }
+            }
+            else
+            {
+                if (vm.Price <= 0m)
+                {
+                    ModelState.AddModelError(nameof(vm.Price), "Monthly and Yearly plans must have a price greater than 0.00.");
+                }
+            }
+
+            if (vm.PlanFeatures != null)
+            {
+                for (int i = 0; i < vm.PlanFeatures.Count; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(vm.PlanFeatures[i].FeatureName))
+                    {
+                        ModelState.AddModelError($"PlanFeatures[{i}].FeatureName", "Feature name is required.");
+                    }
+                    if (string.IsNullOrWhiteSpace(vm.PlanFeatures[i].FeatureDescription))
+                    {
+                        ModelState.AddModelError($"PlanFeatures[{i}].FeatureDescription", "Feature description is required.");
+                    }
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.BillingType = currentBillingType;
+                return View(vm);
+            }
+
+            vm.BillingType = currentBillingType;
+
+            var success = await _planRepository.UpdatePlansWithFeaturesAsync(vm);
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "An error occurred while updating the plan. Please try again.");
-                ViewBag.BillingTypes = new List<string> { "Free Trial", "Monthly", "Yearly" };
+                vm.BillingType = currentBillingType;
                 return View(vm);
             }
+
             return RedirectToAction(nameof(Plans));
         }
 
@@ -229,12 +259,23 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <returns>The create discount view.</returns>
         [HttpGet]
-        public IActionResult CreateDiscount()
+        public async Task<IActionResult> CreateDiscount()
         {
-            var vm = new DiscountVM(){
-                    StartDateTime = DateTime.Now,
-                    EndDateTime = DateTime.Now.AddMonths(1)
+            var plans = (await _planRepository.GetAllAsync())
+                .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var vm = new DiscountVM
+            {
+                StartDateTime = DateTime.Now.AddMinutes(30),
+                EndDateTime = DateTime.Now.AddDays(7),
+                AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = $"{p.PlanName}"
+                }).ToList()
             };
+
             return View(vm);
         }
 
@@ -247,12 +288,32 @@ namespace TeamYellow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDiscount(DiscountVM vm)
         {
-            if (!ModelState.IsValid)
-                return View(vm);
+            var selectedPlanIds = vm.PlanIds ?? new List<int>();
+            vm.DiscountCode = (vm.DiscountCode ?? string.Empty).Trim().ToUpperInvariant();
 
-            if (vm.EndDateTime <= vm.StartDateTime)
+            if (await _discountRepository.DiscountCodeExistsAsync(vm.DiscountCode))
             {
-                ModelState.AddModelError("EndDateTime", "End date must be after start date.");
+                ModelState.AddModelError(nameof(vm.DiscountCode), "This discount code already exists.");
+            }
+
+            if (vm.PlanIds == null || vm.PlanIds.Count == 0)
+            {
+                ModelState.AddModelError(nameof(vm.PlanIds), "Please select at least one plan.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var plans = (await _planRepository.GetAllAsync())
+                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = $"{p.PlanName}",
+                    Selected = selectedPlanIds.Contains(p.PlanId)
+                }).ToList();
+
                 return View(vm);
             }
 
@@ -260,15 +321,38 @@ namespace TeamYellow.Controllers
             {
                 DiscountCode = vm.DiscountCode,
                 DiscountType = vm.DiscountType,
-                Value = vm.Value,
+                Value = vm.Value!.Value,
                 StartDateTime = vm.StartDateTime,
                 EndDateTime = vm.EndDateTime,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
-            await _discountRepository.AddAsync(discount);
+            try
+            {
+                await _discountRepository.AddAsync(discount);
+                foreach (var planId in selectedPlanIds)
+                {
+                    await _discountRepository.AddDiscountToPlanAsync(planId, discount.DiscountId);
+                }
+                TempData["Success"] = "Discount created and applied to selected plans.";
+                return RedirectToAction(nameof(Discounts));
+            }
+            catch
+            {
+                var plans = (await _planRepository.GetAllAsync())
+                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-            return RedirectToAction(nameof(Discounts));
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = $"{p.PlanName}",
+                    Selected = selectedPlanIds.Contains(p.PlanId)
+                }).ToList();
+
+                ModelState.AddModelError(string.Empty, "Unable to create discount. Please try again.");
+                return View(vm);
+            }
         }
 
         /// <summary>
@@ -278,12 +362,13 @@ namespace TeamYellow.Controllers
         [HttpGet]
         public async Task<IActionResult> ApplyDiscount()
         {
-            var discounts = await _discountRepository.GetActiveDiscountsAsync();
-            var plans = await _planRepository.GetAllAsync();
+            var discounts = await _discountRepository.GetDiscountsForLinkingAsync();
+            var plans = (await _planRepository.GetAllAsync())
+                .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             
-            var vm = new DiscountVM
+            var vm = new ApplyDiscountVM
             {
-                
                 Plans = plans,
                 DiscountCodeOptions = discounts.Select(d => new SelectListItem
                 {
@@ -301,40 +386,32 @@ namespace TeamYellow.Controllers
         /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public  async Task<IActionResult> ApplyDiscount(DiscountVM vm)
+        public  async Task<IActionResult> ApplyDiscount(ApplyDiscountVM vm)
         {
-            if (vm.DiscountId == 0)
-            {
-                 ModelState.AddModelError(nameof(vm.DiscountId), "Please select a discount.");
-             }
-
-            if (vm.PlanIds == null || vm.PlanIds.Count == 0)
-            {
-                ModelState.AddModelError(nameof(vm.PlanIds), "Please select at least one plan.");
-            }
-
             if (!ModelState.IsValid)
             {
-                var discounts = await _discountRepository.GetActiveDiscountsAsync();
-                var plans = await _planRepository.GetAllAsync();
+                var discounts = await _discountRepository.GetDiscountsForLinkingAsync();
+                var plans = (await _planRepository.GetAllAsync())
+                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
                 vm.Plans = plans;
                 vm.DiscountCodeOptions = discounts.Select(d => new SelectListItem
                 {
                     Value = d.DiscountId.ToString(),
                     Text = d.DiscountCode
                 }).ToList();
+
                 return View(vm);
             }
 
-            if (vm.PlanIds != null)
+            foreach (var planId in vm.PlanIds)
             {
-                foreach (var planId in vm.PlanIds)
-                {
-                   await _discountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
-                }
+                await _discountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
             }
 
-            return RedirectToAction("Discounts");
+            TempData["Success"] = "Discount applied to selected plans.";
+            return RedirectToAction(nameof(Discounts));
         }
 
         /// <summary>
@@ -367,7 +444,7 @@ namespace TeamYellow.Controllers
 
             // Await the plans and then use Select
             var plans = (await _planRepository.GetAllAsync())
-                .Where(p => p.PlanName != "Free");
+                .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase));
 
             var vm = new DiscountVM
             {
@@ -407,10 +484,6 @@ namespace TeamYellow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditDiscount(DiscountVM vm)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(vm);
-            }
             var discount = await _discountRepository.GetDiscountByIdAsync(vm.DiscountId);
 
             if (discount == null)
@@ -418,8 +491,43 @@ namespace TeamYellow.Controllers
                 return NotFound();
             }
 
+            vm.DiscountCode = (vm.DiscountCode ?? string.Empty).Trim().ToUpperInvariant();
+
+            if (await _discountRepository.DiscountCodeExistsAsync(vm.DiscountCode, vm.DiscountId))
+            {
+                ModelState.AddModelError(nameof(vm.DiscountCode), "This discount code already exists.");
+            }
+
             //update date of discount
             var now = DateTime.Now;
+            var effectiveStart = (discount.StartDateTime <= now && discount.EndDateTime >= now)
+                ? discount.StartDateTime
+                : vm.StartDateTime;
+
+            if (vm.EndDateTime <= effectiveStart)
+            {
+                ModelState.AddModelError(nameof(vm.EndDateTime), "End date must be after start date.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var plans = (await _planRepository.GetAllAsync())
+                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase));
+
+                vm.IsStarted = discount.StartDateTime <= now;
+                vm.IsExpired = discount.EndDateTime < now;
+                vm.HasPlans = discount.PlanDiscounts.Any();
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = p.PlanName,
+                    Selected = vm.PlanIds.Contains(p.PlanId) ||
+                               discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
+                }).ToList();
+
+                return View(vm);
+            }
+
             if (discount.EndDateTime < now)
             {
                 // expired → allow reactivation
@@ -443,25 +551,42 @@ namespace TeamYellow.Controllers
             if (!isActive)
             {
                 discount.PlanDiscounts.Clear();
-                if (vm.PlanIds != null)
+                foreach (var planId in vm.PlanIds)
                 {
-                    foreach (var planId in vm.PlanIds)
+                    discount.PlanDiscounts.Add(new PlanDiscount
                     {
-                        var plan = await _planRepository.GetById(planId);
-                        if (plan != null)
-                        {
-                            discount.PlanDiscounts.Add(new PlanDiscount
-                            {
-                                Plan = plan,
-                                Discount = discount
-                            });
-                        }
-                    }
+                        PlanId = planId,
+                        DiscountId = discount.DiscountId
+                    });
                 }
             }
-            await _discountRepository.UpdateAsync(discount);
 
-            return RedirectToAction(nameof(Discounts));
+            try
+            {
+                await _discountRepository.UpdateAsync(discount);
+                TempData["Success"] = "Discount updated successfully.";
+                return RedirectToAction(nameof(Discounts));
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update discount. Please try again.");
+
+                var plans = (await _planRepository.GetAllAsync())
+                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase));
+
+                vm.IsStarted = discount.StartDateTime <= now;
+                vm.IsExpired = discount.EndDateTime < now;
+                vm.HasPlans = discount.PlanDiscounts.Any();
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = p.PlanName,
+                    Selected = vm.PlanIds.Contains(p.PlanId) ||
+                               discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
+                }).ToList();
+
+                return View(vm);
+            }
         }
 
 

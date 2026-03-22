@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Models;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories
 {
@@ -72,7 +73,7 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
-		    /// <summary>
+        /// <summary>
         /// Retrieves a single plan by its primary key, including its associated features.
         /// </summary>
         /// <param name="id">The primary key of the plan to retrieve.</param>
@@ -81,6 +82,44 @@ namespace TeamYellow.Repositories
         {
             return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
                 .FirstOrDefaultAsync(p => p.PlanId == id);
-        }		
+        }
+
+        public async Task<Plan?> GetByIdWithFeaturesAsync(int id)
+        {
+            return await _context.Plans
+                .Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
+                .FirstOrDefaultAsync(p => p.PlanId == id);
+        }
+
+        public async Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm)
+        {
+            var plan = await _context.Plans
+                .Include(p => p.PlanFeatures)
+                .FirstOrDefaultAsync(p => p.PlanId == vm.PlanId);
+
+            if (plan == null)
+                return false;
+
+            plan.PlanName = vm.PlanName;
+            plan.PlanDescription = vm.PlanDescription;
+            plan.Price = vm.Price;
+            plan.IsActive = vm.IsActive;
+
+            if (vm.PlanFeatures != null)
+            {
+                var existingFeatures = plan.PlanFeatures
+                    .OrderBy(f => f.SortOrder)
+                    .ToList();
+
+                for (int i = 0; i < existingFeatures.Count && i < vm.PlanFeatures.Count; i++)
+                {
+                    existingFeatures[i].FeatureName = vm.PlanFeatures[i].FeatureName?.Trim() ?? string.Empty;
+                    existingFeatures[i].FeatureDescription = vm.PlanFeatures[i].FeatureDescription?.Trim() ?? string.Empty;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

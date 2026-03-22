@@ -1,9 +1,10 @@
+using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using TeamYellow.Models;
 
 namespace TeamYellow.ViewModels
 {
-    public class PlanVM
+    public class PlanVM : IValidatableObject
     {
         public int PlanId { get; set; }
 
@@ -26,5 +27,15 @@ namespace TeamYellow.ViewModels
         public IEnumerable<Plan> Plans { get; set; } = new List<Plan>();
       
         public List<PlanFeatureVM> PlanFeatures { get; set; } = [];
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Price != decimal.Round(Price, 2, MidpointRounding.AwayFromZero))
+            {
+                yield return new ValidationResult(
+                    "Price can have at most 2 decimal places.",
+                    new[] { nameof(Price) });
+            }
+        }
     }
 }

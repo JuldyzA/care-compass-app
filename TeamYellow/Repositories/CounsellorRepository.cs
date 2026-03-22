@@ -136,7 +136,9 @@ public class CounsellorRepository
 		return await _context.Counsellors
 			.Include(c => c.User)
 			.Include(c => c.Subscriptions)
-			.ThenInclude(s => s.PaymentTransaction)
+                .ThenInclude(s => s.Plan)
+            .Include(c => c.Subscriptions)
+			    .ThenInclude(s => s.PaymentTransaction)
 			.ToListAsync();
 	}
 }

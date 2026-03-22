@@ -1,6 +1,4 @@
-﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
-@using System.Security.Claims
-@model TeamYellow.ViewModels.PlanVM
+﻿@model TeamYellow.ViewModels.PlanVM
 
 <h4>Plans</h4>
 
@@ -12,10 +10,7 @@
             <th>Price</th>
             <th>Billing Type</th>
             <th>Status</th>
-            <th>Created</th>
-            <th>Edit</th>
-
-
+            <th>Actions</th>
         </tr>
     </thead>
 
@@ -27,18 +22,22 @@
                 <td>@plan.PlanDescription</td>
                 <td>@plan.Price.ToString("0.00")</td>
                 <td>@plan.BillingType</td>
-                <td>@(plan.IsActive ? "Active" : "Inactive")</td>
-                <td>@plan.CreatedAt.ToString("yyyy-MM-dd")</td>
-                <td>
-                    @if(plan.BillingType != "Free")
+                <td>@if (plan.IsActive)
                     {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </td>
+                <td>
                     <a class="btn btn-sm btn-primary"
                         asp-controller="Manager"
                         asp-action="PlanEdit"
                         asp-route-id="@plan.PlanId">
                         Edit
-                    </a>                                     
-                    }
+                    </a>
                 </td>
             </tr>
         }

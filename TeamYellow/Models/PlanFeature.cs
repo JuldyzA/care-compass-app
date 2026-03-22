@@ -13,11 +13,11 @@ public class PlanFeature
 
     [Column("featureName")]
     [Required, MaxLength(120)]
-    public string FeatureName { get; set; } = String.Empty;
+    public string FeatureName { get; set; } = string.Empty;
 
     [Column("featureDescription")]
     [Required, MaxLength(300)]
-    public string FeatureDescription { get; set; } = String.Empty;
+    public string FeatureDescription { get; set; } = string.Empty;
 
     [Column("sortOrder")]
     public int SortOrder { get; set; }

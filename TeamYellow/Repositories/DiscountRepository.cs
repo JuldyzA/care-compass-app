@@ -23,13 +23,24 @@ namespace TeamYellow.Repositories
         }
 
 
-        public async Task<List<Discount>> GetActiveDiscountsAsync()
+        public async Task<List<Discount>> GetDiscountsForLinkingAsync()
         {
-            var nowUtc = DateTime.UtcNow;
+            var now = DateTime.Now;
             return await _context.Discounts
-                    .Where(d => d.StartDateTime <= nowUtc && d.EndDateTime >= nowUtc)
+                    .Where(d => d.EndDateTime >= now)
+                    .OrderBy(d => d.DiscountCode)
                     .ToListAsync();
         }
+
+        public async Task<bool> DiscountCodeExistsAsync(string discountCode, int? excludeDiscountId = null)
+        {
+            var normalizedCode = discountCode.Trim().ToUpperInvariant();
+
+            return await _context.Discounts.AnyAsync(d =>
+                d.DiscountCode == normalizedCode &&
+                (!excludeDiscountId.HasValue || d.DiscountId != excludeDiscountId.Value));
+        }
+
         /// <summary>
         /// Adds a new discount to the database and saves changes.
         /// </summary>
@@ -47,22 +58,22 @@ namespace TeamYellow.Repositories
         /// <param name="discountId">The ID of the discount.</param>
         public async Task AddDiscountToPlanAsync(int planId, int discountId)
         {
-            var plan = await _context.Plans.FindAsync(planId);
-            var discount = await _context.Discounts.FindAsync(discountId);
-
-            if (plan == null || discount == null)
-                return;
-
             var exists = await _context.PlanDiscounts
                 .AnyAsync(pd => pd.PlanId == planId && pd.DiscountId == discountId);
 
             if (exists)
                 return;
 
+            var planExists = await _context.Plans.AnyAsync(p => p.PlanId == planId);
+            var discountExists = await _context.Discounts.AnyAsync(d => d.DiscountId == discountId);
+
+            if (!planExists || !discountExists)
+                return;
+
             var planDiscount = new PlanDiscount
             {
-                Plan = plan,
-                Discount = discount
+                PlanId = planId,
+                DiscountId = discountId
             };
 
             await _context.PlanDiscounts.AddAsync(planDiscount);
@@ -92,6 +103,17 @@ namespace TeamYellow.Repositories
                 .Include(d => d.PlanDiscounts)
                 .ThenInclude(pd => pd.Plan)
                 .FirstOrDefaultAsync(d => d.DiscountId == discountId);
+        }
+
+        public async Task<Discount?> GetDiscountForPlanByIdAsync(int planId, int discountId)
+        {
+            return await _context.PlanDiscounts
+                .AsNoTracking()
+                .Where(pd =>
+                    pd.PlanId == planId &&
+                    pd.DiscountId == discountId)
+                .Select(pd => pd.Discount)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -146,14 +168,14 @@ namespace TeamYellow.Repositories
                 return null;
 
             var normalizedCode = discountCode.Trim().ToUpperInvariant();
-            var nowUtc = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             return await _context.PlanDiscounts
                 .AsNoTracking()
                 .Where(pd =>
                     pd.PlanId == planId &&
-                    pd.Discount.StartDateTime <= nowUtc &&
-                    pd.Discount.EndDateTime >= nowUtc &&
+                    pd.Discount.StartDateTime <= now &&
+                    pd.Discount.EndDateTime >= now &&
                     pd.Discount.DiscountCode == normalizedCode)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
@@ -161,15 +183,15 @@ namespace TeamYellow.Repositories
 
         public async Task<Discount?> GetValidDiscountForPlanByIdAsync(int planId, int discountId)
         {
-            var nowUtc = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             return await _context.PlanDiscounts
                 .AsNoTracking()
                 .Where(pd =>
                     pd.PlanId == planId &&
                     pd.DiscountId == discountId &&
-                    pd.Discount.StartDateTime <= nowUtc &&
-                    pd.Discount.EndDateTime >= nowUtc)
+                    pd.Discount.StartDateTime <= now &&
+                    pd.Discount.EndDateTime >= now)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
         }

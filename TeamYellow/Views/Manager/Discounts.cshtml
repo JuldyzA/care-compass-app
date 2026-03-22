@@ -1,10 +1,18 @@
-﻿@using System.Security.Claims
-@model TeamYellow.ViewModels.DiscountVM
+﻿@model TeamYellow.ViewModels.DiscountVM
 
 <h4>Discounts</h4>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
 <div class="mb-3 d-flex gap-2">
-    <a href="@Url.Action("ApplyDiscount", "Manager")" class="btn btn-primary">Apply Code</a>
     <a href="@Url.Action("CreateDiscount", "Manager")" class="btn btn-success">Create Code</a>
 </div>
 
@@ -15,10 +23,10 @@
             <th>Discount Type</th>
             <th>Value</th>
             <th>Start Date</th>
-            <th>End Date</th>                          
+            <th>End Date</th>
+            <th>Status</th>
             <th>Applied To</th>
-            <th>Edit</th>
-            <th>Delete </th>
+            <th>Actions</th>
         </tr>
     </thead>
 
@@ -31,9 +39,18 @@
                     <td>@d.DiscountCode</td>
                     <td>@d.DiscountType</td>
                     <td>@d.Value</td>
-                    <td>@d.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@d.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                    
+                    <td>@d.StartDateTime.ToString("yyyy-MMM-dd HH:mm")</td>
+                    <td>@d.EndDateTime.ToString("yyyy-MMM-dd HH:mm")</td>
+                    <td>
+                        @if (@d.StartDateTime < DateTime.Now && d.EndDateTime > DateTime.Now)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </td>
                     <td>
                         @if (d.PlanDiscounts != null && d.PlanDiscounts.Any())
                         {
@@ -50,23 +67,11 @@
                         }
                     </td>
                     <td>
-                        @if (d.EndDateTime < DateTime.Now)
-                        {
-                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
-                                class="btn btn-sm btn-warning">
-                                Expired
-                            </a>
-                        }
-                        else
-                        {
-                            <a href="@Url.Action("EditDiscount", "Manager", new { id = d.DiscountId })"
-                                class="btn btn-sm btn-warning">
-                                Edit
-                            </a>
-                        }
-                                    
-                    </td>
-                    <td>
+                        <a asp-action="EditDiscount"
+                               asp-route-id="@d.DiscountId"
+                               class="btn btn-sm btn-warning">
+                            Edit
+                        </a>
                         <a asp-action="DeleteDiscount"
                             asp-route-id="@d.DiscountId"
                             class="btn btn-sm btn-danger">

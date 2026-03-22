@@ -69,7 +69,7 @@ public class PlanController : Controller
                 }
             }
         }
-        // Copy TempData message (if any) into ViewData so the view can render it
+
         if (TempData.ContainsKey("Message"))
             ViewData["Message"] = TempData["Message"];
         if (TempData.ContainsKey("MessageType"))
@@ -131,9 +131,15 @@ public class PlanController : Controller
 
         var vm = MapToCheckoutVM(plan);
 
-        if (plan.Price == 0)
+        if (TempData["CheckoutMessage"] is string checkoutMessage &&
+            !string.IsNullOrWhiteSpace(checkoutMessage))
         {
-            vm.FinalAmount = 0;
+            vm.DiscountMessage = checkoutMessage;
+        }
+
+        if (plan.Price == 0m)
+        {
+            vm.FinalAmount = 0m;
             return View(vm);
         }
 
@@ -145,13 +151,22 @@ public class PlanController : Controller
 
             if (discount == null)
             {
-                vm.DiscountMessage = "Invalid, expired, or ineligible discount code.";
+                vm.DiscountApplied = false;
+                vm.AppliedDiscountId = null;
+                vm.DiscountAmount = 0m;
+                vm.FinalAmount = plan.Price;
+
+                if (string.IsNullOrWhiteSpace(vm.DiscountMessage))
+                    vm.DiscountMessage = "Invalid, expired, or ineligible discount code.";
             }
             else
             {
                 vm.AppliedDiscountId = discount.DiscountId;
                 vm.DiscountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
-                vm.FinalAmount = plan.Price - vm.DiscountAmount;
+                vm.FinalAmount = decimal.Round(
+                    Math.Max(0m, plan.Price - vm.DiscountAmount),
+                    2,
+                    MidpointRounding.AwayFromZero);
                 vm.DiscountApplied = true;
                 vm.DiscountMessage = "Discount code applied successfully.";
             }
@@ -165,10 +180,12 @@ public class PlanController : Controller
     [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
     public IActionResult ApplyDiscount(CheckoutVM vm)
     {
+        var normalizedCode = vm.DiscountCode?.Trim();
+
         return RedirectToAction(nameof(Checkout), new
         {
             id = vm.PlanId,
-            discountCode = vm.DiscountCode
+            discountCode = string.IsNullOrWhiteSpace(normalizedCode) ? null : normalizedCode.ToUpperInvariant()
         });
     }
 
@@ -186,10 +203,10 @@ public class PlanController : Controller
         BillingType = plan.BillingType,
         IsActive = plan.IsActive,
         PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
-            {
-                FeatureName = f.FeatureName,
-                FeatureDescription = f.FeatureDescription
-            })]
+        {
+            FeatureName = f.FeatureName,
+            FeatureDescription = f.FeatureDescription
+        })]
     };
 
     private static CheckoutVM MapToCheckoutVM(Plan plan) => new()
@@ -201,9 +218,9 @@ public class PlanController : Controller
         OriginalPrice = plan.Price,
         FinalAmount = plan.Price,
         PlanFeatures = [.. plan.PlanFeatures.Select(f => new PlanFeatureVM
-                                                            {
-                                                                FeatureName = f.FeatureName,
-                                                                FeatureDescription = f.FeatureDescription
-                                                            })]
+        {
+            FeatureName = f.FeatureName,
+            FeatureDescription = f.FeatureDescription
+        })]
     };
 }
