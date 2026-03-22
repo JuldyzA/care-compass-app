@@ -9,8 +9,6 @@ namespace TeamYellow.Repositories
 
         Task<List<Plan>> GetActivePlans();
 
-        Task<Plan?> GetPlanById(int id);
-
         Task<Plan?> GetByIdWithFeaturesAsync(int id);
 
         Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm);

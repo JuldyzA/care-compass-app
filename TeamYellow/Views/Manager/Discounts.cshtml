@@ -39,8 +39,8 @@
                     <td>@d.DiscountCode</td>
                     <td>@d.DiscountType</td>
                     <td>@d.Value</td>
-                    <td>@d.StartDateTime.ToLocalTime().ToString("yyyy-MMM-dd HH:mm")</td>
-                    <td>@d.EndDateTime.ToLocalTime().ToString("yyyy-MMM-dd HH:mm")</td>
+                    <td>@DateTime.SpecifyKind(d.StartDateTime, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@DateTime.SpecifyKind(d.EndDateTime, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                     <td>
                         @if (d.StartDateTime <= DateTime.UtcNow && d.EndDateTime >= DateTime.UtcNow)
                         {

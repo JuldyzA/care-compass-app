@@ -39,21 +39,11 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
-        /// <summary>
-        /// Retrieves a single plan by its primary key, including its associated features.
-        /// </summary>
-        /// <param name="id">The primary key of the plan to retrieve.</param>
-        /// <returns>The matching <see cref="Plan"/> with features, or <c>null</c> if not found.</returns>
-        public async Task<Plan?> GetPlanById(int id)
-        {
-            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
-                .FirstOrDefaultAsync(p => p.PlanId == id);
-        }
-
         public async Task<Plan?> GetByIdWithFeaturesAsync(int id)
         {
             return await _context.Plans
-                .Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
+                .Include(p => p.PlanFeatures
+                    .OrderBy(f => f.SortOrder))
                 .FirstOrDefaultAsync(p => p.PlanId == id);
         }
 

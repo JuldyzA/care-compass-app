@@ -41,7 +41,7 @@ public class SubscriptionService(
     /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
     public async Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId)
     {
-        var plan = await _planRepository.GetPlanById(planId)
+        var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
         if (!plan.IsActive)
@@ -98,7 +98,7 @@ public class SubscriptionService(
         int planId,
         int? discountId)
     {
-        var plan = await _planRepository.GetPlanById(planId)
+        var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
         if (!plan.IsActive)
@@ -188,7 +188,7 @@ public class SubscriptionService(
         string returnUrl,
         string cancelUrl)
     {
-        var plan = await _planRepository.GetPlanById(planId)
+        var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
         if (!plan.IsActive)
@@ -279,7 +279,7 @@ public class SubscriptionService(
             discountId = parsedDiscountId;
         }
 
-        var plan = await _planRepository.GetPlanById(planId)
+        var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
 
         if (!plan.IsActive)

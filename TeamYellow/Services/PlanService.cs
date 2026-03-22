@@ -27,7 +27,7 @@ namespace TeamYellow.Services
         /// <returns>The matching <see cref="Plan"/>, or <c>null</c> if not found.</returns>
         public async Task<Plan?> GetPlanById(int id)
         {
-            return await _planRepository.GetPlanById(id);
+            return await _planRepository.GetByIdWithFeaturesAsync(id);
         }
     }
 }
