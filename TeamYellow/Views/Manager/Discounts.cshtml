@@ -39,10 +39,10 @@
                     <td>@d.DiscountCode</td>
                     <td>@d.DiscountType</td>
                     <td>@d.Value</td>
-                    <td>@d.StartDateTime.ToString("yyyy-MMM-dd HH:mm")</td>
-                    <td>@d.EndDateTime.ToString("yyyy-MMM-dd HH:mm")</td>
+                    <td>@d.StartDateTime.ToLocalTime().ToString("yyyy-MMM-dd HH:mm")</td>
+                    <td>@d.EndDateTime.ToLocalTime().ToString("yyyy-MMM-dd HH:mm")</td>
                     <td>
-                        @if (@d.StartDateTime < DateTime.Now && d.EndDateTime > DateTime.Now)
+                        @if (d.StartDateTime <= DateTime.UtcNow && d.EndDateTime >= DateTime.UtcNow)
                         {
                             <span class="badge bg-success">Active</span>
                         }

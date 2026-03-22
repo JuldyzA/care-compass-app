@@ -204,7 +204,7 @@ public class SubscriptionController : Controller
                 user.Id,
                 planId);
 
-            TempData["CheckoutMessage"] = ex.Message;
+            TempData["CheckoutMessage"] = "We were unable to process the selected plan. Please review your selection and try again.";
             return RedirectToAction("Checkout", "Plan", new { id = planId });
         }
         catch (Exception ex)
@@ -306,7 +306,7 @@ public class SubscriptionController : Controller
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Payment could not be completed for order {OrderId}.", orderId);
-            TempData["Message"] = ex.Message;
+            TempData["Message"] = "Your payment could not be completed. Please try again or contact support if the problem persists.";
             TempData["MessageType"] = "warning";
             return RedirectToAction(nameof(Failed));
         }

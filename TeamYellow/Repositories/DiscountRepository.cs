@@ -22,12 +22,11 @@ namespace TeamYellow.Repositories
             return await _context.Discounts.ToListAsync();
         }
 
-
         public async Task<List<Discount>> GetDiscountsForLinkingAsync()
         {
-            var now = DateTime.Now;
+            var nowUtc = DateTime.UtcNow;
             return await _context.Discounts
-                    .Where(d => d.EndDateTime >= now)
+                    .Where(d => d.StartDateTime <= nowUtc && d.EndDateTime >= nowUtc)
                     .OrderBy(d => d.DiscountCode)
                     .ToListAsync();
         }
@@ -168,14 +167,14 @@ namespace TeamYellow.Repositories
                 return null;
 
             var normalizedCode = discountCode.Trim().ToUpperInvariant();
-            var now = DateTime.Now;
+            var nowUtc = DateTime.UtcNow;
 
             return await _context.PlanDiscounts
                 .AsNoTracking()
                 .Where(pd =>
                     pd.PlanId == planId &&
-                    pd.Discount.StartDateTime <= now &&
-                    pd.Discount.EndDateTime >= now &&
+                    pd.Discount.StartDateTime <= nowUtc &&
+                    pd.Discount.EndDateTime >= nowUtc &&
                     pd.Discount.DiscountCode == normalizedCode)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
@@ -183,15 +182,15 @@ namespace TeamYellow.Repositories
 
         public async Task<Discount?> GetValidDiscountForPlanByIdAsync(int planId, int discountId)
         {
-            var now = DateTime.Now;
+            var nowUtc = DateTime.UtcNow;
 
             return await _context.PlanDiscounts
                 .AsNoTracking()
                 .Where(pd =>
                     pd.PlanId == planId &&
                     pd.DiscountId == discountId &&
-                    pd.Discount.StartDateTime <= now &&
-                    pd.Discount.EndDateTime >= now)
+                    pd.Discount.StartDateTime <= nowUtc &&
+                    pd.Discount.EndDateTime >= nowUtc)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
         }

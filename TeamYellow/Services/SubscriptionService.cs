@@ -32,7 +32,7 @@ public class SubscriptionService(
     /// A zero-amount transaction record is created for audit purposes.
     /// </summary>
     /// <param name="counsellorId">The ID of the counsellor being subscribed.</param>
-    /// <param name="userName">The username of the counsellor, used as the payer name on the transaction record.</param>
+    /// <param name="payerName">The name used as the payer name on the transaction.</param>
     /// <param name="planId">The ID of the free plan to subscribe the counsellor to.</param>
     /// <returns>
     /// A <see cref="SubscriptionResult"/> indicating whether the subscription was newly created,
@@ -112,7 +112,7 @@ public class SubscriptionService(
 
         if (discount == null)
             throw new InvalidOperationException(
-                $"Discount {discountId.Value} is not valid for plan {planId}.");
+                "The selected discount is not valid for this plan.");
 
         var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
         var finalAmount = decimal.Round(
@@ -121,7 +121,7 @@ public class SubscriptionService(
             MidpointRounding.AwayFromZero);
 
         if (finalAmount != 0m)
-            throw new InvalidOperationException($"Discount {discountId.Value} does not reduce plan {planId} to zero.");
+            throw new InvalidOperationException("The selected discount does not reduce this plan to zero.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -257,7 +257,7 @@ public class SubscriptionService(
     /// </summary>
     /// <param name="token">The PayPal order approval token returned from the PayPal redirect.</param>
     /// <param name="counsellorId">The ID of the counsellor completing the subscription.</param>
-    /// <param name="userName">The username of the counsellor, used as the payer name on the transaction record.</param>
+    /// <param name="payerName">The name used as the payer name on the transaction.</param>
     /// <returns>
     /// A <see cref="SubscriptionResult"/> indicating whether the subscription was newly created,
     /// represents a plan change, or was already active (including duplicate capture detection).

@@ -317,14 +317,17 @@ namespace TeamYellow.Controllers
                 return View(vm);
             }
 
+            var startUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
+            var endUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
+
             var discount = new Discount
             {
                 DiscountCode = vm.DiscountCode,
                 DiscountType = vm.DiscountType,
                 Value = vm.Value!.Value,
-                StartDateTime = vm.StartDateTime,
-                EndDateTime = vm.EndDateTime,
-                CreatedAt = DateTime.Now
+                StartDateTime = startUtc,
+                EndDateTime = endUtc,
+                CreatedAt = DateTime.UtcNow
             };
 
             try
@@ -436,10 +439,10 @@ namespace TeamYellow.Controllers
             {
                 return NotFound();
             }
-            var now = DateTime.Now;
+            var nowUtc = DateTime.UtcNow;
 
-            bool isStarted = discount.StartDateTime <= now;
-            bool isExpired = discount.EndDateTime < now;
+            bool isStarted = discount.StartDateTime <= nowUtc;
+            bool isExpired = discount.EndDateTime < nowUtc;
             bool HasPlans = discount.PlanDiscounts.Count != 0;
 
             // Await the plans and then use Select
@@ -452,8 +455,8 @@ namespace TeamYellow.Controllers
                 DiscountCode = discount.DiscountCode,
                 DiscountType = discount.DiscountType,
                 Value = discount.Value,
-                StartDateTime = discount.StartDateTime,
-                EndDateTime = discount.EndDateTime,
+                StartDateTime = DateTime.SpecifyKind(discount.StartDateTime, DateTimeKind.Utc).ToLocalTime(),
+                EndDateTime = DateTime.SpecifyKind(discount.EndDateTime, DateTimeKind.Utc).ToLocalTime(),
                 IsStarted = isStarted,
                 IsExpired = isExpired,
                 HasPlans = HasPlans,
@@ -499,12 +502,15 @@ namespace TeamYellow.Controllers
             }
 
             //update date of discount
-            var now = DateTime.Now;
-            var effectiveStart = (discount.StartDateTime <= now && discount.EndDateTime >= now)
-                ? discount.StartDateTime
-                : vm.StartDateTime;
+            var nowUtc = DateTime.UtcNow;
+            var vmStartUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
+            var vmEndUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
 
-            if (vm.EndDateTime <= effectiveStart)
+            var effectiveStart = (discount.StartDateTime <= nowUtc && discount.EndDateTime >= nowUtc)
+                ? discount.StartDateTime
+                : vmStartUtc;
+
+            if (vmEndUtc <= effectiveStart)
             {
                 ModelState.AddModelError(nameof(vm.EndDateTime), "End date must be after start date.");
             }
@@ -514,8 +520,8 @@ namespace TeamYellow.Controllers
                 var plans = (await _planRepository.GetAllAsync())
                     .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase));
 
-                vm.IsStarted = discount.StartDateTime <= now;
-                vm.IsExpired = discount.EndDateTime < now;
+                vm.IsStarted = discount.StartDateTime <= nowUtc;
+                vm.IsExpired = discount.EndDateTime < nowUtc;
                 vm.HasPlans = discount.PlanDiscounts.Any();
                 vm.AvailablePlans = plans.Select(p => new SelectListItem
                 {
@@ -528,26 +534,26 @@ namespace TeamYellow.Controllers
                 return View(vm);
             }
 
-            if (discount.EndDateTime < now)
+            if (discount.EndDateTime < nowUtc)
             {
                 // expired → allow reactivation
-                discount.StartDateTime = vm.StartDateTime;
-                discount.EndDateTime = vm.EndDateTime;
+                discount.StartDateTime = vmStartUtc;
+                discount.EndDateTime = vmEndUtc;
             }
-            else if (discount.StartDateTime <= now)
+            else if (discount.StartDateTime <= nowUtc)
             {
                 // active → only end date editable
-                discount.EndDateTime = vm.EndDateTime;
+                discount.EndDateTime = vmEndUtc;
             }
             else
             {
                 // not started
-                discount.StartDateTime = vm.StartDateTime;
-                discount.EndDateTime = vm.EndDateTime;
+                discount.StartDateTime = vmStartUtc;
+                discount.EndDateTime = vmEndUtc;
             }
 
             //only allow plan changes when discount is not currently active
-            var isActive = discount.StartDateTime <= now && discount.EndDateTime >= now;
+            var isActive = discount.StartDateTime <= nowUtc && discount.EndDateTime >= nowUtc;
             if (!isActive)
             {
                 discount.PlanDiscounts.Clear();
@@ -574,8 +580,8 @@ namespace TeamYellow.Controllers
                 var plans = (await _planRepository.GetAllAsync())
                     .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase));
 
-                vm.IsStarted = discount.StartDateTime <= now;
-                vm.IsExpired = discount.EndDateTime < now;
+                vm.IsStarted = discount.StartDateTime <= nowUtc;
+                vm.IsExpired = discount.EndDateTime < nowUtc;
                 vm.HasPlans = discount.PlanDiscounts.Any();
                 vm.AvailablePlans = plans.Select(p => new SelectListItem
                 {
