@@ -119,16 +119,6 @@ public class CounsellorRepository
     }
 	
 	/// <summary>
-	/// Retrieves all counsellors including their associated user profiles.
-	/// </summary>
-	public async Task<IEnumerable<Counsellor>> GetAllAsync()
-	{
-		return await _context.Counsellors
-			.Include(c => c.User)
-			.ToListAsync();
-	}
-	
-	/// <summary>
 	/// Retrieves all counsellors with their user profiles, subscriptions, and related payment transactions.
 	/// </summary>
 	public async Task<IEnumerable<Counsellor>> GetCounsellorsWithPaymentsAsync()

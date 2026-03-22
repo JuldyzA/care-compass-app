@@ -13,15 +13,6 @@ namespace TeamYellow.Repositories
             _context = context;
         }
 
-        /// <summary>
-        /// Retrieves all discounts from the database.
-        /// </summary>
-        /// <returns>A list of all Discount entities.</returns>
-        public async Task<List<Discount>> GetAllAsync()
-        {
-            return await _context.Discounts.ToListAsync();
-        }
-
         public async Task<List<Discount>> GetDiscountsForLinkingAsync()
         {
             var nowUtc = DateTime.UtcNow;

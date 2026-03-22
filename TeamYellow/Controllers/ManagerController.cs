@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
@@ -356,65 +355,6 @@ namespace TeamYellow.Controllers
                 ModelState.AddModelError(string.Empty, "Unable to create discount. Please try again.");
                 return View(vm);
             }
-        }
-
-        /// <summary>
-        /// Displays the form to apply a discount to one or more plans asynchronously.
-        /// </summary>
-        /// <returns>The apply discount view with available discounts and plans.</returns>
-        [HttpGet]
-        public async Task<IActionResult> ApplyDiscount()
-        {
-            var discounts = await _discountRepository.GetDiscountsForLinkingAsync();
-            var plans = (await _planRepository.GetAllAsync())
-                .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            
-            var vm = new ApplyDiscountVM
-            {
-                Plans = plans,
-                DiscountCodeOptions = discounts.Select(d => new SelectListItem
-                {
-                    Value = d.DiscountId.ToString(),
-                    Text = d.DiscountCode
-                }).ToList()
-            };         
-            return View(vm);
-        }
-
-        /// <summary>
-        /// Processes the submission of the apply discount form and associates the selected discount with the selected plans.
-        /// </summary>
-        /// <param name="vm">The view model containing selected plan IDs and discount ID.</param>
-        /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public  async Task<IActionResult> ApplyDiscount(ApplyDiscountVM vm)
-        {
-            if (!ModelState.IsValid)
-            {
-                var discounts = await _discountRepository.GetDiscountsForLinkingAsync();
-                var plans = (await _planRepository.GetAllAsync())
-                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                vm.Plans = plans;
-                vm.DiscountCodeOptions = discounts.Select(d => new SelectListItem
-                {
-                    Value = d.DiscountId.ToString(),
-                    Text = d.DiscountCode
-                }).ToList();
-
-                return View(vm);
-            }
-
-            foreach (var planId in vm.PlanIds)
-            {
-                await _discountRepository.AddDiscountToPlanAsync(planId, vm.DiscountId);
-            }
-
-            TempData["Success"] = "Discount applied to selected plans.";
-            return RedirectToAction(nameof(Discounts));
         }
 
         /// <summary>

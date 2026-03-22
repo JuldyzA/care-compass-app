@@ -25,41 +25,7 @@ namespace TeamYellow.Repositories
             return await _context.Plans.ToListAsync();
         }
 
-        /// <summary>
-        /// Retrieves a plan by its unique identifier asynchronously.
-        /// </summary>
-        /// <param name="id">The unique identifier of the plan.</param>
-        /// <returns>The plan if found; otherwise, null.</returns>
-        public async Task<Plan?> GetById(int id)
-        {
-            return await _context.Plans.FindAsync(id);
-        }
-
-        /// <summary>
-        /// Updates an existing plan in the database asynchronously.
-        /// </summary>
-        /// <param name="entity">The plan entity with updated values.</param>
-        /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateAsync(Plan entity)
-        {
-            var existingPlan = await _context.Plans.FindAsync(entity.PlanId);
-                if (existingPlan == null)
-                {
-                    return false;
-                }
-
-                existingPlan.PlanName = entity.PlanName;
-                existingPlan.PlanDescription = entity.PlanDescription;
-                existingPlan.Price = entity.Price;
-                existingPlan.BillingType = entity.BillingType;
-                existingPlan.IsActive = entity.IsActive;
-
-                await _context.SaveChangesAsync();
-
-                return true;
-        }
-
-		    /// <summary>
+		/// <summary>
         /// Retrieves all plans that are currently active, ordered by price ascending.
         /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
         /// </summary>
