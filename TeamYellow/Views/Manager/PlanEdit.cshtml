@@ -20,17 +20,16 @@
         <span asp-validation-for="PlanDescription" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Price</label>
-        @if (Model.BillingType != "Free")
-        {
+    <div class="mb-3"> 
+        <label class="form-label">Price</label> 
+        @if (Model.BillingType != "Free") {
             <input asp-for="Price" class="form-control" />
-            <span asp-validation-for="Price" class="text-danger"></span>
-        }
+        } 
         else
         {
             <input asp-for="Price" class="form-control" readonly />
         }
+        <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
     <div class="mb-3">

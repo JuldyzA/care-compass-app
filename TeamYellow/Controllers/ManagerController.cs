@@ -405,7 +405,7 @@ namespace TeamYellow.Controllers
 
             bool isStarted = discount.StartDateTime <= nowUtc;
             bool isExpired = discount.EndDateTime < nowUtc;
-            bool HasPlans = discount.PlanDiscounts.Count != 0;
+            bool hasPlans = discount.PlanDiscounts.Count != 0;
 
             // Await the plans and then use Select
             var plans = (await _planRepository.GetAllAsync())
@@ -421,12 +421,12 @@ namespace TeamYellow.Controllers
                 EndDateTime = DateTime.SpecifyKind(discount.EndDateTime, DateTimeKind.Utc).ToLocalTime(),
                 IsStarted = isStarted,
                 IsExpired = isExpired,
-                HasPlans = HasPlans,
+                HasPlans = hasPlans,
                 AvailablePlans = plans.Select(p => new SelectListItem
                 {
                     Value = p.PlanId.ToString(),
                     Text = p.PlanName,
-                    Selected = discount.PlanDiscounts.Any(pd => pd.Plan.PlanId == p.PlanId)
+                    Selected = discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
                 }).ToList()
             };
 
@@ -542,9 +542,7 @@ namespace TeamYellow.Controllers
                 discount.EndDateTime = vmEndUtc;
             }
 
-            var isActive = discount.StartDateTime <= nowUtc && discount.EndDateTime >= nowUtc;
-
-            if (!isActive)
+            if (!isCurrentlyActive)
             {
                 discount.PlanDiscounts.Clear();
 
