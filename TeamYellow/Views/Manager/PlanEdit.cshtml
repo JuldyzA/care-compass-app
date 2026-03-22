@@ -60,6 +60,7 @@
                 {
                     <tr>
                         <td>
+                            <input asp-for="PlanFeatures[i].PlanFeatureId" type="hidden" />
                             <input asp-for="PlanFeatures[i].FeatureName" class="form-control" />
                             <span asp-validation-for="PlanFeatures[i].FeatureName" class="text-danger"></span>
                         </td>

@@ -60,16 +60,38 @@ namespace TeamYellow.Repositories
             plan.Price = updatedPlan.Price;
             plan.IsActive = updatedPlan.IsActive;
 
-            var existingFeatures = plan.PlanFeatures
-                    .OrderBy(f => f.SortOrder)
-                    .ToList();
+            var existingFeatures = plan.PlanFeatures.ToList();
+            var incomingFeatures = (updatedPlan.PlanFeatures ?? []).ToList();
 
-            var incomingFeatures = updatedPlan.PlanFeatures.ToList();
-
-            for (int i = 0; i < existingFeatures.Count && i < incomingFeatures.Count; i++)
+            if (existingFeatures.Count != incomingFeatures.Count)
             {
-                existingFeatures[i].FeatureName = incomingFeatures[i].FeatureName?.Trim() ?? string.Empty;
-                existingFeatures[i].FeatureDescription = incomingFeatures[i].FeatureDescription?.Trim() ?? string.Empty;
+                return false;
+            }
+
+            var existingIds = existingFeatures.Select(f => f.PlanFeatureId)
+                                              .OrderBy(id => id)
+                                              .ToList();
+
+            var incomingIds = incomingFeatures.Select(f => f.PlanFeatureId)
+                                              .OrderBy(id => id)
+                                              .ToList();
+
+            if (!existingIds.SequenceEqual(incomingIds))
+            {
+                return false;
+            }
+
+            var incomingById = incomingFeatures.ToDictionary(f => f.PlanFeatureId);
+
+            foreach (var existingFeature in existingFeatures)
+            {
+                if (!incomingById.TryGetValue(existingFeature.PlanFeatureId, out var incomingFeature))
+                {
+                    return false;
+                }
+
+                existingFeature.FeatureName = (incomingFeature.FeatureName ?? string.Empty).Trim();
+                existingFeature.FeatureDescription = (incomingFeature.FeatureDescription ?? string.Empty).Trim();
             }
 
             await _context.SaveChangesAsync();

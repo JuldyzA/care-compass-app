@@ -36,13 +36,14 @@ namespace TeamYellow.Services
             var plan = new Plan
             {
                 PlanId = vm.PlanId,
-                PlanName = vm.PlanName.Trim(),
-                PlanDescription = vm.PlanDescription.Trim(),
+                PlanName = (vm.PlanName ?? string.Empty).Trim(),
+                PlanDescription = (vm.PlanDescription ?? string.Empty).Trim(),
                 Price = vm.Price,
                 IsActive = vm.IsActive,
                 PlanFeatures = vm.PlanFeatures
                     .Select(f => new PlanFeature
                     {
+                        PlanFeatureId = f.PlanFeatureId,
                         FeatureName = f.FeatureName?.Trim() ?? string.Empty,
                         FeatureDescription = f.FeatureDescription?.Trim() ?? string.Empty
                     })

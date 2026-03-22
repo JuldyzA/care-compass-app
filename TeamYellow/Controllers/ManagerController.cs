@@ -169,6 +169,7 @@ namespace TeamYellow.Controllers
                     .OrderBy(f => f.SortOrder)
                     .Select(f => new PlanFeatureVM
                     {
+                        PlanFeatureId = f.PlanFeatureId,
                         FeatureName = f.FeatureName,
                         FeatureDescription = f.FeatureDescription
                     })
