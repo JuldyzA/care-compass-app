@@ -1,5 +1,4 @@
 using TeamYellow.Models;
-using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories
 {
@@ -11,6 +10,6 @@ namespace TeamYellow.Repositories
 
         Task<Plan?> GetByIdWithFeaturesAsync(int id);
 
-        Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm);
+        Task<bool> UpdatePlansWithFeaturesAsync(Plan updatedPlan);
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Data;
 using TeamYellow.Models;
-using TeamYellow.ViewModels;
 
 namespace TeamYellow.Repositories
 {
@@ -47,31 +46,30 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync(p => p.PlanId == id);
         }
 
-        public async Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm)
+        public async Task<bool> UpdatePlansWithFeaturesAsync(Plan updatedPlan)
         {
             var plan = await _context.Plans
                 .Include(p => p.PlanFeatures)
-                .FirstOrDefaultAsync(p => p.PlanId == vm.PlanId);
+                .FirstOrDefaultAsync(p => p.PlanId == updatedPlan.PlanId);
 
             if (plan == null)
                 return false;
 
-            plan.PlanName = vm.PlanName;
-            plan.PlanDescription = vm.PlanDescription;
-            plan.Price = vm.Price;
-            plan.IsActive = vm.IsActive;
+            plan.PlanName = updatedPlan.PlanName;
+            plan.PlanDescription = updatedPlan.PlanDescription;
+            plan.Price = updatedPlan.Price;
+            plan.IsActive = updatedPlan.IsActive;
 
-            if (vm.PlanFeatures != null)
-            {
-                var existingFeatures = plan.PlanFeatures
+            var existingFeatures = plan.PlanFeatures
                     .OrderBy(f => f.SortOrder)
                     .ToList();
 
-                for (int i = 0; i < existingFeatures.Count && i < vm.PlanFeatures.Count; i++)
-                {
-                    existingFeatures[i].FeatureName = vm.PlanFeatures[i].FeatureName?.Trim() ?? string.Empty;
-                    existingFeatures[i].FeatureDescription = vm.PlanFeatures[i].FeatureDescription?.Trim() ?? string.Empty;
-                }
+            var incomingFeatures = updatedPlan.PlanFeatures.ToList();
+
+            for (int i = 0; i < existingFeatures.Count && i < incomingFeatures.Count; i++)
+            {
+                existingFeatures[i].FeatureName = incomingFeatures[i].FeatureName?.Trim() ?? string.Empty;
+                existingFeatures[i].FeatureDescription = incomingFeatures[i].FeatureDescription?.Trim() ?? string.Empty;
             }
 
             await _context.SaveChangesAsync();

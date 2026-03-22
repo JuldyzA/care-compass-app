@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
+using TeamYellow.Services;
 using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
@@ -12,6 +13,7 @@ namespace TeamYellow.Controllers
     {
         private readonly CounsellorRepository _counsellorRepository;
         private readonly IPlanRepository _planRepository;
+        private readonly IPlanService _planService;
         private readonly DiscountRepository _discountRepository;
 
 
@@ -20,10 +22,11 @@ namespace TeamYellow.Controllers
         /// /// <param name="counsellorRepository">The repository for counsellor data.</param>
         /// <param name="planRepository">The repository for plan data.</param>
         /// <param name="discountRepository">The repository for discount data.</param>
-        public ManagerController(CounsellorRepository counsellorRepository, IPlanRepository planRepository, DiscountRepository discountRepository)
+        public ManagerController(CounsellorRepository counsellorRepository, IPlanRepository planRepository, IPlanService planService, DiscountRepository discountRepository)
         {
             _counsellorRepository = counsellorRepository;
             _planRepository = planRepository;
+            _planService = planService;
             _discountRepository = discountRepository;
         }
 
@@ -163,13 +166,13 @@ namespace TeamYellow.Controllers
                 BillingType = plan.BillingType,
                 IsActive = plan.IsActive,
                 PlanFeatures = plan.PlanFeatures
-                .OrderBy(f => f.SortOrder)
-                .Select(f => new PlanFeatureVM
-                {
-                    FeatureName = f.FeatureName,
-                    FeatureDescription = f.FeatureDescription
-                })
-                .ToList()
+                    .OrderBy(f => f.SortOrder)
+                    .Select(f => new PlanFeatureVM
+                    {
+                        FeatureName = f.FeatureName,
+                        FeatureDescription = f.FeatureDescription
+                    })
+                    .ToList()
             };
             return View(vm);
         }
@@ -228,7 +231,7 @@ namespace TeamYellow.Controllers
 
             vm.BillingType = currentBillingType;
 
-            var success = await _planRepository.UpdatePlansWithFeaturesAsync(vm);
+            var success = await _planService.UpdatePlansWithFeaturesAsync(vm);
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "An error occurred while updating the plan. Please try again.");
