@@ -47,7 +47,7 @@ namespace TeamYellow.ViewModels
             if (EndDateTime <= StartDateTime)
             {
                 yield return new ValidationResult(
-                    "End date must be after start date.",
+                    "End date/time must be after start date/time.",
                     new[] { nameof(EndDateTime) });
             }
 

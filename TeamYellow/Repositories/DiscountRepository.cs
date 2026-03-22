@@ -41,32 +41,39 @@ namespace TeamYellow.Repositories
             await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Associates a discount with a plan if not already associated.
-        /// </summary>
-        /// <param name="planId">The ID of the plan.</param>
-        /// <param name="discountId">The ID of the discount.</param>
-        public async Task AddDiscountToPlanAsync(int planId, int discountId)
+        public async Task AddDiscountToPlansAsync(IEnumerable<int> planIds, int discountId)
         {
-            var exists = await _context.PlanDiscounts
-                .AnyAsync(pd => pd.PlanId == planId && pd.DiscountId == discountId);
+            var distinctPlanIds = (planIds ?? Enumerable.Empty<int>())
+                .Distinct()
+                .ToList();
 
-            if (exists)
-                return;
-
-            var planExists = await _context.Plans.AnyAsync(p => p.PlanId == planId);
-            var discountExists = await _context.Discounts.AnyAsync(d => d.DiscountId == discountId);
-
-            if (!planExists || !discountExists)
-                return;
-
-            var planDiscount = new PlanDiscount
+            if (distinctPlanIds.Count == 0)
             {
-                PlanId = planId,
-                DiscountId = discountId
-            };
+                return;
+            }
 
-            await _context.PlanDiscounts.AddAsync(planDiscount);
+            var existingPlanIds = await _context.PlanDiscounts
+                .Where(pd => pd.DiscountId == discountId && distinctPlanIds.Contains(pd.PlanId))
+                .Select(pd => pd.PlanId)
+                .ToListAsync();
+
+            var existingPlanIdSet = existingPlanIds.ToHashSet();
+
+            var newPlanDiscounts = distinctPlanIds
+                .Where(planId => !existingPlanIdSet.Contains(planId))
+                .Select(planId => new PlanDiscount
+                {
+                    PlanId = planId,
+                    DiscountId = discountId
+                })
+                .ToList();
+
+            if (newPlanDiscounts.Count == 0)
+            {
+                return;
+            }
+
+            await _context.PlanDiscounts.AddRangeAsync(newPlanDiscounts);
             await _context.SaveChangesAsync();
         }
 
