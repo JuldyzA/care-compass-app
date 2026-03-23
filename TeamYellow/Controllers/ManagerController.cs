@@ -312,6 +312,15 @@ namespace TeamYellow.Controllers
                 .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
+            var nowUtc = DateTime.UtcNow;
+            var startUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
+            var endUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
+
+            if (startUtc < nowUtc)
+            {
+                ModelState.AddModelError(nameof(vm.StartDateTime), "Start date cannot be in the past.");
+            }
+
             if (selectedPlanIds.Count == 0)
             {
                 ModelState.AddModelError(nameof(vm.PlanIds), "Please select at least one plan.");
@@ -345,8 +354,6 @@ namespace TeamYellow.Controllers
             }
 
             var discountValue = vm.Value.GetValueOrDefault();
-            var startUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
-            var endUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
 
             var discount = new Discount
             {

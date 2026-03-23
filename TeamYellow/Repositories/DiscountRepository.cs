@@ -13,15 +13,6 @@ namespace TeamYellow.Repositories
             _context = context;
         }
 
-        public async Task<List<Discount>> GetDiscountsForLinkingAsync()
-        {
-            var nowUtc = DateTime.UtcNow;
-            return await _context.Discounts
-                    .Where(d => d.StartDateTime <= nowUtc && d.EndDateTime >= nowUtc)
-                    .OrderBy(d => d.DiscountCode)
-                    .ToListAsync();
-        }
-
         public async Task<bool> DiscountCodeExistsAsync(string discountCode, int? excludeDiscountId = null)
         {
             var normalizedCode = discountCode.Trim().ToUpperInvariant();
