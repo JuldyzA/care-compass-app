@@ -9,9 +9,14 @@ namespace TeamYellow.Repositories
     /// <summary>
     /// Repository providing data access operations for <see cref="Subscription"/> entities.
     /// </summary>
-    public class SubscriptionRepository(ApplicationDbContext context) : ISubscriptionRepository
+    public class SubscriptionRepository : ISubscriptionRepository
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly ApplicationDbContext _context;
+
+        public SubscriptionRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         /// <summary>
         /// Creates and persists a new subscription based on the provided DTO.

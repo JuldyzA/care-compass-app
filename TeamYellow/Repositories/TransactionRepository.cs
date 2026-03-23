@@ -8,9 +8,14 @@ namespace TeamYellow.Repositories;
 /// <summary>
 /// Repository providing data access operations for <see cref="PaymentTransaction"/> entities.
 /// </summary>
-public class TransactionRepository(ApplicationDbContext context) : ITransactionRepository
+public class TransactionRepository : ITransactionRepository
 {
-    private readonly ApplicationDbContext _context = context;
+    private readonly ApplicationDbContext _context;
+
+    public TransactionRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
     /// <summary>
     /// Creates and persists a new payment transaction record from the provided DTO.
