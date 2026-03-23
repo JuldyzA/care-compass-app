@@ -271,8 +271,10 @@ public class SubscriptionService(
 
         var parts = customId.Split('|', StringSplitOptions.TrimEntries);
 
-        if (parts.Length < 3 || !int.TryParse(parts[0], out var planId))
+        if (parts.Length < 2 || !int.TryParse(parts[0], out var planId))
+        {
             throw new Exception("PayPal response contained an invalid plan identifier.");
+        }
 
         int? discountId = null;
         if (int.TryParse(parts[1], out var parsedDiscountId) && parsedDiscountId > 0)
@@ -280,9 +282,18 @@ public class SubscriptionService(
             discountId = parsedDiscountId;
         }
 
-        if (!decimal.TryParse(parts[2], NumberStyles.Number, CultureInfo.InvariantCulture, out var expectedAmount))
+        decimal expectedAmount;
+
+        if (parts.Length >= 3)
         {
-            throw new Exception("PayPal response contained an invalid expected amount.");
+            if (!decimal.TryParse(parts[2], NumberStyles.Number, CultureInfo.InvariantCulture, out expectedAmount))
+            {
+                throw new Exception("PayPal response contained an invalid expected amount.");
+            }
+        }
+        else
+        {
+            expectedAmount = decimal.Round(capturedAmount, 2, MidpointRounding.AwayFromZero);
         }
 
         var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
@@ -302,6 +313,18 @@ public class SubscriptionService(
         {
             throw new InvalidOperationException(
                 $"Captured amount {capturedAmount:F2} does not match expected amount {expectedAmount:F2}.");
+        }
+
+        int? persistedDiscountId = discountId;
+
+        if (discountId.HasValue)
+        {
+            var discountStillExists = await _context.Discounts.FindAsync(discountId.Value) is not null;
+
+            if (!discountStillExists)
+            {
+                persistedDiscountId = null;
+            }
         }
 
         await using var tx = await _context.Database.BeginTransactionAsync();
@@ -329,7 +352,7 @@ public class SubscriptionService(
                 Currency = "CAD",
                 Provider = "PayPal",
                 ProviderOrderId = captureId,
-                DiscountId = discountId
+                DiscountId = persistedDiscountId
             });
 
             await tx.CommitAsync();
