@@ -50,14 +50,14 @@ namespace TeamYellow.ViewModels
             if (isStartDateDefault)
             {
                 yield return new ValidationResult(
-                    "Start Date is required.",
+                    "Start date is required.",
                     new[] { nameof(StartDateTime) });
             }
 
             if (isEndDateDefault)
             {
                 yield return new ValidationResult(
-                    "End Date is required.",
+                    "End date is required.",
                     new[] { nameof(EndDateTime) });
             }
 

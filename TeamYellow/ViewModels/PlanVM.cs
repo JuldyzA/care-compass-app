@@ -8,12 +8,12 @@ namespace TeamYellow.ViewModels
     {
         public int PlanId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Plan name is required.")]
         [MaxLength(80)]
         [DisplayName("Plan Name")]
         public string PlanName { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Plan description is required.")]
         [MaxLength(500)]
         [DisplayName("Plan description")]
         public string PlanDescription { get; set; } = string.Empty;

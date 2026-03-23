@@ -312,15 +312,6 @@ namespace TeamYellow.Controllers
                 .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            var nowUtc = DateTime.UtcNow;
-            var startUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
-            var endUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
-
-            if (startUtc < nowUtc)
-            {
-                ModelState.AddModelError(nameof(vm.StartDateTime), "Start date cannot be in the past.");
-            }
-
             if (selectedPlanIds.Count == 0)
             {
                 ModelState.AddModelError(nameof(vm.PlanIds), "Please select at least one plan.");
@@ -353,13 +344,32 @@ namespace TeamYellow.Controllers
                 return View(vm);
             }
 
-            var discountValue = vm.Value.GetValueOrDefault();
+            var nowUtc = DateTime.UtcNow;
+            var startUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
+            var endUtc = DateTime.SpecifyKind(vm.EndDateTime, DateTimeKind.Local).ToUniversalTime();
+
+            if (startUtc < nowUtc)
+            {
+                ModelState.AddModelError(nameof(vm.StartDateTime), "Start date cannot be in the past.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = p.PlanName,
+                    Selected = selectedPlanIds.Contains(p.PlanId)
+                }).ToList();
+
+                return View(vm);
+            }
 
             var discount = new Discount
             {
                 DiscountCode = vm.DiscountCode,
                 DiscountType = vm.DiscountType,
-                Value = discountValue,
+                Value = vm.Value.GetValueOrDefault(),
                 StartDateTime = startUtc,
                 EndDateTime = endUtc,
                 CreatedAt = DateTime.UtcNow
@@ -477,6 +487,10 @@ namespace TeamYellow.Controllers
                 .Distinct()
                 .ToList();
 
+            var plans = (await _planRepository.GetAllAsync())
+                .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
             if (!isCurrentlyActive)
             {
                 if (selectedPlanIds.Count == 0)
@@ -485,8 +499,7 @@ namespace TeamYellow.Controllers
                 }
                 else
                 {
-                    var allowedPlanIds = (await _planRepository.GetAllAsync())
-                        .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+                    var allowedPlanIds = plans
                         .Select(p => p.PlanId)
                         .ToHashSet();
 
@@ -499,6 +512,23 @@ namespace TeamYellow.Controllers
                         ModelState.AddModelError(nameof(vm.PlanIds), "One or more selected plans are invalid.");
                     }
                 }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.IsStarted = discount.StartDateTime <= nowUtc;
+                vm.IsExpired = discount.EndDateTime < nowUtc;
+                vm.HasPlans = discount.PlanDiscounts.Any();
+                vm.AvailablePlans = plans.Select(p => new SelectListItem
+                {
+                    Value = p.PlanId.ToString(),
+                    Text = p.PlanName,
+                    Selected = !isCurrentlyActive
+                        ? selectedPlanIds.Contains(p.PlanId)
+                        : discount.PlanDiscounts.Any(pd => pd.PlanId == p.PlanId)
+                }).ToList();
+
+                return View(vm);
             }
 
             var vmStartUtc = DateTime.SpecifyKind(vm.StartDateTime, DateTimeKind.Local).ToUniversalTime();
@@ -515,10 +545,6 @@ namespace TeamYellow.Controllers
 
             if (!ModelState.IsValid)
             {
-                var plans = (await _planRepository.GetAllAsync())
-                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
                 vm.IsStarted = discount.StartDateTime <= nowUtc;
                 vm.IsExpired = discount.EndDateTime < nowUtc;
                 vm.HasPlans = discount.PlanDiscounts.Any();
@@ -572,10 +598,6 @@ namespace TeamYellow.Controllers
             catch
             {
                 ModelState.AddModelError(string.Empty, "Unable to update discount. Please try again.");
-
-                var plans = (await _planRepository.GetAllAsync())
-                    .Where(p => !string.Equals(p.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
 
                 vm.IsStarted = discount.StartDateTime <= nowUtc;
                 vm.IsExpired = discount.EndDateTime < nowUtc;
