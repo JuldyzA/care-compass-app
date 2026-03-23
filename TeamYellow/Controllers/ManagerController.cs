@@ -356,8 +356,7 @@ namespace TeamYellow.Controllers
 
             try
             {
-                await _discountRepository.AddAsync(discount);
-                await _discountRepository.AddDiscountToPlansAsync(selectedPlanIds, discount.DiscountId);
+                await _discountRepository.CreateDiscountWithPlansAsync(discount, selectedPlanIds);
 
                 TempData["Success"] = "Discount created and applied to selected plans.";
                 return RedirectToAction(nameof(Discounts));

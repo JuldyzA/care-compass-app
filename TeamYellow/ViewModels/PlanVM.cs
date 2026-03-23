@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TeamYellow.Models;
 
@@ -9,13 +10,16 @@ namespace TeamYellow.ViewModels
 
         [Required]
         [MaxLength(80)]
+        [DisplayName("Plan Name")]
         public string PlanName { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(500)]
+        [DisplayName("Plan description")]
         public string PlanDescription { get; set; } = string.Empty;
 
         [Range(0, 10000)]
+        [DisplayName("Price")]
         public decimal Price { get; set; }
 
         [Required]

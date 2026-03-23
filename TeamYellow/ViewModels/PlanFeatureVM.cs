@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace TeamYellow.ViewModels
@@ -7,10 +8,12 @@ namespace TeamYellow.ViewModels
         public int PlanFeatureId { get; set; }
 
         [Required]
+        [DisplayName("Feature name")]
         [StringLength(120, ErrorMessage = "Feature name cannot exceed 120 characters.")]
         public string FeatureName { get; set; } = string.Empty;
 
         [Required]
+        [DisplayName("Feature description")]
         [StringLength(300, ErrorMessage = "Feature description cannot exceed 300 characters.")]
         public string FeatureDescription { get; set; } = string.Empty;
     }
