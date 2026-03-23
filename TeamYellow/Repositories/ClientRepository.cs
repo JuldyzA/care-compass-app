@@ -161,9 +161,14 @@ public class ClientRepository
             _logger.LogInformation("Client created successfully with ID {ClientId} for Counsellor ID {CounsellorId}.", client.ClientId, client.CounsellorId);
             return true;
         }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error while creating a client for Counsellor ID {CounsellorId}.", client.CounsellorId);
+            return false;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while creating a client for Counsellor ID {CounsellorId}.", client.CounsellorId);
+            _logger.LogError(ex, "Unexpected error while creating a client for Counsellor ID {CounsellorId}.", client.CounsellorId);
             return false;
         }
     }
@@ -182,9 +187,14 @@ public class ClientRepository
             _logger.LogInformation("Client ID {ClientId} updated successfully.", client.ClientId);
             return true;
         }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error while updating client ID {ClientId}.", client.ClientId);
+            return false;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while updating client ID {ClientId}.", client.ClientId);
+            _logger.LogError(ex, "Unexpected error while updating client ID {ClientId}.", client.ClientId);
             return false;
         }
     }
@@ -215,9 +225,14 @@ public class ClientRepository
             _logger.LogInformation("Client ID {ClientId} deleted successfully for Counsellor with User ID {UserId}.", clientId, userId);
             return true;
         }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error while deleting client ID {ClientId} for user {UserId}.", clientId, userId);
+            return false;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while deleting client ID {ClientId} for user {UserId}.", clientId, userId);
+            _logger.LogError(ex, "Unexpected error while deleting client ID {ClientId} for user {UserId}.", clientId, userId);
             return false;
         }
     }

@@ -12,10 +12,12 @@ namespace TeamYellow.Repositories
     public class SubscriptionRepository : ISubscriptionRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<SubscriptionRepository> _logger;
 
-        public SubscriptionRepository(ApplicationDbContext context)
+        public SubscriptionRepository(ApplicationDbContext context, ILogger<SubscriptionRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -42,9 +44,32 @@ namespace TeamYellow.Repositories
                 UpdatedAt = cycleStart
             };
 
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-            return subscription;
+            try
+            {
+                _context.Subscriptions.Add(subscription);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Subscription {SubscriptionId} created successfully for counsellor {CounsellorId} and plan {PlanId}.", 
+                    subscription.SubscriptionId, subscription.CounsellorId, subscription.PlanId);
+                return subscription;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while creating subscription for counsellor {CounsellorId} and plan {PlanId}.",
+                    subscription.CounsellorId,
+                    subscription.PlanId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while creating subscription for counsellor {CounsellorId} and plan {PlanId}.",
+                    subscription.CounsellorId,
+                    subscription.PlanId);
+                throw;
+            }
         }
 
         /// <summary>
@@ -88,9 +113,29 @@ namespace TeamYellow.Repositories
         /// <param name="subscription">The subscription entity with updated values to persist.</param>
         public async Task UpdateSubscription(Subscription subscription)
         {
-            subscription.UpdatedAt = DateTime.UtcNow;
-            _context.Subscriptions.Update(subscription);
-            await _context.SaveChangesAsync();
+            try
+            {
+                subscription.UpdatedAt = DateTime.UtcNow;
+                _context.Subscriptions.Update(subscription);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Subscription {SubscriptionId} updated successfully with status {Status}.", subscription.SubscriptionId, subscription.Status);
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while updating subscription {SubscriptionId}.",
+                    subscription.SubscriptionId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while updating subscription {SubscriptionId}.",
+                    subscription.SubscriptionId);
+                throw;
+            }
         }
     }
 }

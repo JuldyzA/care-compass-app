@@ -46,14 +46,18 @@ public class CounsellorRepository
             _context.Counsellors.Add(counsellor);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Successfully added counsellor '{CounsellorId}'", counsellor.CounsellorId);
+            return counsellor;
         }
-        catch (Exception e)
+        catch (DbUpdateException ex)
         {
-            _logger.LogError(e, "Error adding counsellor '{PractitionerLicenceId}'", counsellor.PractitionerLicenceId);
+            _logger.LogError(ex, "Database error while adding counsellor {PractitionerLicenceId}.", counsellor.PractitionerLicenceId);
+            throw;
         }
-
-        return counsellor;
-
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while adding counsellor {PractitionerLicenceId}.", counsellor.PractitionerLicenceId);
+            throw;
+        }
     }
 
     /// <summary>

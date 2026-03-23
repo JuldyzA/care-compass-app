@@ -87,9 +87,14 @@ namespace TeamYellow.Repositories
                 _logger.LogInformation("Role '{RoleName}' created successfully.", roleName);
                 return true;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while creating role '{RoleName}'.", roleName);
+                return false;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating role '{RoleName}'", roleName);
+                _logger.LogError(ex, "Unexpected error while creating role '{RoleName}'.", roleName);
                 return false;
             }
         }
@@ -122,9 +127,14 @@ namespace TeamYellow.Repositories
                 _logger.LogInformation("Role '{RoleName}' deleted successfully.", roleName);
                 return true;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while deleting role '{RoleName}'.", roleName);
+                return false;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting role '{RoleName}'", roleName);
+                _logger.LogError(ex, "Unexpected error while deleting role '{RoleName}'.", roleName);
                 return false;
             }
         }

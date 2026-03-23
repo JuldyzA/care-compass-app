@@ -136,9 +136,14 @@ namespace TeamYellow.Repositories
                 _logger.LogInformation("UserLog added successfully for userId={UserId}", userId);
                 return true;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while adding UserLog for userId={UserId}", userId);
+                return false;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unable to add UserLog for userId={UserId}", userId);
+                _logger.LogError(ex, "Unexpected error while adding UserLog for userId={UserId}", userId);
                 return false;
             }
         }
@@ -171,9 +176,14 @@ namespace TeamYellow.Repositories
                 _logger.LogInformation("UserLog {LogId} closed successfully for userId={UserId}.", logId, userLog.UserId);
                 return true;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while closing UserLog {LogId}", logId);
+                return false;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error closing UserLog {LogId}", logId);
+                _logger.LogError(ex, "Unexpected error while closing UserLog {LogId}", logId);
                 return false;
             }
         }
@@ -215,9 +225,14 @@ namespace TeamYellow.Repositories
                 _logger.LogInformation("Closed {Count} dangling log(s) for userId={UserId}", danglingLogs.Count, userId);
                 return true;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while closing dangling logs for userId={UserId}", userId);
+                return false;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error closing dangling logs for userId={UserId}", userId);
+                _logger.LogError(ex, "Unexpected error while closing dangling logs for userId={UserId}", userId);
                 return false;
             }
         }

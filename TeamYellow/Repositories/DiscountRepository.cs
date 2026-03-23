@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using TeamYellow.Data;
 using TeamYellow.Models;
 
@@ -7,10 +8,12 @@ namespace TeamYellow.Repositories
     public class DiscountRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<DiscountRepository> _logger;
 
-        public DiscountRepository(ApplicationDbContext context)
+        public DiscountRepository(ApplicationDbContext context, ILogger<DiscountRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<bool> DiscountCodeExistsAsync(string discountCode, int? excludeDiscountId = null)
@@ -70,16 +73,17 @@ namespace TeamYellow.Repositories
             {
                 _context.Discounts.Update(entity);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Discount {DiscountId} updated successfully.", entity.DiscountId);
                 return entity.DiscountId.ToString();
             }
             catch (DbUpdateException ex)
             {
-                // Log exception or handle as needed
+                _logger.LogError(ex, "Database error while updating discount {DiscountId}.", entity.DiscountId);
                 throw new ApplicationException("An error occurred while updating the Discount in the database.", ex);
             }
             catch (Exception ex)
             {
-                // Log exception or handle as needed
+                _logger.LogError(ex, "Unexpected error while updating discount {DiscountId}.", entity.DiscountId);
                 throw new ApplicationException("An unexpected error occurred while updating the discount record.", ex);
             }
         }
@@ -93,14 +97,29 @@ namespace TeamYellow.Repositories
             if (discount == null)
                 return false;
 
-            // do not delete if it has dependencies
             if (discount.PlanDiscounts.Any())
+            {
+                _logger.LogWarning("Delete skipped for discount {DiscountId} because it is linked to one or more plans.", discountId);
                 return false;
+            }
 
-            _context.Discounts.Remove(discount);
-            await _context.SaveChangesAsync();
-
-            return true;
+            try
+            {
+                _context.Discounts.Remove(discount);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Discount {DiscountId} deleted successfully.", discountId);
+                return true;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while deleting unused discount {DiscountId}.", discountId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while deleting unused discount {DiscountId}.", discountId);
+                throw;
+            }
         }
 
         public async Task<Discount?> GetValidDiscountForPlanAsync(int planId, string discountCode)
@@ -139,10 +158,12 @@ namespace TeamYellow.Repositories
 
         public async Task CreateDiscountWithPlansAsync(Discount discount, IEnumerable<int> planIds)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            IDbContextTransaction? transaction = null;
 
             try
             {
+                transaction = await _context.Database.BeginTransactionAsync();
+
                 await _context.Discounts.AddAsync(discount);
                 await _context.SaveChangesAsync();
 
@@ -165,11 +186,51 @@ namespace TeamYellow.Repositories
                 }
 
                 await transaction.CommitAsync();
+                _logger.LogInformation("Discount {DiscountCode} created successfully with {PlanCount} linked plan(s).", discount.DiscountCode, distinctPlanIds.Count);
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Database error while creating discount {DiscountCode} with plans.", discount.DiscountCode);
+
+                if (transaction != null)
+                {
+                    try
+                    {
+                        await transaction.RollbackAsync();
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        _logger.LogError(rollbackEx, "Rollback failed while creating discount {DiscountCode}.", discount.DiscountCode);
+                    }
+                }
+
+
                 throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while creating discount {DiscountCode} with plans.", discount.DiscountCode);
+
+                if (transaction != null)
+                {
+                    try
+                    {
+                        await transaction.RollbackAsync();
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        _logger.LogError(rollbackEx, "Rollback failed while creating discount {DiscountCode}.", discount.DiscountCode);
+                    }
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    await transaction.DisposeAsync();
+                }
             }
         }
     }

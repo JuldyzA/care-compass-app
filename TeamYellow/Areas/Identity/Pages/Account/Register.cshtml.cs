@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -130,18 +131,16 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            // Read the reCAPTCHA response posted from the form
             string captchaResponse = Request.Form["g-Recaptcha-Response"];
             string secret = _configuration["Recaptcha:SecretKey"];
 
             ReCaptchaValidationResult resultCaptcha =
                 ReCaptchaValidator.IsValid(secret, captchaResponse);
-
-            // Invalidate the form if the captcha is invalid.
+            
             if (!resultCaptcha.Success)
             {
-                ModelState.AddModelError(string.Empty,
-                    "The ReCaptcha is invalid.");
+                _logger.LogWarning("Registration blocked due to invalid reCAPTCHA for email {Email}.", Input.Email);
+                ModelState.AddModelError(string.Empty, "The ReCaptcha is invalid.");
             }
 
             if (ModelState.IsValid)
@@ -151,13 +150,18 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-                await using var transaction = await _context.Database.BeginTransactionAsync();
+                IDbContextTransaction? transaction = null;
 
                 try
                 {
+                    transaction = await _context.Database.BeginTransactionAsync();
+
                     var result = await _userManager.CreateAsync(user, Input.Password);
                     if (!result.Succeeded)
                     {
+                        var createErrors = string.Join("; ", result.Errors.Select(e => $"[{e.Code}] {e.Description}"));
+                        _logger.LogWarning("Registration failed for email {Email} due to identity validation errors. Errors: {Errors}", Input.Email, createErrors);
+
                         foreach (var error in result.Errors)
                         {
                             ModelState.AddModelError(string.Empty, error.Description);
@@ -212,14 +216,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     _context.UserProfiles.Add(userProfile);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    _logger.LogInformation("Registration completed successfully for user {UserId}.", user.Id);
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
+                    if (transaction != null)
+                    {
+                        await transaction.RollbackAsync();
+                    }
                     _logger.LogError(ex, "Error occurred during registration for email {Email}.", Input.Email);
                     ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
                     return Page();
                 }
+                finally
+                {
+                    if (transaction != null)
+                    {
+                        await transaction.DisposeAsync();
+                    }
+                }
+
                 try
                 {
                     var userId = await _userManager.GetUserIdAsync(user);
@@ -253,6 +269,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        _logger.LogWarning("Registration rolled back logically after email failure for user {UserId}.", user.Id);
                         ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try registering again later.");
                     }
                     return Page();

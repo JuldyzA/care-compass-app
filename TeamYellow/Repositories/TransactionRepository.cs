@@ -11,10 +11,12 @@ namespace TeamYellow.Repositories;
 public class TransactionRepository : ITransactionRepository
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<TransactionRepository> _logger;
 
-    public TransactionRepository(ApplicationDbContext context)
+    public TransactionRepository(ApplicationDbContext context, ILogger<TransactionRepository> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -39,9 +41,32 @@ public class TransactionRepository : ITransactionRepository
             PaidAt = DateTime.UtcNow
         };
 
-        _context.PaymentTransactions.Add(transaction);
-        await _context.SaveChangesAsync();
-        return transaction;
+        try
+        {
+            _context.PaymentTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Payment transaction {PaymentTransactionId} created successfully for subscription {SubscriptionId}.", 
+                transaction.PaymentTransactionId, transaction.SubscriptionId);
+            return transaction;
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(
+                ex,
+                "Database error while creating payment transaction for subscription {SubscriptionId} and provider order {ProviderOrderId}.",
+                transaction.SubscriptionId,
+                transaction.ProviderOrderId);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Unexpected error while creating payment transaction for subscription {SubscriptionId} and provider order {ProviderOrderId}.",
+                transaction.SubscriptionId,
+                transaction.ProviderOrderId);
+            throw;
+        }
     }
 
     /// <summary>
