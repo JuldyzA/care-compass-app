@@ -368,7 +368,7 @@ namespace TeamYellow.Controllers
             var discount = new Discount
             {
                 DiscountCode = vm.DiscountCode,
-                DiscountType = vm.DiscountType,
+                DiscountType = vm.DiscountType!.Value,
                 Value = vm.Value.GetValueOrDefault(),
                 StartDateTime = startUtc,
                 EndDateTime = endUtc,

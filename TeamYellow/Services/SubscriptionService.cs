@@ -2,6 +2,7 @@ using TeamYellow.Data;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
 using TeamYellow.Repositories;
+using System.Globalization;
 
 namespace TeamYellow.Services;
 
@@ -236,7 +237,7 @@ public class SubscriptionService(
             };
         }
 
-        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}";
+        var customId = $"{planId}|{discountId.GetValueOrDefault(0)}|{finalAmount.ToString("0.00", CultureInfo.InvariantCulture)}";
         var approvalUrl = await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
 
         return new SubscriptionCheckoutResult
@@ -270,20 +271,22 @@ public class SubscriptionService(
 
         var parts = customId.Split('|', StringSplitOptions.TrimEntries);
 
-        if (parts.Length == 0 || !int.TryParse(parts[0], out var planId))
+        if (parts.Length < 3 || !int.TryParse(parts[0], out var planId))
             throw new Exception("PayPal response contained an invalid plan identifier.");
 
         int? discountId = null;
-        if (parts.Length > 1 && int.TryParse(parts[1], out var parsedDiscountId) && parsedDiscountId > 0)
+        if (int.TryParse(parts[1], out var parsedDiscountId) && parsedDiscountId > 0)
         {
             discountId = parsedDiscountId;
         }
 
+        if (!decimal.TryParse(parts[2], NumberStyles.Number, CultureInfo.InvariantCulture, out var expectedAmount))
+        {
+            throw new Exception("PayPal response contained an invalid expected amount.");
+        }
+
         var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
             ?? throw new KeyNotFoundException($"Plan {planId} not found.");
-
-        if (!plan.IsActive)
-            throw new KeyNotFoundException($"Plan {planId} not found.");
 
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
@@ -292,27 +295,6 @@ public class SubscriptionService(
 
         if (await _transactionRepository.ExistsByProviderOrderId(captureId))
             return SubscriptionResult.AlreadySubscribed;
-
-        decimal expectedAmount = plan.Price;
-
-        if (discountId.HasValue)
-        {
-            var discount = await _discountRepository.GetDiscountForPlanByIdAsync(planId, discountId.Value);
-
-            if (discount == null)
-                throw new InvalidOperationException(
-                    $"Discount {discountId.Value} is not linked to plan {planId}.");
-
-            var discountAmount = DiscountCalculator.CalculateDiscountAmount(plan.Price, discount);
-            expectedAmount = decimal.Round(
-                Math.Max(0m, plan.Price - discountAmount),
-                2,
-                MidpointRounding.AwayFromZero);
-        }
-        else
-        {
-            expectedAmount = decimal.Round(expectedAmount, 2, MidpointRounding.AwayFromZero);
-        }
 
         const decimal amountTolerance = 0.01m;
 

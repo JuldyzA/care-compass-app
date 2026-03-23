@@ -17,7 +17,7 @@ namespace TeamYellow.ViewModels
 
         [DisplayName("Discount Type")]
         [Required(ErrorMessage = "Discount type is required.")]
-        public DiscountType DiscountType { get; set; }
+        public DiscountType? DiscountType { get; set; }
 
         [DisplayName("Discount Value")]
         [Required(ErrorMessage = "Discount value is required.")]
@@ -71,7 +71,7 @@ namespace TeamYellow.ViewModels
             if (!Value.HasValue)
                 yield break;
 
-            if (DiscountType == DiscountType.Percent)
+            if (DiscountType == Models.DiscountType.Percent)
             {
                 if (Value.Value < 1 || Value.Value > 100)
                 {
@@ -88,7 +88,7 @@ namespace TeamYellow.ViewModels
                 }
             }
 
-            if (DiscountType == DiscountType.Amount)
+            if (DiscountType == Models.DiscountType.Amount)
             {
                 if (Value.Value <= 0 || Value.Value > 999.99m)
                 {

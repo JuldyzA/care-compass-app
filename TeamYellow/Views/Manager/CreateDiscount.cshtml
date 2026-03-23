@@ -25,6 +25,7 @@
         <select asp-for="DiscountType"
                 asp-items="Html.GetEnumSelectList<DiscountType>()"
                 class="form-select">
+                <option value="">--  Select discount type --</option>
         </select>
         <span asp-validation-for="DiscountType" class="text-danger"></span>
     </div>
