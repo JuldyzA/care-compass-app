@@ -161,15 +161,7 @@ namespace TeamYellow.Repositories
 
                 if (distinctPlanIds.Count > 0)
                 {
-                    var existingPlanIds = await _context.PlanDiscounts
-                        .Where(pd => pd.DiscountId == discount.DiscountId && distinctPlanIds.Contains(pd.PlanId))
-                        .Select(pd => pd.PlanId)
-                        .ToListAsync();
-
-                    var existingPlanIdSet = existingPlanIds.ToHashSet();
-
                     var newPlanDiscounts = distinctPlanIds
-                        .Where(planId => !existingPlanIdSet.Contains(planId))
                         .Select(planId => new PlanDiscount
                         {
                             PlanId = planId,
@@ -177,11 +169,8 @@ namespace TeamYellow.Repositories
                         })
                         .ToList();
 
-                    if (newPlanDiscounts.Count > 0)
-                    {
-                        await _context.PlanDiscounts.AddRangeAsync(newPlanDiscounts);
-                        await _context.SaveChangesAsync();
-                    }
+                    await _context.PlanDiscounts.AddRangeAsync(newPlanDiscounts);
+                    await _context.SaveChangesAsync();
                 }
 
                 await transaction.CommitAsync();

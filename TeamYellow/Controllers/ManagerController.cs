@@ -39,32 +39,33 @@ namespace TeamYellow.Controllers
         {
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
 
-            var dashboardData = counsellors
-                .SelectMany(c => GetManagerDashboardData(c))
-                .OrderByDescending(x => x.PaidAt)
-                .ToList();
+            IEnumerable<ManagerDashboardVM> dashboardQuery = counsellors
+                .SelectMany(GetManagerDashboardData);
 
             // Filter by email
-            if (!string.IsNullOrEmpty(searchEmail))
+            if (!string.IsNullOrWhiteSpace(searchEmail))
             {
-                dashboardData = dashboardData
-                    .Where(d => d.Email != null && d.Email.Contains(searchEmail, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                dashboardQuery = dashboardQuery
+                    .Where(d => d.Email != null && d.Email.Contains(searchEmail, StringComparison.OrdinalIgnoreCase));
             }
+
             // Filter by start date
             if (startDate.HasValue)
             {
-                dashboardData = dashboardData
-                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value >= startDate.Value)
-                    .ToList();
+                dashboardQuery = dashboardQuery
+                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value >= startDate.Value);
             }
             // Filter by end date
             if (endDate.HasValue)
             {
-                dashboardData = dashboardData
-                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value <= endDate.Value)
-                    .ToList();
+                var endExclusive = endDate.Value.Date.AddDays(1);
+                dashboardQuery = dashboardQuery
+                    .Where(x => x.PaidAt.HasValue && x.PaidAt.Value < endExclusive);
             }
+
+            var dashboardData = dashboardQuery
+                .OrderByDescending(x => x.PaidAt)
+                .ToList();
 
             var stats = new DashboardStatsVM
             {
@@ -87,26 +88,29 @@ namespace TeamYellow.Controllers
         /// </summary>
         /// <param name="counsellor">The counsellor whose data is being aggregated.</param>
         /// <returns>A view model containing dashboard data for the counsellor.</returns>
-        private List<ManagerDashboardVM> GetManagerDashboardData(Counsellor counsellor)
+        private IEnumerable<ManagerDashboardVM> GetManagerDashboardData(Counsellor counsellor)
         {
-            return counsellor.Subscriptions?
+            return (counsellor.Subscriptions ?? Enumerable.Empty<Subscription>())
                 .Where(s => s.PaymentTransaction != null)
-                .Select(s => new ManagerDashboardVM
+                .Select(s =>
                 {
-                    CounsellorId = counsellor.CounsellorId,
-                    PractitionerLicenceId = counsellor.PractitionerLicenceId,
-                    CounsellorName = counsellor.DisplayName,
-                    Email = counsellor.User?.Email ?? "No email",
-                    Amount = s.PaymentTransaction?.Amount ?? 0,
-                    PaymentTransactionId = s.PaymentTransaction?.PaymentTransactionId ?? 0,
-                    Currency = s.PaymentTransaction?.Currency ?? "CAD",
-                    SOP = s.PaymentTransaction?.Status == PaymentTransactionStatus.Failed ? "Failed" : "Paid",
-                    PaidAt = s.PaymentTransaction?.PaidAt,
-                    RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
-                    BillingType = s.Plan?.BillingType ?? "N/A"
-                })
-                .OrderByDescending(x => x.PaidAt)
-                .ToList() ?? [];
+                    var paymentTransaction = s.PaymentTransaction!;
+
+                    return new ManagerDashboardVM
+                    {
+                        CounsellorId = counsellor.CounsellorId,
+                        PractitionerLicenceId = counsellor.PractitionerLicenceId,
+                        CounsellorName = counsellor.DisplayName,
+                        Email = counsellor.User?.Email ?? "No email",
+                        Amount = paymentTransaction.Amount,
+                        PaymentTransactionId = paymentTransaction.PaymentTransactionId,
+                        Currency = paymentTransaction.Currency,
+                        SOP = paymentTransaction.Status == PaymentTransactionStatus.Failed ? "Failed" : "Paid",
+                        PaidAt = paymentTransaction.PaidAt,
+                        RegistrationDate = counsellor.CreatedAt.ToString("yyyy-MM-dd"),
+                        BillingType = s.Plan?.BillingType ?? "N/A"
+                    };
+                });
         }
 
         /// <summary>
@@ -118,7 +122,7 @@ namespace TeamYellow.Controllers
         {
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
             var detailsData = counsellors
-                .SelectMany(c => GetManagerDashboardData(c))
+                .SelectMany(GetManagerDashboardData)
                 .FirstOrDefault(d => d.PaymentTransactionId == id);
 
             if (detailsData == null)
