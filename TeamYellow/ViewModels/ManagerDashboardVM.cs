@@ -1,5 +1,4 @@
-﻿using TeamYellow.Models;
-namespace TeamYellow.ViewModels
+﻿namespace TeamYellow.ViewModels
 {
     public class ManagerDashboardVM
     {
@@ -13,6 +12,6 @@ namespace TeamYellow.ViewModels
         public string Currency { get; set; } = "CAD";
         public DateTime? PaidAt { get; set; }
         public int PaymentTransactionId { get; set; }
-      
+        public string BillingType { get; set; } = string.Empty;
     }
 }

@@ -13,10 +13,10 @@ public class UserProfile
     public int UserProfileId { get; set; }
 
     [Column("firstName")]
-    public string FirstName { get; set; } = String.Empty;
+    public string FirstName { get; set; } = string.Empty;
 
     [Column("lastName")]
-    public string LastName { get; set; } = String.Empty;
+    public string LastName { get; set; } = string.Empty;
 
     [Column("phone")]
     [MaxLength(20)]

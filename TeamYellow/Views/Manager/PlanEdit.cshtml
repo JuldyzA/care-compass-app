@@ -1,40 +1,79 @@
-﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
-@using System.Security.Claims
-@model TeamYellow.ViewModels.PlanVM
+﻿@model TeamYellow.ViewModels.PlanVM
 
 <h4>Edit Plan</h4>
 
 <form asp-action="PlanEdit" method="post">
-
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="PlanId" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
     <div class="mb-3">
         <label class="form-label">Plan Name</label>
         <input asp-for="PlanName" class="form-control" />
+        <span asp-validation-for="PlanName" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Description</label>
         <textarea asp-for="PlanDescription" class="form-control"></textarea>
+        <span asp-validation-for="PlanDescription" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Price</label>
-        <input asp-for="Price" class="form-control" />
+    <div class="mb-3"> 
+        <label class="form-label">Price</label> 
+        @if (!string.Equals(Model.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+        {
+            <input asp-for="Price" class="form-control" />
+        } 
+        else
+        {
+            <input asp-for="Price" class="form-control" readonly />
+        }
+        <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Billing Type</label>
-        <select asp-for="BillingType"
-                asp-items="@(new SelectList(ViewBag.BillingTypes))"
-                class="form-select">
-        </select>
+        <input value="@Model.BillingType" class="form-control" readonly />
+        <input type="hidden" asp-for="BillingType" />
     </div>
 
     <div class="form-check mb-3">
         <input asp-for="IsActive" class="form-check-input" />
-        <label class="form-check-label">Active</label>
+        <label asp-for="IsActive" class="form-check-label"></label>
     </div>
+
+    @if (Model.PlanFeatures != null && Model.PlanFeatures.Any())
+    {
+        <hr />
+        <h5>Plan Features</h5>
+
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Feature Name</th>
+                    <th>Feature Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.PlanFeatures.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input asp-for="PlanFeatures[i].PlanFeatureId" type="hidden" />
+                            <input asp-for="PlanFeatures[i].FeatureName" class="form-control" />
+                            <span asp-validation-for="PlanFeatures[i].FeatureName" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="PlanFeatures[i].FeatureDescription" class="form-control" />
+                            <span asp-validation-for="PlanFeatures[i].FeatureDescription" class="text-danger"></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 
     <div class="mt-4">
         <button type="submit" class="btn btn-primary">
@@ -47,3 +86,9 @@
     </div>
 
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

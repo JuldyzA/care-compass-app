@@ -1,20 +1,41 @@
-﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
-@using System.Security.Claims
-@model TeamYellow.ViewModels.ManagerDashboardVM
+﻿@model TeamYellow.ViewModels.ManagerDashboardVM
 
 
 <h4>Transaction Details</h4>
-<div>
-    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
-    <p><strong>Paid Date:</strong> @Model.PaidAt</p>
-    <p><strong>Amount:</strong> @Model.Amount</p>
-    <p><strong>Status:</strong> @Model.SOP</p>
-    <p><strong>Practitioner Licence ID:</strong> @Model.PractitionerLicenceId</p>
-    <p>
-        <strong>Counsellor:</strong>
-        @Model.CounsellorName
-    </p>
-    <p><strong>Email:</strong> @Model.Email</p>
-    <p><strong>Registration Date:</strong> @Model.RegistrationDate</p>
-</div>
+<table class="table table-bordered table-striped">
+    <tbody>
+        <tr>
+            <th>Transaction ID</th>
+            <td>@Model.PaymentTransactionId</td>
+        </tr>
+        <tr>
+            <th>Amount</th>
+            <td>@Model.Amount</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>@Model.SOP</td>
+        </tr>
+        <tr>
+            <th>Paid Date</th>
+            <td>@Model.PaidAt</td>
+        </tr>
+        <tr>
+            <th>Practitioner Licence ID</th>
+            <td>@Model.PractitionerLicenceId</td>
+        </tr>
+        <tr>
+            <th>Counsellor</th>
+            <td>@Model.CounsellorName</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>@Model.Email</td>
+        </tr>
+        <tr>
+            <th>Counsellor Registered On</th>
+            <td>@Model.RegistrationDate</td>
+        </tr>
+    </tbody>
+</table>
 <a asp-action="Index" class="btn btn-secondary">Back</a>

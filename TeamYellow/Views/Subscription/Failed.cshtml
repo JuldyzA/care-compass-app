@@ -1,5 +1,7 @@
 ﻿@{
-    ViewData["Title"] = "Payment Cancelled";
+    ViewData["Title"] = "Payment Failed";
+    var message = TempData["Message"] as string;
+    var messageType = (TempData["MessageType"] as string) ?? "danger";
 }
 
 <div class="container mt-5">
@@ -7,14 +9,21 @@
         <div class="col-lg-8">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h2 class="text-warning mb-3">Payment Cancelled</h2>
+                    <h2 class="text-danger mb-3">Payment Failed</h2>
 
                     <p class="mb-3">
-                        Your payment was cancelled. No charge was completed, and no subscription was activated.
+                        Your payment could not be completed, and no subscription was activated.
                     </p>
 
+                    @if (!string.IsNullOrWhiteSpace(message))
+                    {
+                        <div class="alert alert-@messageType">
+                            @message
+                        </div>
+                    }
+
                     <p class="text-muted mb-4">
-                        You can return to the plans page and try again whenever you're ready.
+                        Please review your plan and payment details, then try again.
                     </p>
 
                     <div class="d-flex gap-2 flex-wrap">

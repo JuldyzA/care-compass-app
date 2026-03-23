@@ -104,6 +104,8 @@ public class SubscriptionController : Controller
             {
                 counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
+                var payerName = counsellor.DisplayName;
+
                 SubscriptionResult result;
                 string successMessage;
                 string roleToAssign;
@@ -112,7 +114,7 @@ public class SubscriptionController : Controller
                 {
                     result = await _subscriptionService.SubscribeFree(
                         counsellor.CounsellorId,
-                        user.UserName ?? "Unknown",
+                        payerName,
                         planId);
 
                     successMessage = result == SubscriptionResult.PlanChanged
@@ -125,7 +127,7 @@ public class SubscriptionController : Controller
                 {
                     result = await _subscriptionService.SubscribeDiscountedZeroAmount(
                         counsellor.CounsellorId,
-                        user.UserName ?? "Unknown",
+                        payerName,
                         planId,
                         checkout.DiscountId);
 
@@ -194,6 +196,17 @@ public class SubscriptionController : Controller
             TempData["MessageType"] = "danger";
             return RedirectToAction("Index", "Plan");
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Invalid subscription attempt for user {UserId} and plan {PlanId}.",
+                user.Id,
+                planId);
+
+            TempData["CheckoutMessage"] = "We were unable to process the selected plan. Please review your selection and try again.";
+            return RedirectToAction("Checkout", "Plan", new { id = planId });
+        }
         catch (Exception ex)
         {
             _logger.LogError(
@@ -239,10 +252,12 @@ public class SubscriptionController : Controller
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
             counsellor = await EnsureCounsellorAsync(user.Id, user.UserName, user.Email, counsellor);
 
+            var payerName = counsellor.DisplayName;
+
             var result = await _subscriptionService.CompletePayPalSubscription(
                 orderId,
                 counsellor.CounsellorId,
-                user.UserName ?? "Unknown");
+                payerName);
 
             if (result == SubscriptionResult.AlreadySubscribed)
             {
@@ -288,12 +303,19 @@ public class SubscriptionController : Controller
 
             return View("Success", vm);
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Payment could not be completed for order {OrderId}.", orderId);
+            TempData["Message"] = "Your payment could not be completed. Please try again or contact support if the problem persists.";
+            TempData["MessageType"] = "warning";
+            return RedirectToAction(nameof(Failed));
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error completing subscription for order {OrderId}.", orderId);
-            TempData["Message"] = "Payment failed. Please try again.";
+            TempData["Message"] = "Your payment could not be completed. Please try again.";
             TempData["MessageType"] = "danger";
-            return RedirectToAction("Index", "Plan");
+            return RedirectToAction(nameof(Failed));
         }
     }
 
@@ -303,6 +325,12 @@ public class SubscriptionController : Controller
     /// <returns>The cancellation view informing the user that no charge was made.</returns>
     [HttpGet]
     public IActionResult Cancel()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Failed()
     {
         return View();
     }

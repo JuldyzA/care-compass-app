@@ -13,11 +13,11 @@ public class Plan
 
     [Required, MaxLength(80)]
     [Column("planName")]
-    public string PlanName { get; set; } = String.Empty;
+    public string PlanName { get; set; } = string.Empty;
 
     [Required, MaxLength(500)]
     [Column("planDescription")]
-    public string PlanDescription { get; set; } = String.Empty;
+    public string PlanDescription { get; set; } = string.Empty;
 
     [Required]
     [Range(0, 10000)]
@@ -26,7 +26,7 @@ public class Plan
 
     [Required]
     [Column("billingType")]
-    public string BillingType { get; set; } = String.Empty;
+    public string BillingType { get; set; } = string.Empty;
 
     [Column("isActive")]
     public bool IsActive { get; set; } = true;

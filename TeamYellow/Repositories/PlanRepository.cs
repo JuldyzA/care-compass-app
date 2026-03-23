@@ -24,41 +24,7 @@ namespace TeamYellow.Repositories
             return await _context.Plans.ToListAsync();
         }
 
-        /// <summary>
-        /// Retrieves a plan by its unique identifier asynchronously.
-        /// </summary>
-        /// <param name="id">The unique identifier of the plan.</param>
-        /// <returns>The plan if found; otherwise, null.</returns>
-        public async Task<Plan?> GetById(int id)
-        {
-            return await _context.Plans.FindAsync(id);
-        }
-
-        /// <summary>
-        /// Updates an existing plan in the database asynchronously.
-        /// </summary>
-        /// <param name="entity">The plan entity with updated values.</param>
-        /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateAsync(Plan entity)
-        {
-            var existingPlan = await _context.Plans.FindAsync(entity.PlanId);
-                if (existingPlan == null)
-                {
-                    return false;
-                }
-
-                existingPlan.PlanName = entity.PlanName;
-                existingPlan.PlanDescription = entity.PlanDescription;
-                existingPlan.Price = entity.Price;
-                existingPlan.BillingType = entity.BillingType;
-                existingPlan.IsActive = entity.IsActive;
-
-                await _context.SaveChangesAsync();
-
-                return true;
-        }
-
-		    /// <summary>
+		/// <summary>
         /// Retrieves all plans that are currently active, ordered by price ascending.
         /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
         /// </summary>
@@ -72,15 +38,64 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
-		    /// <summary>
-        /// Retrieves a single plan by its primary key, including its associated features.
-        /// </summary>
-        /// <param name="id">The primary key of the plan to retrieve.</param>
-        /// <returns>The matching <see cref="Plan"/> with features, or <c>null</c> if not found.</returns>
-        public async Task<Plan?> GetPlanById(int id)
+        public async Task<Plan?> GetByIdWithFeaturesAsync(int id)
         {
-            return await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
+            return await _context.Plans
+                .Include(p => p.PlanFeatures
+                    .OrderBy(f => f.SortOrder))
                 .FirstOrDefaultAsync(p => p.PlanId == id);
-        }		
+        }
+
+        public async Task<bool> UpdatePlansWithFeaturesAsync(Plan updatedPlan)
+        {
+            var plan = await _context.Plans
+                .Include(p => p.PlanFeatures)
+                .FirstOrDefaultAsync(p => p.PlanId == updatedPlan.PlanId);
+
+            if (plan == null)
+                return false;
+
+            plan.PlanName = updatedPlan.PlanName;
+            plan.PlanDescription = updatedPlan.PlanDescription;
+            plan.Price = updatedPlan.Price;
+            plan.IsActive = updatedPlan.IsActive;
+
+            var existingFeatures = plan.PlanFeatures.ToList();
+            var incomingFeatures = (updatedPlan.PlanFeatures ?? []).ToList();
+
+            if (existingFeatures.Count != incomingFeatures.Count)
+            {
+                return false;
+            }
+
+            var existingIds = existingFeatures.Select(f => f.PlanFeatureId)
+                                              .OrderBy(id => id)
+                                              .ToList();
+
+            var incomingIds = incomingFeatures.Select(f => f.PlanFeatureId)
+                                              .OrderBy(id => id)
+                                              .ToList();
+
+            if (!existingIds.SequenceEqual(incomingIds))
+            {
+                return false;
+            }
+
+            var incomingById = incomingFeatures.ToDictionary(f => f.PlanFeatureId);
+
+            foreach (var existingFeature in existingFeatures)
+            {
+                if (!incomingById.TryGetValue(existingFeature.PlanFeatureId, out var incomingFeature))
+                {
+                    return false;
+                }
+
+                existingFeature.FeatureName = (incomingFeature.FeatureName ?? string.Empty).Trim();
+                existingFeature.FeatureDescription = (incomingFeature.FeatureDescription ?? string.Empty).Trim();
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

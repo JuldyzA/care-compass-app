@@ -1,37 +1,41 @@
-﻿@using System.Security.Claims
-@model TeamYellow.ViewModels.DiscountVM
+﻿@model TeamYellow.ViewModels.DiscountVM
 
 <h4>Edit Discount</h4>
 
 <form asp-action="EditDiscount" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="DiscountId" />
 
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <div class="mb-3">
-        <label>Discount Code</label>
+        <label asp-for="DiscountCode" class="form-label"></label>
         <input asp-for="DiscountCode" class="form-control" readonly />
+        <span asp-validation-for="DiscountCode" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label>Discount Type</label>
+        <label asp-for="DiscountType" class="form-label"></label>
         <input asp-for="DiscountType" class="form-control" readonly />
+        <span asp-validation-for="DiscountType" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label>Value</label>
+        <label asp-for="Value" class="form-label"></label>
         <input asp-for="Value" class="form-control" type="number" readonly />
+        <span asp-validation-for="Value" class="text-danger"></span>
     </div>
 
-                   
     <div class="mb-3">
-        <label>Start Date</label>
+        <label asp-for="StartDateTime" class="form-label"></label>
 
         @if (Model.IsStarted && !Model.IsExpired)
         {
-                          
             <input asp-for="StartDateTime"
-                    type="datetime-local"
-                    class="form-control"
-                    readonly />
+                   type="datetime-local"
+                   class="form-control"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                   readonly />
 
             <small class="text-warning">
                 Start date cannot be changed because the discount has already started.
@@ -39,25 +43,22 @@
         }
         else
         {
-                            
             <input asp-for="StartDateTime"
-                    type="datetime-local"
-                    class="form-control"
-                    min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                   type="datetime-local"
+                   class="form-control"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}" />
         }
 
-                        
+        <span asp-validation-for="StartDateTime" class="text-danger"></span>
     </div>
-                    
-               
-    <div class="mb-3">
-        <label>End Date</label>
 
+    <div class="mb-3">
+        <label asp-for="EndDateTime" class="form-label"></label>
         <input asp-for="EndDateTime"
-                type="datetime-local"
-                class="form-control"
-                min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
-                max="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-ddTHH:mm")" /> 
+               type="datetime-local"
+               class="form-control"
+               asp-format="{0:yyyy-MM-ddTHH:mm}" />
+        <span asp-validation-for="EndDateTime" class="text-danger"></span>
     </div>
 
     @if (Model.IsExpired)
@@ -81,35 +82,35 @@
 
     <div class="mb-3">
         <label class="form-label">Plans</label>
+        <span asp-validation-for="PlanIds" class="text-danger d-block"></span>
 
         @if (Model.AvailablePlans != null)
         {
             foreach (var plan in Model.AvailablePlans)
             {
                 <div class="form-check">
-
                     <input class="form-check-input"
-                            type="checkbox"
-                            name="PlanIds"
-                            value="@plan.Value"
-                            id="plan_@plan.Value"
-                            @(plan.Selected ? "checked" : "")
-                            />
+                           type="checkbox"
+                           name="PlanIds"
+                           value="@plan.Value"
+                           id="plan_@plan.Value"
+                    @(plan.Selected ? "checked" : "")
+                    @(Model.IsStarted && !Model.IsExpired ? "disabled" : "") />
 
                     <label class="form-check-label" for="plan_@plan.Value">
                         @plan.Text
                     </label>
-
                 </div>
             }
         }
     </div>
 
-    <button type="submit"
-            class="btn btn-primary"
-            >
-        Save
-    </button>
-
-
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Discounts" class="btn btn-secondary ms-2">Cancel</a>
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

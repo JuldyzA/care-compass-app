@@ -17,7 +17,7 @@ public class SubscriptionCheckoutResult
 
 public interface ISubscriptionService
 {
-    Task<SubscriptionResult> SubscribeFree(int counsellorId, string userName, int planId);
+    Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId);
 
     Task<SubscriptionCheckoutResult> CreatePayPalOrder(
         int planId,
@@ -27,9 +27,9 @@ public interface ISubscriptionService
 
     Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
         int counsellorId,
-        string userName,
+        string payerName,
         int planId,
         int? discountId);
 
-    Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string userName);
+    Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string payerName);
 }

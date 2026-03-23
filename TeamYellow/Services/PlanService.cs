@@ -1,5 +1,6 @@
 using TeamYellow.Models;
 using TeamYellow.Repositories;
+using TeamYellow.ViewModels;
 
 namespace TeamYellow.Services
 {
@@ -27,7 +28,29 @@ namespace TeamYellow.Services
         /// <returns>The matching <see cref="Plan"/>, or <c>null</c> if not found.</returns>
         public async Task<Plan?> GetPlanById(int id)
         {
-            return await _planRepository.GetPlanById(id);
+            return await _planRepository.GetByIdWithFeaturesAsync(id);
+        }
+
+        public async Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm)
+        {
+            var plan = new Plan
+            {
+                PlanId = vm.PlanId,
+                PlanName = (vm.PlanName ?? string.Empty).Trim(),
+                PlanDescription = (vm.PlanDescription ?? string.Empty).Trim(),
+                Price = vm.Price,
+                IsActive = vm.IsActive,
+                PlanFeatures = vm.PlanFeatures
+                    .Select(f => new PlanFeature
+                    {
+                        PlanFeatureId = f.PlanFeatureId,
+                        FeatureName = f.FeatureName?.Trim() ?? string.Empty,
+                        FeatureDescription = f.FeatureDescription?.Trim() ?? string.Empty
+                    })
+                    .ToList()
+            };
+
+            return await _planRepository.UpdatePlansWithFeaturesAsync(plan);
         }
     }
 }

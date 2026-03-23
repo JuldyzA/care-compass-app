@@ -13,60 +13,13 @@ namespace TeamYellow.Repositories
             _context = context;
         }
 
-        /// <summary>
-        /// Retrieves all discounts from the database.
-        /// </summary>
-        /// <returns>A list of all Discount entities.</returns>
-        public async Task<List<Discount>> GetAllAsync()
+        public async Task<bool> DiscountCodeExistsAsync(string discountCode, int? excludeDiscountId = null)
         {
-            return await _context.Discounts.ToListAsync();
-        }
+            var normalizedCode = discountCode.Trim().ToUpperInvariant();
 
-
-        public async Task<List<Discount>> GetActiveDiscountsAsync()
-        {
-            var nowUtc = DateTime.UtcNow;
-            return await _context.Discounts
-                    .Where(d => d.StartDateTime <= nowUtc && d.EndDateTime >= nowUtc)
-                    .ToListAsync();
-        }
-        /// <summary>
-        /// Adds a new discount to the database and saves changes.
-        /// </summary>
-        /// <param name="discount">The Discount entity to add.</param>
-        public async Task AddAsync(Discount discount)
-        {
-            await _context.Discounts.AddAsync(discount);
-            await _context.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Associates a discount with a plan if not already associated.
-        /// </summary>
-        /// <param name="planId">The ID of the plan.</param>
-        /// <param name="discountId">The ID of the discount.</param>
-        public async Task AddDiscountToPlanAsync(int planId, int discountId)
-        {
-            var plan = await _context.Plans.FindAsync(planId);
-            var discount = await _context.Discounts.FindAsync(discountId);
-
-            if (plan == null || discount == null)
-                return;
-
-            var exists = await _context.PlanDiscounts
-                .AnyAsync(pd => pd.PlanId == planId && pd.DiscountId == discountId);
-
-            if (exists)
-                return;
-
-            var planDiscount = new PlanDiscount
-            {
-                Plan = plan,
-                Discount = discount
-            };
-
-            await _context.PlanDiscounts.AddAsync(planDiscount);
-            await _context.SaveChangesAsync();
+            return await _context.Discounts.AnyAsync(d =>
+                d.DiscountCode == normalizedCode &&
+                (!excludeDiscountId.HasValue || d.DiscountId != excludeDiscountId.Value));
         }
 
         /// <summary>
@@ -94,6 +47,17 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync(d => d.DiscountId == discountId);
         }
 
+        public async Task<Discount?> GetDiscountForPlanByIdAsync(int planId, int discountId)
+        {
+            return await _context.PlanDiscounts
+                .AsNoTracking()
+                .Where(pd =>
+                    pd.PlanId == planId &&
+                    pd.DiscountId == discountId)
+                .Select(pd => pd.Discount)
+                .FirstOrDefaultAsync();
+        }
+
         /// <summary>
         /// Updates an existing discount entity in the database.
         /// </summary>
@@ -119,7 +83,6 @@ namespace TeamYellow.Repositories
                 throw new ApplicationException("An unexpected error occurred while updating the discount record.", ex);
             }
         }
-
 
         public async Task<bool> DeleteIfUnusedAsync(int discountId)
         {
@@ -172,6 +135,42 @@ namespace TeamYellow.Repositories
                     pd.Discount.EndDateTime >= nowUtc)
                 .Select(pd => pd.Discount)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task CreateDiscountWithPlansAsync(Discount discount, IEnumerable<int> planIds)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                await _context.Discounts.AddAsync(discount);
+                await _context.SaveChangesAsync();
+
+                var distinctPlanIds = (planIds ?? Enumerable.Empty<int>())
+                    .Distinct()
+                    .ToList();
+
+                if (distinctPlanIds.Count > 0)
+                {
+                    var newPlanDiscounts = distinctPlanIds
+                        .Select(planId => new PlanDiscount
+                        {
+                            PlanId = planId,
+                            DiscountId = discount.DiscountId
+                        })
+                        .ToList();
+
+                    await _context.PlanDiscounts.AddRangeAsync(newPlanDiscounts);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }
