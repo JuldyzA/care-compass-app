@@ -44,7 +44,24 @@ namespace TeamYellow.ViewModels
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (EndDateTime <= StartDateTime)
+            var isStartDateDefault = StartDateTime == default;
+            var isEndDateDefault = EndDateTime == default;
+
+            if (isStartDateDefault)
+            {
+                yield return new ValidationResult(
+                    "Start Date is required.",
+                    new[] { nameof(StartDateTime) });
+            }
+
+            if (isEndDateDefault)
+            {
+                yield return new ValidationResult(
+                    "End Date is required.",
+                    new[] { nameof(EndDateTime) });
+            }
+
+            if (!isStartDateDefault && !isEndDateDefault && EndDateTime <= StartDateTime)
             {
                 yield return new ValidationResult(
                     "End date/time must be after start date/time.",

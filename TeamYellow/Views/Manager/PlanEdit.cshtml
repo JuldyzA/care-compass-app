@@ -22,7 +22,8 @@
 
     <div class="mb-3"> 
         <label class="form-label">Price</label> 
-        @if (Model.BillingType != "Free") {
+        @if (!string.Equals(Model.BillingType, "Free", StringComparison.OrdinalIgnoreCase))
+        {
             <input asp-for="Price" class="form-control" />
         } 
         else
