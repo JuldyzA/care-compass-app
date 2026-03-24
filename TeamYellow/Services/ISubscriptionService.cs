@@ -1,5 +1,8 @@
 namespace TeamYellow.Services;
 
+/// <summary>
+/// Represents the possible outcomes of a subscription creation workflow.
+/// </summary>
 public enum SubscriptionResult
 {
     Created,
@@ -7,6 +10,9 @@ public enum SubscriptionResult
     PlanChanged
 }
 
+/// <summary>
+/// Defines business operations for creating checkout flows and managing subscriptions.
+/// </summary>
 public class SubscriptionCheckoutResult
 {
     public bool RequiresPayPal { get; set; }
@@ -15,6 +21,9 @@ public class SubscriptionCheckoutResult
     public string? ApprovalUrl { get; set; }
 }
 
+/// <summary>
+/// Defines business operations for creating checkout flows and managing subscriptions.
+/// </summary>
 public interface ISubscriptionService
 {
     Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId);

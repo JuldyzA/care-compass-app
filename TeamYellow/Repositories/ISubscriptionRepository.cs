@@ -3,6 +3,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
+    /// <summary>
+    /// Defines data access operations for <see cref="Subscription"/> entities.
+    /// </summary>
     public interface ISubscriptionRepository
     {
         Task<Subscription> CreateSubscription(AddSubscriptionDto addSubscriptionDto);

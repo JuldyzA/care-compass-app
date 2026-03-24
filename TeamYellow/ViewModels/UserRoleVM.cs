@@ -3,7 +3,7 @@
 namespace TeamYellow.ViewModels
 {
     /// <summary>
-    /// ViewModel representing a mapping between a user and a role
+    /// View model representing a mapping between a user and a role.
     /// </summary>
     public class UserRoleVM
     {

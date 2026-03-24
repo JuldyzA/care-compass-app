@@ -1,5 +1,8 @@
 ﻿namespace TeamYellow.DTOs;
 
+/// <summary>
+/// Represents paginated client table data along with filtering metadata.
+/// </summary>
 public class ClientTableDto
 {
     public IEnumerable<ClientDto> Clients { get; set; } = new List<ClientDto>();

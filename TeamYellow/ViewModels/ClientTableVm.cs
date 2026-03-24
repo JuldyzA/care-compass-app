@@ -1,6 +1,9 @@
 ﻿namespace TeamYellow.ViewModels;
 
-public class ClientTableVm
+/// <summary>
+/// View model representing paginated client table data and related UI state.
+/// </summary>
+public class ClientTableVM
 {
     public int Page { get; set; }
 

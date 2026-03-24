@@ -4,6 +4,9 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Helpers;
 
+/// <summary>
+/// Provides helper methods for mapping client entities and DTOs to view models.
+/// </summary>
 public class ClientHelper
 {
     /// <summary>
@@ -12,7 +15,7 @@ public class ClientHelper
     /// </summary>
     /// <param name="dto">The source DTO containing the list of clients and pagination metadata.</param>
     /// <returns>A view model formatted for display in the client table UI.</returns>
-    public static ClientTableVm MapToVm(ClientTableDto dto)
+    public static ClientTableVM MapToVm(ClientTableDto dto)
     {
         List<ClientVM> clientVMs = dto.Clients.Select(c =>
             new ClientVM
@@ -44,7 +47,7 @@ public class ClientHelper
 
         int totalPages = (dto.PageSize > 0) ? (int)Math.Ceiling(dto.TotalCount / (double)dto.PageSize) : 1;
 
-        return new ClientTableVm
+        return new ClientTableVM
         {
             Page = dto.Page,
             PageSize = dto.PageSize,

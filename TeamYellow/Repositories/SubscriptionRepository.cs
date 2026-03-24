@@ -21,12 +21,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Creates and persists a new subscription based on the provided DTO.
-        /// The billing cycle start and end dates are computed automatically from the current UTC time,
-        /// using a one-year cycle for <c>Yearly</c> billing and a one-month cycle for all other types.
+        /// Creates and persists a new subscription based on the provided data transfer object.
         /// </summary>
         /// <param name="addSubscriptionDto">The DTO containing subscription creation data.</param>
-        /// <returns>The newly created and persisted <see cref="Subscription"/> entity.</returns>
+        /// <returns>The newly created subscription.</returns>
         public async Task<Subscription> CreateSubscription(AddSubscriptionDto addSubscriptionDto)
         {
             var cycleStart = DateTime.UtcNow;
@@ -75,10 +73,8 @@ namespace TeamYellow.Repositories
         /// <summary>
         /// Retrieves the active subscription for the specified counsellor, if one exists.
         /// </summary>
-        /// <param name="counsellorId">The primary key of the counsellor to look up.</param>
-        /// <returns>
-        /// The counsellor's active <see cref="Subscription"/>, or <c>null</c> if no active subscription exists.
-        /// </returns>
+        /// <param name="counsellorId">The counsellor identifier.</param>
+        /// <returns>The active subscription, or <c>null</c> if no active subscription exists.</returns>
         public async Task<Subscription?> GetActiveSubscriptionByCounsellorId(int counsellorId)
         {
             return await _context.Subscriptions
@@ -86,17 +82,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Retrieves the active subscription for the specified counsellor,
-        /// including the associated <see cref="Plan"/>, <see cref="Subscription.PaymentTransaction"/>,
-        /// and <see cref="Subscription.Counsellor"/> navigation properties so that related details
-        /// are available without additional queries.
+        /// Retrieves the active subscription for the specified counsellor, including related plan and payment details.
         /// </summary>
-        /// <param name="counsellorId">The primary key of the counsellor to look up.</param>
-        /// <returns>
-        /// The counsellor's active <see cref="Subscription"/> with its <see cref="Plan"/>,
-        /// <see cref="Subscription.PaymentTransaction"/>, and <see cref="Subscription.Counsellor"/> loaded,
-        /// or <c>null</c> if no active subscription exists.
-        /// </returns>
+        /// <param name="counsellorId">The counsellor identifier.</param>
+        /// <returns>The active subscription with related data, or <c>null</c> if none exists.</returns>
         public async Task<Subscription?> GetActiveSubscriptionWithPlanByCounsellorId(int counsellorId)
         {
             return await _context.Subscriptions
@@ -107,10 +96,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Persists changes to an existing <see cref="Subscription"/> entity.
-        /// Typically called after modifying the subscription's status (for example, cancellation).
+        /// Persists changes to an existing subscription.
         /// </summary>
-        /// <param name="subscription">The subscription entity with updated values to persist.</param>
+        /// <param name="subscription">The subscription entity to update.</param>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
         public async Task UpdateSubscription(Subscription subscription)
         {
             try

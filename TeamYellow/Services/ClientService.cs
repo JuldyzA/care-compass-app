@@ -8,6 +8,9 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Services;
 
+/// <summary>
+/// Service that implements client management business logic for counsellor users.
+/// </summary>
 public class ClientService
 {
     private readonly ClientRepository _repository;
@@ -24,16 +27,16 @@ public class ClientService
     /// <summary>
     /// Fetches a validated and paginated list of clients for the current user.
     /// </summary>
-    /// <param name="user">The current user's claims.</param>
+    /// <param name="user">The current authenticated user.</param>
     /// <param name="page">The requested page number.</param>
-    /// <param name="pageSize">The number of records to return, capped at 100.</param>
-    /// <param name="searchTerm">Optional search term to filter by name or email.</param>
-    /// <param name="startDate">Optional start date (inclusive) to filter client CreatedAt.</param>
-    /// <param name="endDate">Optional end date (inclusive) to filter client CreatedAt.</param>
-    /// <param name="sortColumn">Optional column to sort by.</param>
-    /// <param name="sortDir">Optional sort direction.</param>
-    /// <returns>A view model containing the paginated client data.</returns>
-    public async Task<ClientTableVm> GetClientsByPageAndFilterAsync
+    /// <param name="pageSize">The number of records to return.</param>
+    /// <param name="searchTerm">An optional search term to filter clients.</param>
+    /// <param name="startDate">An optional inclusive start date filter.</param>
+    /// <param name="endDate">An optional inclusive end date filter.</param>
+    /// <param name="sortColumn">An optional column to sort by.</param>
+    /// <param name="sortDir">An optional sort direction.</param>
+    /// <returns>A view model containing paginated client data.</returns>
+    public async Task<ClientTableVM> GetClientsByPageAndFilterAsync
     (
         ClaimsPrincipal user,
         int page,
@@ -49,7 +52,7 @@ public class ClientService
         if (string.IsNullOrEmpty(userId))
         {
             _logger.LogWarning("Unable to extract user ID from claims.");
-            return new ClientTableVm();
+            return new ClientTableVM();
         }
 
         if (page < 1)
@@ -97,17 +100,17 @@ public class ClientService
             );
         }
 
-        ClientTableVm clientTableVm = ClientHelper.MapToVm(dto);
+        ClientTableVM clientTableVm = ClientHelper.MapToVm(dto);
 
         return clientTableVm;
     }
 
     /// <summary>
-    /// Retrieves a specific client by ID if it belongs to the authenticated counsellor.
+    /// Retrieves a specific client if it belongs to the authenticated counsellor.
     /// </summary>
-    /// <param name="clientId">The client ID to retrieve.</param>
-    /// <param name="user">The current authenticated user (counsellor).</param>
-    /// <returns>The client view model if found and belongs to the counsellor; otherwise, null.</returns>
+    /// <param name="clientId">The client identifier.</param>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns>The client view model if found; otherwise <c>null</c>.</returns>
     public async Task<ClientVM?> GetClientByIdAsync(int clientId, ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
@@ -130,12 +133,11 @@ public class ClientService
     }
 
     /// <summary>
-    /// Creates a new client for the authenticated counsellor with duplicate email validation and logging.
+    /// Creates a new client for the specified counsellor.
     /// </summary>
-    /// <param name="vm">The client view model containing the client data.</param>
-    /// <param name="user">The current authenticated user (counsellor).</param>
-    /// <param name="counsellorId">The counsellor ID to associate with the client.</param>
-    /// <returns>True if the client was successfully created; otherwise, false.</returns>
+    /// <param name="vm">The submitted client view model.</param>
+    /// <param name="counsellorId">The counsellor identifier to associate with the client.</param>
+    /// <returns><c>true</c> if the client was created successfully; otherwise <c>false</c>.</returns>
     public async Task<bool> CreateClientAsync(ClientVM vm, int counsellorId)
     {
         // Check for duplicate email
@@ -163,12 +165,11 @@ public class ClientService
     }
 
     /// <summary>
-    /// Updates an existing client's information if it belongs to the authenticated counsellor.
-    /// Performs authorization verification and duplicate email validation (excluding current client).
+    /// Updates an existing client if it belongs to the authenticated counsellor.
     /// </summary>
-    /// <param name="vm">The client view model containing updated client data.</param>
-    /// <param name="user">The current authenticated user (counsellor).</param>
-    /// <returns>True if the client was successfully updated; false if not found, authorization failed, or email already exists.</returns>
+    /// <param name="vm">The submitted client view model containing updated values.</param>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns><c>true</c> if the client was updated successfully; otherwise <c>false</c>.</returns>
     public async Task<bool> UpdateClientAsync(ClientVM vm, ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
@@ -219,11 +220,10 @@ public class ClientService
 
     /// <summary>
     /// Deletes a specific client if it belongs to the authenticated counsellor.
-    /// Performs authorization verification before deletion.
     /// </summary>
-    /// <param name="clientId">The client ID to delete.</param>
-    /// <param name="user">The current authenticated user (counsellor).</param>
-    /// <returns>True if the client was successfully deleted; false if the client was not found or authorization failed.</returns>
+    /// <param name="clientId">The client identifier to delete.</param>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns><c>true</c> if the client was deleted successfully; otherwise <c>false</c>.</returns>
     public async Task<bool> DeleteClientAsync(int clientId, ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);

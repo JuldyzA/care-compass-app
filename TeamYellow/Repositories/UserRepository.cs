@@ -7,7 +7,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Repositories
 {
     /// <summary>
-    /// Repository for reading application users and preparing user dropdown lists
+    /// Repository for reading application users and preparing user dropdown lists.
     /// </summary>
     public class UserRepository
     {
@@ -19,9 +19,13 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns a paginated, sortable, and filterable list of users projected into UserVM.
-        /// Used for the admin user role management screen.
+        /// Returns a paginated, sortable, and filterable list of users projected into view models.
         /// </summary>
+        /// <param name="emailFilter">An optional email filter.</param>
+        /// <param name="sortOrder">An optional sort order.</param>
+        /// <param name="pageNumber">The requested page number.</param>
+        /// <param name="pageSize">The number of records per page.</param>
+        /// <returns>A paginated list of user view models.</returns>
         public async Task<PaginatedList<UserVM>> GetAllUsersAsync(string? emailFilter = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
             IQueryable<UserVM> query = _context.Users
@@ -58,9 +62,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Creates a SelectList of users for Razor dropdowns
-        /// The provided email (if any) will be selected by default
+        /// Builds a select list of users for use in dropdown controls.
         /// </summary>
+        /// <param name="email">An optional email value to preselect.</param>
+        /// <returns>A select list containing available users.</returns>
         public async Task<SelectList> GetUserSelectListAsync(string? email)
         {
             var users = await _context.Users

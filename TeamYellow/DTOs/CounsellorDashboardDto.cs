@@ -2,6 +2,10 @@
 
 namespace TeamYellow.DTOs;
 
+/// <summary>
+/// Handles subscription workflows, including PayPal checkout, success and failure callbacks,
+/// cancellation handling, and counsellor role assignment.
+/// </summary>
 public class CounsellorDashboardDto
 {
     public string? ProfilePhotoUrl { get; set; }

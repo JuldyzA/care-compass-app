@@ -7,7 +7,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Repositories
 {
     /// <summary>
-    /// Repository for reading and writing user login/logout audit logs (UserLogs table).
+    /// Repository for reading and writing user login and logout audit logs (UserLogs table).
     /// </summary>
     public class UserLogRepository
     {
@@ -21,10 +21,16 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns a paginated, sortable, and filterable list of user logs, sorted by most recent first.
-        /// Used for the admin user logs screen.
-        /// Uses AsNoTracking() because this is read-only for display.
+        /// Returns a paginated, sortable, and filterable list of user logs for display.
         /// </summary>
+        /// <param name="emailFilter">An optional email filter.</param>
+        /// <param name="abandonedFilter">An optional abandoned-session filter.</param>
+        /// <param name="startDate">An optional inclusive start date filter.</param>
+        /// <param name="endDate">An optional inclusive end date filter.</param>
+        /// <param name="sortOrder">An optional sort order.</param>
+        /// <param name="pageNumber">The requested page number.</param>
+        /// <param name="pageSize">The number of records per page.</param>
+        /// <returns>A paginated list of user log view models.</returns>
         public async Task<PaginatedList<UserLogVM>> GetAllAsync(string? emailFilter = null, string? abandonedFilter = null, DateTime? startDate = null, DateTime? endDate = null, string? sortOrder = null, int pageNumber = 1, int pageSize = 10)
         {
             IQueryable<UserLogVM> query = _context.UserLogs
@@ -103,9 +109,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns the most recent "active" (not yet logged out) session for a user, if any.
-        /// Active means LogOutTime is null.
+        /// Returns the most recent active session log for the specified user, if one exists.
         /// </summary>
+        /// <param name="userId">The identity user identifier.</param>
+        /// <returns>The active user log, or <c>null</c> if none exists.</returns>
         public async Task<UserLog?> GetActiveLogAsync(string? userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -118,8 +125,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Starts a new session log row for the user with LogInTime = UtcNow.
+        /// Starts a new session log for the specified user.
         /// </summary>
+        /// <param name="userId">The identity user identifier.</param>
+        /// <returns><c>true</c> if the log was created successfully; otherwise <c>false</c>.</returns>
         public async Task<bool> StartLogAsync(string userId)
         {
             UserLog userLog = new UserLog
@@ -149,8 +158,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Ends a session log by setting LogOutTime = UtcNow and Abandoned = false.
+        /// Ends an active session log by setting the logout time and abandoned status.
         /// </summary>
+        /// <param name="logId">The log identifier.</param>
+        /// <returns><c>true</c> if the log was closed successfully; otherwise <c>false</c>.</returns>
         public async Task<bool> EndLogAsync(int logId)
         {
             UserLog? userLog = await _context.UserLogs.FirstOrDefaultAsync(ul => ul.LogId == logId);
@@ -189,12 +200,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Abandoned-session policy helper:
-        /// If there are any open sessions for this user (LogOutTime == null),
-        /// close all of them as abandoned by setting:
-        /// - Abandoned = true
-        /// - LogOutTime = closedAt (DateTime.UtcNow)
+        /// Closes any open session logs for the specified user as abandoned sessions.
         /// </summary>
+        /// <param name="userId">The identity user identifier.</param>
+        /// <returns><c>true</c> if one or more dangling logs were closed; otherwise <c>false</c>.</returns>
         public async Task<bool> CloseDanglingLogsIfAnyAsync(string? userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return false;

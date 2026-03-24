@@ -8,7 +8,11 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Controllers
 {
-    [Authorize (Roles ="Manager")]
+    /// <summary>
+    /// Handles manager-only workflows for dashboard reporting, plan management,
+    /// and discount management.
+    /// </summary>
+    [Authorize(Roles = "Manager")]
     public class ManagerController : Controller
     {
         private readonly CounsellorRepository _counsellorRepository;
@@ -16,12 +20,13 @@ namespace TeamYellow.Controllers
         private readonly IPlanService _planService;
         private readonly DiscountRepository _discountRepository;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagerController"/> class.
-        /// /// <param name="counsellorRepository">The repository for counsellor data.</param>
-        /// <param name="planRepository">The repository for plan data.</param>
-        /// <param name="discountRepository">The repository for discount data.</param>
+        /// </summary>
+        /// <param name="counsellorRepository">Provides access to counsellor and payment-related data.</param>
+        /// <param name="planRepository">Provides access to plan lookup operations.</param>
+        /// <param name="planService">Provides plan update operations and related business logic.</param>
+        /// <param name="discountRepository">Provides access to discount lookup and management operations.</param>
         public ManagerController(CounsellorRepository counsellorRepository, IPlanRepository planRepository, IPlanService planService, DiscountRepository discountRepository)
         {
             _counsellorRepository = counsellorRepository;
@@ -31,10 +36,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays a summary of all counsellor payment transactions for the manager dashboard.
-        /// Aggregates transaction statistics and details for each counsellor.
+        /// Displays the manager dashboard with counsellor payment transactions and summary statistics.
         /// </summary>
-        /// <returns>The dashboard view with aggregated data.</returns>
+        /// <param name="searchEmail">An optional email filter for transaction records.</param>
+        /// <param name="startDate">An optional inclusive start date filter.</param>
+        /// <param name="endDate">An optional inclusive end date filter.</param>
+        /// <returns>The dashboard view populated with filtered transaction data and summary statistics.</returns>
         public async Task<IActionResult> Index(string? searchEmail, DateTime? startDate, DateTime? endDate)
         {
             var counsellors = await _counsellorRepository.GetCounsellorsWithPaymentsAsync();
@@ -84,10 +91,10 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Aggregates payment transaction data for a given counsellor to be displayed on the manager dashboard.
+        /// Projects a counsellor's subscription payment data into dashboard rows for display.
         /// </summary>
-        /// <param name="counsellor">The counsellor whose data is being aggregated.</param>
-        /// <returns>A view model containing dashboard data for the counsellor.</returns>
+        /// <param name="counsellor">The counsellor whose payment transaction data is being projected.</param>
+        /// <returns>A sequence of dashboard rows for the counsellor's payment transactions.</returns>
         private IEnumerable<ManagerDashboardVM> GetManagerDashboardData(Counsellor counsellor)
         {
             return (counsellor.Subscriptions ?? Enumerable.Empty<Subscription>())
@@ -133,9 +140,9 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays a list of all available plans asynchronously.
+        /// Displays all available subscription plans.
         /// </summary>
-        /// <returns>The plans view with a list of plans.</returns>
+        /// <returns>The plans view populated with the current list of plans.</returns>
         public async Task<IActionResult> Plans()
         {
             var plans = await _planRepository.GetAllAsync();
@@ -148,10 +155,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the edit form for a specific plan, allowing the manager to modify plan details.
+        /// Displays the edit form for a specific subscription plan.
         /// </summary>
         /// <param name="id">The unique identifier of the plan to edit.</param>
-        /// <returns>The edit view for the specified plan, or NotFound if not found.</returns>
+        /// <returns>
+        /// The edit view for the specified plan, or a not found result if the plan does not exist.
+        /// </returns>
         public async Task<IActionResult> PlanEdit(int id)
         {
             var plan = await _planRepository.GetByIdWithFeaturesAsync(id);
@@ -183,9 +192,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Processes the submission of the plan edit form and updates the plan details asynchronously.
-        /// <param name="vm">The view model containing updated plan information.</param>
-        /// <returns>Redirects to the plans list if successful, otherwise redisplays the edit form.</returns>
+        /// Processes the submitted plan edit form and updates the selected plan.
+        /// </summary>
+        /// <param name="vm">The view model containing the updated plan details and features.</param>
+        /// <returns>
+        /// Redirects to the plans page if the update succeeds; otherwise redisplays the edit form with validation errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlanEdit(PlanVM vm)
@@ -248,9 +260,9 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays a list of all available discounts with their associated plans.
+        /// Displays all available discounts and their associated plans.
         /// </summary>
-        /// <returns>The discounts view with a list of discounts and plans.</returns>
+        /// <returns>The discounts view populated with existing discount records.</returns>
         public async Task<IActionResult> Discounts()
         {
             var vm = new DiscountVM
@@ -262,9 +274,9 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the form to create a new discount.
+        /// Displays the form for creating a new discount.
         /// </summary>
-        /// <returns>The create discount view.</returns>
+        /// <returns>The create discount view populated with eligible plans.</returns>
         [HttpGet]
         public async Task<IActionResult> CreateDiscount()
         {
@@ -287,10 +299,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Processes the submission of the create discount form and adds a new discount.
+        /// Processes the submitted create discount form and creates a new discount linked to the selected plans.
         /// </summary>
-        /// <param name="vm">The view model containing discount information.</param>
-        /// <returns>Redirects to the discounts list if successful, otherwise redisplays the form.</returns>
+        /// <param name="vm">The view model containing the new discount details.</param>
+        /// <returns>
+        /// Redirects to the discounts page if creation succeeds; otherwise redisplays the form with validation errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDiscount(DiscountVM vm)
@@ -397,16 +411,11 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the edit form for a specific discount.
-        /// Retrieves the discount by its ID, determines its current status
-        /// (started or expired), and prepares the view model with the discount
-        /// details and available plans for selection.
+        /// Displays the edit form for a specific discount and prepares its associated plan selections.
         /// </summary>
         /// <param name="id">The unique identifier of the discount to edit.</param>
         /// <returns>
-        /// The edit discount view populated with the existing discount data and
-        /// associated plan selections, or <see cref="NotFound"/> if the discount
-        /// does not exist.
+        /// The edit discount view populated with the existing discount data, or a not found result if the discount does not exist.
         /// </returns>
         [HttpGet]
         public async Task<IActionResult> EditDiscount(int id)
@@ -451,16 +460,11 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Processes the submission of the edit discount form and updates the selected discount.
-        /// Updates the start and end dates of the discount and modifies the associated plans
-        /// based on the selected plan IDs from the form.
+        /// Processes the submitted edit discount form and updates the selected discount and its associated plans.
         /// </summary>
-        /// <param name="vm">
-        /// The view model containing the updated discount data, including the selected plan IDs.
-        /// </param>
+        /// <param name="vm">The view model containing the updated discount data.</param>
         /// <returns>
-        /// Redirects to the Discounts page if the update is successful; otherwise redisplays
-        /// the edit form with validation errors.
+        /// Redirects to the discounts page if the update succeeds; otherwise redisplays the edit form with validation errors.
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -615,7 +619,13 @@ namespace TeamYellow.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Displays a confirmation view before deleting a discount.
+        /// </summary>
+        /// <param name="id">The unique identifier of the discount to delete.</param>
+        /// <returns>
+        /// The delete confirmation view for the specified discount, or a not found result if the discount does not exist.
+        /// </returns>
         [HttpGet]
         public async Task<IActionResult> DeleteDiscount(int id)
         {
@@ -636,6 +646,14 @@ namespace TeamYellow.Controllers
 
             return View(vm);
         }
+
+        /// <summary>
+        /// Deletes the specified discount if it is not currently associated with any plans.
+        /// </summary>
+        /// <param name="id">The unique identifier of the discount to delete.</param>
+        /// <returns>
+        /// Redirects to the discounts page after the delete attempt completes.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteDiscountConfirmed(int id)

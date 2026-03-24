@@ -2,6 +2,9 @@
 
 namespace TeamYellow.DTOs;
 
+/// <summary>
+/// Represents client data used for display and transfer between application layers.
+/// </summary>
 public class ClientDto
 {
     public int ClientId { get; set; }

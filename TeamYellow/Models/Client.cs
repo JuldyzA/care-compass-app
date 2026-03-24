@@ -3,12 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Defines the possible status values for a client record.
+/// </summary>
 public enum ClientStatus
 {
     Inactive = 0,
     Active = 1
 }
 
+/// <summary>
+/// Represents a client record managed by a counsellor.
+/// </summary>
 [Table("Client")]
 public class Client
 {

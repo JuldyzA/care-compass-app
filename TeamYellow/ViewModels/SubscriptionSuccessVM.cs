@@ -1,5 +1,9 @@
 namespace TeamYellow.ViewModels;
 
+/// <summary>
+/// View model representing the subscription success page, including payment
+/// and billing cycle details.
+/// </summary>
 public class SubscriptionSuccessVM
 {
     public string Message { get; set; } = string.Empty;

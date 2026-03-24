@@ -115,7 +115,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             public string LastName { get; set; }
         }
 
-
+        /// <summary>
+        /// Loads the registration page and prepares external login providers and reCAPTCHA settings.
+        /// </summary>
+        /// <param name="returnUrl">The URL to return to after registration completes.</param>
         public async Task OnGetAsync(string returnUrl = null)
         {
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
@@ -124,6 +127,15 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>
+        /// Processes the registration form submission, validates reCAPTCHA, creates the identity user,
+        /// assigns the default role, creates the related user profile, and sends a confirmation email.
+        /// </summary>
+        /// <param name="returnUrl">The URL to return to after registration completes.</param>
+        /// <returns>
+        /// A redirect to the confirmation page or return URL when successful; otherwise returns the current page
+        /// with validation or processing errors.
+        /// </returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {           
             returnUrl ??= Url.Content("~/");
@@ -290,6 +302,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             return Page();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IdentityUser"/> instance for registration.
+        /// </summary>
+        /// <returns>A new <see cref="IdentityUser"/> instance.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when an <see cref="IdentityUser"/> instance cannot be created.
+        /// </exception>
         private IdentityUser CreateUser()
         {
             try
@@ -304,6 +323,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             }
         }
 
+        /// <summary>
+        /// Returns the email-enabled user store required by the default Identity registration flow.
+        /// </summary>
+        /// <returns>An <see cref="IUserEmailStore{IdentityUser}"/> instance.</returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the configured user store does not support email.
+        /// </exception>
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)

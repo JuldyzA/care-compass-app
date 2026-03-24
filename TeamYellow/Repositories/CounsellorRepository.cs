@@ -40,7 +40,6 @@ public class CounsellorRepository
     /// <returns>The newly created <see cref="Counsellor"/> with any database-generated values populated.</returns>
     public async Task<Counsellor> CreateAsync(Counsellor counsellor)
     {
-
         try
         {
             _context.Counsellors.Add(counsellor);

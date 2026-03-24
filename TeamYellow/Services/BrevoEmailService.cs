@@ -4,6 +4,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Services
 {
+    /// <summary>
+    /// Service that sends transactional emails through the Brevo email API.
+    /// </summary>
     public class BrevoEmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
@@ -15,6 +18,9 @@ namespace TeamYellow.Services
             _httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Service that sends transactional emails through the Brevo email API.
+        /// </summary>
         public async Task<HttpResponseMessage> SendEmailAsync(ComposeEmailModel payload)
         {
             var apiKey = _configuration["Brevo:ApiKey"];

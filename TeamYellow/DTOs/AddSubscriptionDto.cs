@@ -1,5 +1,8 @@
 namespace TeamYellow.DTOs;
 
+/// <summary>
+/// Represents the data required to create a new subscription.
+/// </summary>
 public class AddSubscriptionDto
 {
     public int CounsellorId { get; set; }

@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamYellow.ViewModels;
 
+/// <summary>
+/// View model representing client details used in create, edit, and display workflows.
+/// </summary>
 public class ClientVM
 {
     public int ClientId { get; set; }

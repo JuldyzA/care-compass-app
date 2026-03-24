@@ -8,6 +8,9 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Services;
 
+/// <summary>
+/// Service that implements counsellor-related business logic for dashboard and profile retrieval.
+/// </summary>
 public class CounsellorService
 {
     private readonly CounsellorRepository _repository;
@@ -25,10 +28,10 @@ public class CounsellorService
     }
 
     /// <summary>
-    /// Retrieves the dashboard data for a specific counsellor, including active subscription status.
+    /// Retrieves dashboard data for the currently authenticated counsellor.
     /// </summary>
-    /// <param name="user">The ClaimsPrincipal representing the currently logged-in user.</param>
-    /// <returns>A view model containing mapped dashboard statistics and user status.</returns>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns>A counsellor dashboard view model.</returns>
     public async Task<CounsellorDashboardVM> GetCounsellorDashboardAsync(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);
@@ -49,10 +52,10 @@ public class CounsellorService
     }
 
     /// <summary>
-    /// Retrieves the counsellor information for the authenticated user based on their claims.
+    /// Retrieves the counsellor record associated with the authenticated user.
     /// </summary>
-    /// <param name="user">The ClaimsPrincipal representing the currently logged-in user.</param>
-    /// <returns>The Counsellor entity if found; otherwise null.</returns>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns>The matching counsellor entity, or <c>null</c> if not found.</returns>
     public async Task<Counsellor?> GetCounsellorByUser(ClaimsPrincipal user)
     {
         string? userId = _userManager.GetUserId(user);

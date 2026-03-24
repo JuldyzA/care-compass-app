@@ -3,12 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Defines the possible outcomes of a payment transaction.
+/// </summary>
 public enum PaymentTransactionStatus
 {
     Captured = 0,
     Failed = 1,
 }
 
+/// <summary>
+/// Represents a payment transaction associated with a subscription and an optional discount.
+/// </summary>
 [Table("PaymentTransaction")]
 public class PaymentTransaction
 {

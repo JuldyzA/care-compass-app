@@ -4,8 +4,8 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
-	/// <summary>
-    /// Repository providing data access operations for Plans entities.
+    /// <summary>
+    /// Repository providing data access operations for <see cref="Plan"/> entities.
     /// </summary>
     public class PlanRepository : IPlanRepository
     {
@@ -19,18 +19,18 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Retrieves all plans from the database asynchronously.
+        /// Retrieves all plans from the database.
         /// </summary>
+        /// <returns>A collection of all plans.</returns>
         public async Task<IEnumerable<Plan>> GetAllAsync()
         {
             return await _context.Plans.ToListAsync();
         }
 
-		/// <summary>
-        /// Retrieves all plans that are currently active, ordered by price ascending.
-        /// Each plan includes its features ordered by <see cref="PlanFeature.SortOrder"/>.
+        /// <summary>
+        /// Retrieves all active plans, including their features, ordered for display.
         /// </summary>
-        /// <returns>A list of active <see cref="Plan"/> entities ordered by price.</returns>
+        /// <returns>A list of active plans.</returns>
         public async Task<List<Plan>> GetActivePlans()
         {
             var plans = await _context.Plans.Include(p => p.PlanFeatures.OrderBy(f => f.SortOrder))
@@ -40,6 +40,11 @@ namespace TeamYellow.Repositories
             return [.. plans.OrderBy(p => p.Price)];
         }
 
+        /// <summary>
+        /// Retrieves a specific plan with its related features.
+        /// </summary>
+        /// <param name="id">The plan identifier.</param>
+        /// <returns>The matching plan with features, or <c>null</c> if not found.</returns>
         public async Task<Plan?> GetByIdWithFeaturesAsync(int id)
         {
             return await _context.Plans
@@ -48,6 +53,11 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync(p => p.PlanId == id);
         }
 
+        /// <summary>
+        /// Updates a plan and its related features after validating the submitted feature set.
+        /// </summary>
+        /// <param name="updatedPlan">The updated plan entity.</param>
+        /// <returns><c>true</c> if the update succeeds; otherwise <c>false</c>.</returns>
         public async Task<bool> UpdatePlansWithFeaturesAsync(Plan updatedPlan)
         {
             var plan = await _context.Plans

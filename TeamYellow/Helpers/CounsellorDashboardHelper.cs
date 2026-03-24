@@ -4,6 +4,9 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Helpers;
 
+/// <summary>
+/// Provides helper methods for mapping counsellor dashboard data between entities, DTOs, and view models.
+/// </summary>
 public class CounsellorDashboardHelper
 {
     /// <summary>

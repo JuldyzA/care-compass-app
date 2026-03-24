@@ -9,7 +9,6 @@ namespace TeamYellow.Services;
 /// <summary>
 /// Service implementing subscription management business logic, including
 /// free plan subscriptions, PayPal order creation, and PayPal payment capture.
-/// Coordinates between the plan, subscription, transaction repositories and the PayPal API service.
 /// </summary>
 public class SubscriptionService(
     IPlanRepository planRepository,
@@ -28,18 +27,14 @@ public class SubscriptionService(
 
     /// <summary>
     /// Subscribes a counsellor to a free plan.
-    /// If the counsellor already has an active subscription to a different plan, the existing
-    /// subscription is cancelled before the new one is created.
-    /// A zero-amount transaction record is created for audit purposes.
     /// </summary>
-    /// <param name="counsellorId">The ID of the counsellor being subscribed.</param>
-    /// <param name="payerName">The name used as the payer name on the transaction.</param>
-    /// <param name="planId">The ID of the free plan to subscribe the counsellor to.</param>
+    /// <param name="counsellorId">The counsellor identifier.</param>
+    /// <param name="payerName">The payer name recorded for the transaction.</param>
+    /// <param name="planId">The free plan identifier.</param>
     /// <returns>
-    /// A <see cref="SubscriptionResult"/> indicating whether the subscription was newly created,
-    /// represents a plan change from an existing subscription, or was already active.
+    /// A result indicating whether the subscription was created, changed from an existing plan,
+    /// or was already active.
     /// </returns>
-    /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
     public async Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId)
     {
         var plan = await _planRepository.GetByIdWithFeaturesAsync(planId)
@@ -93,6 +88,17 @@ public class SubscriptionService(
         }
     }
 
+    /// <summary>
+    /// Subscribes a counsellor to a paid plan whose final amount becomes zero after applying a valid discount.
+    /// </summary>
+    /// <param name="counsellorId">The counsellor identifier.</param>
+    /// <param name="payerName">The payer name recorded for the transaction.</param>
+    /// <param name="planId">The plan identifier.</param>
+    /// <param name="discountId">The discount identifier to apply.</param>
+    /// <returns>
+    /// A result indicating whether the subscription was created, changed from an existing plan,
+    /// or was already active.
+    /// </returns>
     public async Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
         int counsellorId,
         string payerName,
@@ -168,21 +174,15 @@ public class SubscriptionService(
     }
 
     /// <summary>
-    /// Creates a PayPal checkout order for the specified plan and returns checkout details.
-    /// For plans or discounts that result in a non-zero amount, a PayPal order is created so the
-    /// buyer can approve the payment. For free plans or plans that become zero after applying a
-    /// discount, no PayPal order is created and the subscription is handled as a zero-amount flow.
+    /// Creates a PayPal checkout order for a plan and optional discount code.
     /// </summary>
-    /// <param name="planId">The ID of the plan to start the checkout process for.</param>
-    /// <param name="discountCode">An optional discount code to apply before determining the final amount.</param>
-    /// <param name="returnUrl">The URL PayPal redirects to after the buyer approves the payment.</param>
-    /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels the payment.</param>
+    /// <param name="planId">The plan identifier.</param>
+    /// <param name="discountCode">An optional discount code.</param>
+    /// <param name="returnUrl">The URL PayPal redirects to after approval.</param>
+    /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels.</param>
     /// <returns>
-    /// A <see cref="SubscriptionCheckoutResult"/> describing the checkout flow, including whether
-    /// PayPal approval is required and, for paid plans, the buyer approval URL to redirect the user to.
-    /// For free or zero-after-discount plans, the result indicates that no PayPal redirect is needed.
+    /// A checkout result describing whether PayPal approval is required and, if so, the approval URL.
     /// </returns>
-    /// <exception cref="KeyNotFoundException">Thrown if the specified plan does not exist.</exception>
     public async Task<SubscriptionCheckoutResult> CreatePayPalOrder(
         int planId,
         string? discountCode,
@@ -250,21 +250,15 @@ public class SubscriptionService(
     }
 
     /// <summary>
-    /// Completes a PayPal subscription by capturing the payment order, creating the subscription record,
-    /// and recording the transaction. If the counsellor already has an active subscription to a different plan,
-    /// the existing subscription is cancelled and replaced.
-    /// Duplicate payment captures are detected via the provider order ID and safely returned as
-    /// <see cref="SubscriptionResult.AlreadySubscribed"/>.
+    /// Completes a PayPal subscription by capturing the approved payment and creating the subscription record.
     /// </summary>
-    /// <param name="token">The PayPal order approval token returned from the PayPal redirect.</param>
-    /// <param name="counsellorId">The ID of the counsellor completing the subscription.</param>
-    /// <param name="payerName">The name used as the payer name on the transaction.</param>
+    /// <param name="token">The PayPal order approval token.</param>
+    /// <param name="counsellorId">The counsellor identifier.</param>
+    /// <param name="payerName">The payer name recorded for the transaction.</param>
     /// <returns>
-    /// A <see cref="SubscriptionResult"/> indicating whether the subscription was newly created,
-    /// represents a plan change, or was already active (including duplicate capture detection).
+    /// A result indicating whether the subscription was created, changed from an existing plan,
+    /// or was already active.
     /// </returns>
-    /// <exception cref="KeyNotFoundException">Thrown if the plan embedded in the PayPal custom ID does not exist.</exception>
-    /// <exception cref="Exception">Thrown if the PayPal custom ID cannot be parsed as a valid plan identifier.</exception>
     public async Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string payerName)
     {
         var (captureId, customId, capturedAmount) = await _payPalService.CaptureOrder(token);

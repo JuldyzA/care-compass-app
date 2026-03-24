@@ -8,11 +8,8 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Controllers;
 
 /// <summary>
-/// Controller responsible for handling subscription workflows,
-/// including initiating PayPal payments, processing subscription success,
-/// handling cancellations, and assigning counsellor roles.
-/// Accessible to authenticated users with the roles
-/// <c>Registered_Visitor</c>, <c>Paid_Counselor</c>, or <c>Free_Counselor</c>.
+/// Handles subscription workflows, including PayPal checkout, success and failure callbacks,
+/// cancellation handling, and counsellor role assignment.
 /// </summary>
 [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
 public class SubscriptionController : Controller
@@ -329,6 +326,10 @@ public class SubscriptionController : Controller
         return View();
     }
 
+    /// <summary>
+    /// Displays the payment failure page after an unsuccessful subscription attempt.
+    /// </summary>
+    /// <returns>The failure view.</returns>
     [HttpGet]
     public IActionResult Failed()
     {
@@ -398,6 +399,15 @@ public class SubscriptionController : Controller
         await _signInManager.RefreshSignInAsync(user);
     }
 
+    /// <summary>
+    /// Returns the existing counsellor profile for the user, or creates a new counsellor record if one does not exist.
+    /// The display name is built from the user's profile when available, and falls back to the user name or email.
+    /// </summary>
+    /// <param name="userId">The identity user ID.</param>
+    /// <param name="userName">The user's user name.</param>
+    /// <param name="email">The user's email address.</param>
+    /// <param name="existingCounsellor">The existing counsellor record, if already loaded.</param>
+    /// <returns>The existing or newly created counsellor record.</returns>
     private async Task<Models.Counsellor> EnsureCounsellorAsync(
         string userId,
         string? userName,

@@ -1,5 +1,8 @@
 namespace TeamYellow.DTOs;
 
+/// <summary>
+/// Represents the data required to create a new payment transaction.
+/// </summary>
 public class AddTransactionDto
 {
     public int SubscriptionId { get; set; }

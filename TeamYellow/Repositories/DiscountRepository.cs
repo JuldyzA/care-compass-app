@@ -5,6 +5,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
+    /// <summary>
+    /// Defines data access operations for <see cref="PaymentTransaction"/> entities.
+    /// </summary>
     public class DiscountRepository
     {
         private readonly ApplicationDbContext _context;
@@ -16,6 +19,12 @@ namespace TeamYellow.Repositories
             _logger = logger;
         }
 
+        /// <summary>
+        /// Checks whether a discount code already exists, optionally excluding a specific discount record.
+        /// </summary>
+        /// <param name="discountCode">The discount code to check.</param>
+        /// <param name="excludeDiscountId">An optional discount identifier to exclude from the check.</param>
+        /// <returns><c>true</c> if the discount code already exists; otherwise <c>false</c>.</returns>
         public async Task<bool> DiscountCodeExistsAsync(string discountCode, int? excludeDiscountId = null)
         {
             var normalizedCode = discountCode.Trim().ToUpperInvariant();
@@ -50,6 +59,12 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync(d => d.DiscountId == discountId);
         }
 
+        /// <summary>
+        /// Retrieves a specific discount associated with a given plan.
+        /// </summary>
+        /// <param name="planId">The plan identifier.</param>
+        /// <param name="discountId">The discount identifier.</param>
+        /// <returns>The matching discount for the plan, or <c>null</c> if not found.</returns>
         public async Task<Discount?> GetDiscountForPlanByIdAsync(int planId, int discountId)
         {
             return await _context.PlanDiscounts
@@ -88,6 +103,11 @@ namespace TeamYellow.Repositories
             }
         }
 
+        /// <summary>
+        /// Deletes the specified discount if it is not currently associated with any plans.
+        /// </summary>
+        /// <param name="discountId">The discount identifier.</param>
+        /// <returns><c>true</c> if the discount was deleted; otherwise <c>false</c>.</returns>
         public async Task<bool> DeleteIfUnusedAsync(int discountId)
         {
             var discount = await _context.Discounts
@@ -122,6 +142,12 @@ namespace TeamYellow.Repositories
             }
         }
 
+        /// <summary>
+        /// Retrieves the currently valid discount for a plan using the supplied discount code.
+        /// </summary>
+        /// <param name="planId">The plan identifier.</param>
+        /// <param name="discountCode">The discount code to validate.</param>
+        /// <returns>The valid discount for the plan, or <c>null</c> if none applies.</returns>
         public async Task<Discount?> GetValidDiscountForPlanAsync(int planId, string discountCode)
         {
             if (string.IsNullOrWhiteSpace(discountCode))
@@ -141,6 +167,12 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Retrieves the currently valid discount for a plan using the discount identifier.
+        /// </summary>
+        /// <param name="planId">The plan identifier.</param>
+        /// <param name="discountId">The discount identifier.</param>
+        /// <returns>The valid discount for the plan, or <c>null</c> if none applies.</returns>
         public async Task<Discount?> GetValidDiscountForPlanByIdAsync(int planId, int discountId)
         {
             var nowUtc = DateTime.UtcNow;
@@ -156,6 +188,11 @@ namespace TeamYellow.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Creates a new discount and associates it with the specified plans in a single transaction.
+        /// </summary>
+        /// <param name="discount">The discount entity to create.</param>
+        /// <param name="planIds">The plan identifiers to associate with the discount.</param>
         public async Task CreateDiscountWithPlansAsync(Discount discount, IEnumerable<int> planIds)
         {
             IDbContextTransaction? transaction = null;

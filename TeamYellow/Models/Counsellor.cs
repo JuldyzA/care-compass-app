@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Represents a counsellor account, including profile information, subscriptions, and clients.
+/// </summary>
 [Table("Counsellor")]
 public class Counsellor
 {

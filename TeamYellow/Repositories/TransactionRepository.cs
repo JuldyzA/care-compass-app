@@ -20,12 +20,10 @@ public class TransactionRepository : ITransactionRepository
     }
 
     /// <summary>
-    /// Creates and persists a new payment transaction record from the provided DTO.
-    /// The transaction status is set to <see cref="PaymentTransactionStatus.Captured"/>
-    /// and the payment timestamp is recorded as the current UTC time.
+    /// Creates and persists a new payment transaction record from the provided data transfer object.
     /// </summary>
     /// <param name="addTransactionDto">The DTO containing transaction creation data.</param>
-    /// <returns>The newly created and persisted <see cref="PaymentTransaction"/> entity.</returns>
+    /// <returns>The newly created payment transaction.</returns>
     public async Task<PaymentTransaction> CreateTransaction(AddTransactionDto addTransactionDto)
     {
         var transaction = new PaymentTransaction
@@ -70,10 +68,9 @@ public class TransactionRepository : ITransactionRepository
     }
 
     /// <summary>
-    /// Checks whether a payment transaction with the specified provider order ID already exists.
-    /// Used to detect and prevent duplicate payment processing (idempotency check).
+    /// Checks whether a payment transaction already exists for the specified provider order identifier.
     /// </summary>
-    /// <param name="providerOrderId">The external payment provider's order identifier to search for.</param>
+    /// <param name="providerOrderId">The external provider order identifier.</param>
     /// <returns><c>true</c> if a matching transaction exists; otherwise <c>false</c>.</returns>
     public async Task<bool> ExistsByProviderOrderId(string providerOrderId)
     {

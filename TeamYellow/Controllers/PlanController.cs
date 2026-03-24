@@ -10,9 +10,8 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Controllers;
 
 /// <summary>
-/// Controller responsible for managing subscription plans,
-/// including listing, checkout, creation, editing, and deletion.
-/// Requires authentication by default; individual actions may restrict or relax this requirement.
+/// Handles plan browsing and checkout workflows, including plan listing,
+/// discount application, and checkout preparation.
 /// </summary>
 [Authorize]
 public class PlanController : Controller
@@ -175,6 +174,11 @@ public class PlanController : Controller
         return View(vm);
     }
 
+    /// <summary>
+    /// Redirects back to the checkout page with the submitted discount code so it can be validated and applied.
+    /// </summary>
+    /// <param name="vm">The checkout view model containing the selected plan and entered discount code.</param>
+    /// <returns>A redirect to the checkout action for the selected plan.</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
@@ -209,6 +213,11 @@ public class PlanController : Controller
         })]
     };
 
+    /// <summary>
+    /// Maps a <see cref="Plan"/> domain model to a <see cref="CheckoutVM"/> view model.
+    /// </summary>
+    /// <param name="plan">The plan domain model to map.</param>
+    /// <returns>A <see cref="CheckoutVM"/> populated from the given <paramref name="plan"/>.</returns>
     private static CheckoutVM MapToCheckoutVM(Plan plan) => new()
     {
         PlanId = plan.PlanId,

@@ -2,6 +2,10 @@
 
 namespace TeamYellow.ViewModels;
 
+/// <summary>
+/// View model representing counsellor dashboard information, including subscription
+/// details, client statistics, and growth metrics.
+/// </summary>
 public class CounsellorDashboardVM
 {
     public string? ProfilePhotoUrl { get; set; }

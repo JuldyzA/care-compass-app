@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Represents additional profile information stored for an identity user.
+/// </summary>
 [Table("UserProfile")]
 public class UserProfile
 {

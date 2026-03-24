@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Represents a feature included in a subscription plan.
+/// </summary>
 [Table("PlanFeature")]
 public class PlanFeature
 {

@@ -3,12 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Defines the supported discount calculation types.
+/// </summary>
 public enum DiscountType
 {
     Percent = 0,   // %
     Amount = 1     // $
 }
 
+/// <summary>
+/// Represents a discount that can be applied to eligible plans and related payment transactions.
+/// </summary>
 [Table("Discount")]
 public class Discount
 {

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Represents a user login and logout audit record.
+/// </summary>
 [Table("UserLog")]
 public class UserLog
 {

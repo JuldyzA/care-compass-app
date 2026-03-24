@@ -2,6 +2,9 @@
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Represents the many-to-many relationship between plans and discounts.
+/// </summary>
 [Table("PlanDiscount")]
 public class PlanDiscount
 {

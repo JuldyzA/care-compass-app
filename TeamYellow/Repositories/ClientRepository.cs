@@ -6,6 +6,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories;
 
+/// <summary>
+/// Repository providing data access operations for <see cref="Client"/> entities.
+/// </summary>
 public class ClientRepository
 {
     private readonly ApplicationDbContext _context;

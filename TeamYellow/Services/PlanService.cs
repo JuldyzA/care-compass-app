@@ -31,6 +31,11 @@ namespace TeamYellow.Services
             return await _planRepository.GetByIdWithFeaturesAsync(id);
         }
 
+        /// <summary>
+        /// Updates a plan and its related features using the submitted view model.
+        /// </summary>
+        /// <param name="vm">The view model containing the updated plan data.</param>
+        /// <returns><c>true</c> if the update succeeds; otherwise <c>false</c>.</returns>
         public async Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm)
         {
             var plan = new Plan

@@ -8,8 +8,6 @@ namespace TeamYellow.Services;
 
 /// <summary>
 /// Service that communicates with the PayPal REST API to create and capture payment orders.
-/// Supports both Sandbox and Live environments, configurable via <c>ApiKeys:PayPal:Mode</c>.
-/// Access tokens are cached and refreshed automatically when they expire.
 /// </summary>
 public class PayPalService : IPayPalService
 {
@@ -44,15 +42,9 @@ public class PayPalService : IPayPalService
     }
 
     /// <summary>
-    /// Retrieves a cached OAuth 2.0 access token from PayPal, or requests a new one if
-    /// the cached token is absent or has expired.
+    /// Retrieves a cached OAuth access token from PayPal, or requests a new one if needed.
     /// </summary>
-    /// <returns>A valid PayPal Bearer access token string.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <c>ApiKeys:PayPal:ClientId</c> or <c>ApiKeys:PayPal:ClientSecret</c>
-    /// are not configured in application secrets.
-    /// </exception>
-    /// <exception cref="Exception">Thrown if the PayPal token response does not contain an access token.</exception>
+    /// <returns>A valid PayPal bearer access token.</returns>
     private async Task<string> GetAccessToken()
     {
         if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
@@ -87,18 +79,13 @@ public class PayPalService : IPayPalService
 
     /// <summary>
     /// Creates a PayPal checkout order for a given amount and returns the buyer approval URL.
-    /// The <paramref name="customId"/> is embedded in the order so it can be retrieved after capture.
     /// </summary>
-    /// <param name="amount">The monetary amount to charge, in the specified currency.</param>
-    /// <param name="currency">The ISO 4217 currency code (e.g., <c>CAD</c>, <c>USD</c>).</param>
-    /// <param name="returnUrl">The URL PayPal redirects the buyer to after approval.</param>
-    /// <param name="cancelUrl">The URL PayPal redirects the buyer to if they cancel.</param>
-    /// <param name="customId">
-    /// An application-defined identifier embedded in the order (e.g., the plan ID),
-    /// returned in the capture response for reconciliation.
-    /// </param>
-    /// <returns>The PayPal buyer approval URL that the user should be redirected to.</returns>
-    /// <exception cref="Exception">Thrown if the PayPal response does not include an approval link.</exception>
+    /// <param name="amount">The monetary amount to charge.</param>
+    /// <param name="currency">The ISO currency code.</param>
+    /// <param name="returnUrl">The URL PayPal redirects to after approval.</param>
+    /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels.</param>
+    /// <param name="customId">The application-defined identifier to embed in the order.</param>
+    /// <returns>The PayPal buyer approval URL.</returns>
     public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
     {
         var accessToken = await GetAccessToken();
@@ -144,23 +131,12 @@ public class PayPalService : IPayPalService
 
     /// <summary>
     /// Captures a previously approved PayPal order using its approval token.
-    /// Returns the PayPal capture ID, the custom ID embedded when the order was created,
-    /// and the total captured amount for the single purchase unit used by this application.
     /// </summary>
-    /// <param name="token">The PayPal order approval token (returned by PayPal as the <c>token</c> query parameter).</param>
+    /// <param name="token">The PayPal order approval token.</param>
     /// <returns>
-    /// A tuple containing:
-    /// <list type="bullet">
-    ///   <item><description><c>CaptureId</c> – the PayPal capture transaction identifier.</description></item>
-    ///   <item><description><c>CustomId</c> – the application-defined value set when the order was created (e.g., plan ID).</description></item>
-    ///   <item><description><c>CapturedAmount</c> – the total monetary amount captured for the single purchase unit
-    ///   used by this application, parsed from PayPal's capture response using invariant culture.</description></item>
-    /// </list>
+    /// A tuple containing the PayPal capture identifier, embedded custom identifier,
+    /// and total captured amount.
     /// </returns>
-    /// <exception cref="Exception">
-    /// Thrown if the PayPal response is missing <c>custom_id</c>, does not contain exactly one purchase unit,
-    /// is missing capture amounts, or if the payment capture status is not <c>COMPLETED</c>.
-    /// </exception>
     public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();

@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamYellow.Models;
 
+/// <summary>
+/// Defines the possible lifecycle states of a subscription.
+/// </summary>
 public enum SubscriptionStatus
 {
     Active = 1,
@@ -10,6 +13,9 @@ public enum SubscriptionStatus
     Expired = 3,
 }
 
+/// <summary>
+/// Represents a counsellor's subscription to a plan, including status and billing cycle details.
+/// </summary>
 [Table("Subscription")]
 public class Subscription
 {

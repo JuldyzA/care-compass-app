@@ -23,8 +23,9 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Returns all roles projected into a RoleVM
+        /// Returns all roles projected into a role view model.
         /// </summary>
+        /// <returns>A collection of role view models.</returns>
         public async Task<IEnumerable<RoleVM>> GetAllRolesVMAsync()
         {
             var roles = await _context.Roles
@@ -40,6 +41,8 @@ namespace TeamYellow.Repositories
         /// <summary>
         /// Finds a role by its name.
         /// </summary>
+        /// <param name="roleName">The role name to search for.</param>
+        /// <returns>The matching identity role, or <c>null</c> if not found.</returns>
         public async Task<IdentityRole?> GetRoleAsync(string roleName)
         {
             IdentityRole? role = await _context.Roles
@@ -50,8 +53,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Finds a role by name and returns it as a RoleVM.
+        /// Finds a role by name and returns it as a role view model.
         /// </summary>
+        /// <param name="roleName">The role name to search for.</param>
+        /// <returns>The matching role view model, or <c>null</c> if not found.</returns>
         public async Task<RoleVM?> GetRoleVMAsync(string roleName)
         {
             IdentityRole? role = await GetRoleAsync(roleName);
@@ -67,6 +72,8 @@ namespace TeamYellow.Repositories
         /// <summary>
         /// Creates a new role if it does not already exist.
         /// </summary>
+        /// <param name="roleName">The role name to create.</param>
+        /// <returns><c>true</c> if the role was created; otherwise <c>false</c>.</returns>
         public async Task<bool> CreateRoleAsync(string roleName)
         {
             if (await GetRoleAsync(roleName) != null)
@@ -100,8 +107,10 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Deletes a role by name, but only if it exists and has no assigned users.
+        /// Deletes a role if it exists and is not assigned to any users.
         /// </summary>
+        /// <param name="roleName">The role name to delete.</param>
+        /// <returns><c>true</c> if the role was deleted; otherwise <c>false</c>.</returns>
         public async Task<bool> DeleteRoleAsync(string roleName)
         {
             try
@@ -140,9 +149,9 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Builds a SelectList for role dropdowns
-        /// Useful for forms where the user selects a role
+        /// Builds a select list of available roles for use in dropdown controls.
         /// </summary>
+        /// <returns>A select list containing all available roles.</returns>
         public async Task<SelectList> GetRoleSelectListAsync()
         {
             var roles = await _context.Roles
