@@ -8,9 +8,14 @@ namespace TeamYellow.Services
     /// Service that implements plan management business logic by delegating
     /// data access operations to <see cref="IPlanRepository"/>.
     /// </summary>
-    public class PlanService(IPlanRepository planRepository) : IPlanService
+    public class PlanService : IPlanService
     {
-        private readonly IPlanRepository _planRepository = planRepository;
+        private readonly IPlanRepository _planRepository;
+
+        public PlanService(IPlanRepository planRepository)
+        {
+            _planRepository = planRepository;
+        }
 
         /// <summary>
         /// Retrieves all currently active subscription plans.

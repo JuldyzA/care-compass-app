@@ -10,20 +10,30 @@ namespace TeamYellow.Services;
 /// Service implementing subscription management business logic, including
 /// free plan subscriptions, PayPal order creation, and PayPal payment capture.
 /// </summary>
-public class SubscriptionService(
-    IPlanRepository planRepository,
-    ISubscriptionRepository subscriptionRepository,
-    ITransactionRepository transactionRepository,
-    DiscountRepository discountRepository,
-    IPayPalService payPalService,
-    ApplicationDbContext context) : ISubscriptionService
+public class SubscriptionService : ISubscriptionService
 {
-    private readonly IPlanRepository _planRepository = planRepository;
-    private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
-    private readonly ITransactionRepository _transactionRepository = transactionRepository;
-    private readonly DiscountRepository _discountRepository = discountRepository;
-    private readonly IPayPalService _payPalService = payPalService;
-    private readonly ApplicationDbContext _context = context;
+    private readonly IPlanRepository _planRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly ITransactionRepository _transactionRepository;
+    private readonly DiscountRepository _discountRepository;
+    private readonly IPayPalService _payPalService;
+    private readonly ApplicationDbContext _context;
+
+    public SubscriptionService(
+        IPlanRepository planRepository,
+        ISubscriptionRepository subscriptionRepository,
+        ITransactionRepository transactionRepository,
+        DiscountRepository discountRepository,
+        IPayPalService payPalService,
+        ApplicationDbContext context)
+    {
+        _planRepository = planRepository;
+        _subscriptionRepository = subscriptionRepository;
+        _transactionRepository = transactionRepository;
+        _discountRepository = discountRepository;
+        _payPalService = payPalService;
+        _context = context;
+    }
 
     /// <summary>
     /// Subscribes a counsellor to a free plan.
