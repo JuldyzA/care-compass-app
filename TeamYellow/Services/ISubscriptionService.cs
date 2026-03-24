@@ -11,7 +11,9 @@ namespace TeamYellow.Services
     }
 
     /// <summary>
-    /// Defines business operations for creating checkout flows and managing subscriptions.
+    /// Represents the result of starting a subscription checkout flow,
+    /// including whether PayPal is required, whether the selected plan is effectively free,
+    /// the applied discount identifier, and the approval URL when payment is needed.
     /// </summary>
     public class SubscriptionCheckoutResult
     {

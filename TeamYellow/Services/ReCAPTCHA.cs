@@ -76,9 +76,24 @@ namespace TeamYellow.Services
                     };
                 }
 
-                var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
+                try
+                {
+                    var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
 
-                return result ?? new ReCaptchaValidationResult { Success = false };
+                    return result ?? new ReCaptchaValidationResult
+                    {
+                        Success = false,
+                        ErrorCodes = new List<string> { "empty-response" }
+                    };
+                }
+                catch (JsonException)
+                {
+                    return new ReCaptchaValidationResult
+                    {
+                        Success = false,
+                        ErrorCodes = new List<string> { "invalid-json" }
+                    };
+                }
             }
         }
     }

@@ -21,8 +21,13 @@ namespace TeamYellow.Services
         }
 
         /// <summary>
-        /// Service that sends transactional emails through the Brevo email API.
+        /// Sends a single transactional email through the Brevo API.
         /// </summary>
+        /// <param name="payload">The email payload containing recipient, subject, and body content.</param>
+        /// <returns>The HTTP response returned by the Brevo API.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the Brevo API responds with a non-success status code.
+        /// </exception>
         public async Task<HttpResponseMessage> SendEmailAsync(ComposeEmailModel payload)
         {
             var apiKey = _configuration["Brevo:ApiKey"];
