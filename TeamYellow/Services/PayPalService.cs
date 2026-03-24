@@ -13,6 +13,7 @@ public class PayPalService : IPayPalService
 {
     private readonly HttpClient _client;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<PayPalService> _logger;
 
     private static string? _cachedToken;
     private static DateTime _tokenExpiry = DateTime.MinValue;
@@ -26,15 +27,12 @@ public class PayPalService : IPayPalService
     /// The application configuration. Reads <c>ApiKeys:PayPal:Mode</c> (defaults to <c>Sandbox</c>)
     /// to determine the PayPal API base URL.
     /// </param>
-    public PayPalService(HttpClient client, IConfiguration configuration)
+    public PayPalService(HttpClient client, IConfiguration configuration, ILogger<PayPalService> logger)
     {
         _client = client;
         _configuration = configuration;
+        _logger = logger;
 
-        // Configuration key: ApiKeys:PayPal:Mode
-        // Expected values:
-        //   - "Sandbox" (default if not set) -> uses https://api-m.sandbox.paypal.com
-        //   - "Live"                        -> uses https://api-m.paypal.com
         var mode = _configuration["ApiKeys:PayPal:Mode"] ?? "Sandbox";
         _client.BaseAddress = new Uri(mode == "Live"
             ? "https://api-m.paypal.com"
@@ -48,7 +46,10 @@ public class PayPalService : IPayPalService
     private async Task<string> GetAccessToken()
     {
         if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
+        {
+            _logger.LogInformation("Using cached PayPal access token.");
             return _cachedToken;
+        }
 
         var clientId = _configuration["ApiKeys:PayPal:ClientId"];
         var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
@@ -58,6 +59,8 @@ public class PayPalService : IPayPalService
 
         if (string.IsNullOrEmpty(clientSecret))
             throw new InvalidOperationException("PayPal ClientSecret is not configured. Set ApiKeys:PayPal:ClientSecret in secrets.json.");
+
+        _logger.LogInformation("Requesting new PayPal access token.");
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
         request.Headers.Authorization = new AuthenticationHeaderValue(
@@ -74,6 +77,8 @@ public class PayPalService : IPayPalService
         var expiresIn = json?["expires_in"]?.GetValue<int>() ?? 32400;
         _tokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60);
 
+        _logger.LogInformation("PayPal access token acquired successfully.");
+
         return _cachedToken;
     }
 
@@ -89,6 +94,8 @@ public class PayPalService : IPayPalService
     public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
     {
         var accessToken = await GetAccessToken();
+
+        _logger.LogInformation("Creating PayPal order for amount {Amount} {Currency}.", amount, currency);
 
         var orderRequest = new
         {
@@ -126,7 +133,14 @@ public class PayPalService : IPayPalService
         var links = json?["links"]?.AsArray();
         var approveLink = links?.FirstOrDefault(l => l?["rel"]?.ToString() == "approve")?["href"]?.ToString();
 
-        return approveLink ?? throw new Exception("PayPal approval link not found");
+        if (approveLink == null)
+        {
+            _logger.LogError("PayPal approval link was not found in the create order response.");
+            throw new Exception("PayPal approval link not found");
+        }
+
+        _logger.LogInformation("PayPal order created successfully.");
+        return approveLink;
     }
 
     /// <summary>
@@ -140,6 +154,8 @@ public class PayPalService : IPayPalService
     public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
     {
         var accessToken = await GetAccessToken();
+
+        _logger.LogInformation("Capturing PayPal order for token {Token}.", token);
 
         var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -188,8 +204,13 @@ public class PayPalService : IPayPalService
         }
 
         if (status == "COMPLETED")
-            return (captureId, customId, capturedAmount);
+        {
+            _logger.LogInformation("PayPal capture completed successfully. CaptureId {CaptureId}, Amount {CapturedAmount}.", captureId, capturedAmount);
 
+            return (captureId, customId, capturedAmount);
+        }
+
+        _logger.LogError("PayPal capture failed. Status: {Status}", status);
         throw new Exception($"Payment capture failed. Status: {status}");
     }
 }

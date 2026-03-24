@@ -11,11 +11,13 @@ namespace TeamYellow.Services
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<BrevoEmailService> _logger;
 
-        public BrevoEmailService(IConfiguration configuration, HttpClient httpClient)
+        public BrevoEmailService(IConfiguration configuration, HttpClient httpClient, ILogger<BrevoEmailService> logger)
         {
             _configuration = configuration;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         /// <summary>
@@ -47,15 +49,19 @@ namespace TeamYellow.Services
             request.Headers.Add("api-key", apiKey);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
+            _logger.LogInformation("Sending Brevo email to {Email} with subject {Subject}.", payload.Email, payload.Subject);
+
             var response = await _httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Brevo email failed for recipient {Email}. Response: {Error}", payload.Email, error);
                 response.Dispose();
                 throw new InvalidOperationException($"Brevo email failed: {error}");
             }
 
+            _logger.LogInformation("Brevo email sent successfully to {Email}.", payload.Email);
             return response;
         }
     }

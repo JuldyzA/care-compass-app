@@ -18,6 +18,7 @@ public class SubscriptionService : ISubscriptionService
     private readonly DiscountRepository _discountRepository;
     private readonly IPayPalService _payPalService;
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<SubscriptionService> _logger;
 
     public SubscriptionService(
         IPlanRepository planRepository,
@@ -25,7 +26,8 @@ public class SubscriptionService : ISubscriptionService
         ITransactionRepository transactionRepository,
         DiscountRepository discountRepository,
         IPayPalService payPalService,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ILogger<SubscriptionService> logger)
     {
         _planRepository = planRepository;
         _subscriptionRepository = subscriptionRepository;
@@ -33,6 +35,7 @@ public class SubscriptionService : ISubscriptionService
         _discountRepository = discountRepository;
         _payPalService = payPalService;
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -59,7 +62,10 @@ public class SubscriptionService : ISubscriptionService
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
         if (existing != null && existing.PlanId == planId)
+        {
+            _logger.LogWarning("Free subscription skipped because counsellor {CounsellorId} is already subscribed to plan {PlanId}.", counsellorId, planId);
             return SubscriptionResult.AlreadySubscribed;
+        }
 
         await using var tx = await _context.Database.BeginTransactionAsync();
 
@@ -89,10 +95,15 @@ public class SubscriptionService : ISubscriptionService
             });
 
             await tx.CommitAsync();
-            return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+
+            var result = existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+            _logger.LogInformation("Free subscription completed for counsellor {CounsellorId}, plan {PlanId}, result {Result}.", counsellorId, planId, result);
+
+            return result;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while creating free subscription for counsellor {CounsellorId} and plan {PlanId}.", counsellorId, planId);
             await tx.RollbackAsync();
             throw;
         }
@@ -143,7 +154,10 @@ public class SubscriptionService : ISubscriptionService
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
         if (existing != null && existing.PlanId == planId)
+        {
+            _logger.LogWarning("Discounted zero-amount subscription skipped because counsellor {CounsellorId} is already subscribed to plan {PlanId}.", counsellorId, planId);
             return SubscriptionResult.AlreadySubscribed;
+        }
 
         await using var tx = await _context.Database.BeginTransactionAsync();
 
@@ -174,10 +188,17 @@ public class SubscriptionService : ISubscriptionService
             });
 
             await tx.CommitAsync();
-            return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+
+            var result = existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+            _logger.LogInformation("Discounted zero-amount subscription completed for counsellor {CounsellorId}, plan {PlanId}, discount {DiscountId}, result {Result}.", 
+                counsellorId, planId, discountId, result);
+
+            return result;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while creating discounted zero-amount subscription for counsellor {CounsellorId}, plan {PlanId}, discount {DiscountId}.", 
+                counsellorId, planId, discountId);
             await tx.RollbackAsync();
             throw;
         }
@@ -207,6 +228,8 @@ public class SubscriptionService : ISubscriptionService
 
         if (plan.Price == 0m)
         {
+            _logger.LogInformation("Checkout for plan {PlanId} is an actual free plan and does not require PayPal.", planId);
+
             return new SubscriptionCheckoutResult
             {
                 RequiresPayPal = false,
@@ -238,6 +261,8 @@ public class SubscriptionService : ISubscriptionService
 
         if (finalAmount == 0m)
         {
+            _logger.LogInformation("Checkout for plan {PlanId} became zero-amount after discount {DiscountId}; PayPal not required.", planId, discountId);
+
             return new SubscriptionCheckoutResult
             {
                 RequiresPayPal = false,
@@ -247,8 +272,12 @@ public class SubscriptionService : ISubscriptionService
             };
         }
 
+        _logger.LogInformation("Creating PayPal order for plan {PlanId}, discount {DiscountId}, final amount {FinalAmount}.", planId, discountId, finalAmount);
+
         var customId = $"{planId}|{discountId.GetValueOrDefault(0)}|{finalAmount.ToString("0.00", CultureInfo.InvariantCulture)}";
         var approvalUrl = await _payPalService.CreateOrder(finalAmount, "CAD", returnUrl, cancelUrl, customId);
+
+        _logger.LogInformation("PayPal order created successfully for plan {PlanId}.", planId);
 
         return new SubscriptionCheckoutResult
         {
@@ -306,10 +335,16 @@ public class SubscriptionService : ISubscriptionService
         var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
 
         if (existing != null && existing.PlanId == planId)
+        {
+            _logger.LogWarning("PayPal subscription completion skipped because counsellor {CounsellorId} is already subscribed to plan {PlanId}.", counsellorId, planId);
             return SubscriptionResult.AlreadySubscribed;
+        }
 
         if (await _transactionRepository.ExistsByProviderOrderId(captureId))
+        {
+            _logger.LogWarning("PayPal subscription completion skipped because capture {CaptureId} was already processed.", captureId);
             return SubscriptionResult.AlreadySubscribed;
+        }
 
         const decimal amountTolerance = 0.01m;
 
@@ -360,10 +395,15 @@ public class SubscriptionService : ISubscriptionService
             });
 
             await tx.CommitAsync();
-            return existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+            var result = existing != null ? SubscriptionResult.PlanChanged : SubscriptionResult.Created;
+            _logger.LogInformation("PayPal subscription completed for counsellor {CounsellorId}, plan {PlanId}, capture {CaptureId}, amount {CapturedAmount}, result {Result}.", 
+                counsellorId, planId, captureId, capturedAmount, result);
+
+            return result;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while completing PayPal subscription for counsellor {CounsellorId}, plan {PlanId}, capture {CaptureId}.", counsellorId, planId, captureId);
             await tx.RollbackAsync();
             throw;
         }
