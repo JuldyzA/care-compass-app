@@ -3,7 +3,7 @@
 namespace TeamYellow.Helpers
 {
     /// <summary>
-    /// Provides helper methods for mapping counsellor dashboard data between entities, DTOs, and view models.
+    /// Provides helper methods for calculating discount amounts and final plan prices.
     /// </summary>
     public static class DiscountCalculator
     {

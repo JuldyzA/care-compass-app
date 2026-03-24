@@ -3,16 +3,19 @@
 namespace TeamYellow.Services
 {
     /// <summary>
-    /// Contains helper types for validating Google reCAPTCHA responses.
+    /// Contains types used to verify Google reCAPTCHA responses.
     /// </summary>
     public class ReCAPTCHA
     {
         /// <summary>
-        /// Represents the result returned by Google reCAPTCHA verification.
+        /// Represents the response returned by Google's reCAPTCHA verification API.
         /// </summary>
         public class ReCaptchaValidationResult
         {
+            [JsonProperty("success")]
             public bool Success { get; set; }
+            
+            [JsonProperty("hostname")] 
             public string? HostName { get; set; }
 
             [JsonProperty("challenge_ts")]
@@ -23,27 +26,36 @@ namespace TeamYellow.Services
         }
 
         /// <summary>
-        /// Provides methods for validating Google reCAPTCHA responses.
+        /// Validates submitted reCAPTCHA tokens against Google's verification endpoint.
         /// </summary>
         public class ReCaptchaValidator
         {
+            private readonly HttpClient _httpClient;
+
             /// <summary>
-            /// Validates the submitted reCAPTCHA response against the Google verification endpoint.
+            /// Initializes a new instance of <see cref="ReCaptchaValidator"/>.
+            /// </summary>
+            /// <param name="httpClient">The HTTP client used to call the Google reCAPTCHA API.</param>
+            public ReCaptchaValidator(HttpClient httpClient)
+            {
+                _httpClient = httpClient;
+            }
+
+            /// <summary>
+            /// Verifies the submitted reCAPTCHA token with Google and returns the parsed validation result.
             /// </summary>
             /// <param name="secret">The server-side reCAPTCHA secret key.</param>
-            /// <param name="captchaResponse">The reCAPTCHA response token submitted by the client.</param>
-            /// <returns>The parsed reCAPTCHA validation result.</returns>
-            public static ReCaptchaValidationResult IsValid(string secret, string captchaResponse)
+            /// <param name="captchaResponse">The reCAPTCHA token submitted by the client.</param>
+            /// <returns>
+            /// A <see cref="ReCaptchaValidationResult"/> containing the verification outcome.
+            /// Returns an unsuccessful result when the token is missing or the API response cannot be parsed.
+            /// </returns>
+            public async Task<ReCaptchaValidationResult> IsValidAsync(string secret, string captchaResponse)
             {
-                if (string.IsNullOrWhiteSpace(captchaResponse))
+                if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(captchaResponse))
                 {
                     return new ReCaptchaValidationResult { Success = false };
                 }
-
-                HttpClient client = new HttpClient
-                {
-                    BaseAddress = new Uri("https://www.google.com")
-                };
 
                 var values = new List<KeyValuePair<string, string>>
                 {
@@ -51,11 +63,18 @@ namespace TeamYellow.Services
                     new("response", captchaResponse)
                 };
 
-                var content = new FormUrlEncodedContent(values);
+                using var content = new FormUrlEncodedContent(values);
+                using var response = await _httpClient.PostAsync("/recaptcha/api/siteverify", content);
+                var verificationResponse = await response.Content.ReadAsStringAsync();
 
-                var response = client.PostAsync("/recaptcha/api/siteverify", content).Result;
-
-                string verificationResponse = response.Content.ReadAsStringAsync().Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ReCaptchaValidationResult
+                    {
+                        Success = false,
+                        ErrorCodes = new List<string> { $"http-{(int)response.StatusCode}" }
+                    };
+                }
 
                 var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
 

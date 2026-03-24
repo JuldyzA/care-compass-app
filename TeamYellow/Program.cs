@@ -35,6 +35,10 @@ builder.Services.AddScoped<CounsellorService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddTransient<IEmailService, BrevoEmailService>();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ReCAPTCHA.ReCaptchaValidator>(client =>
+{
+    client.BaseAddress = new Uri("https://www.google.com");
+});
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();

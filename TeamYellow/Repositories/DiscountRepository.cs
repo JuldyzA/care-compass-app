@@ -6,7 +6,8 @@ using TeamYellow.Models;
 namespace TeamYellow.Repositories
 {
     /// <summary>
-    /// Defines data access operations for <see cref="PaymentTransaction"/> entities.
+    /// Defines data access operations for <see cref="Discount"/> entities and related
+    /// plan-discount associations.
     /// </summary>
     public class DiscountRepository
     {

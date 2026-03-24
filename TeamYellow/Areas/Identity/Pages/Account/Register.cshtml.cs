@@ -14,7 +14,6 @@ using System.Text.Encodings.Web;
 using TeamYellow.Data;
 using TeamYellow.Models;
 using TeamYellow.Services;
-using static TeamYellow.Services.ReCAPTCHA;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
 {
@@ -29,6 +28,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
+        private readonly ReCAPTCHA.ReCaptchaValidator _reCaptchaValidator;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -38,7 +38,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailService emailService,
             IConfiguration configuration,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            ReCAPTCHA.ReCaptchaValidator reCaptchaValidator)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -49,6 +50,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             _emailService = emailService;
             _configuration = configuration;
             _context = context;
+            _reCaptchaValidator = reCaptchaValidator;
         }
 
         /// <summary>
@@ -143,11 +145,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            string captchaResponse = Request.Form["g-Recaptcha-Response"];
-            string secret = _configuration["Recaptcha:SecretKey"];
+            string captchaResponse = Request.Form["g-recaptcha-response"];
+            string secret = _configuration["Recaptcha:SecretKey"] ?? string.Empty;
 
-            ReCaptchaValidationResult resultCaptcha =
-                ReCaptchaValidator.IsValid(secret, captchaResponse);
+            ReCAPTCHA.ReCaptchaValidationResult resultCaptcha = await _reCaptchaValidator.IsValidAsync(secret, captchaResponse);
             
             if (!resultCaptcha.Success)
             {
