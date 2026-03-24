@@ -152,8 +152,24 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             
             if (!resultCaptcha.Success)
             {
-                _logger.LogWarning("Registration blocked due to invalid reCAPTCHA for email {Email}.", Input.Email);
-                ModelState.AddModelError(string.Empty, "The ReCaptcha is invalid.");
+                var serviceFailure = resultCaptcha.ErrorCodes.Contains("http-request-failed") ||
+                    resultCaptcha.ErrorCodes.Contains("request-timeout") ||
+                    resultCaptcha.ErrorCodes.Any(e => e.StartsWith("http-"));
+
+                if (serviceFailure)
+                {
+                    _logger.LogWarning("Registration could not verify reCAPTCHA for email {Email} due to a verification service issue. ErrorCodes: {ErrorCodes}", 
+                        Input.Email, string.Join(", ", resultCaptcha.ErrorCodes));
+
+                    ModelState.AddModelError(string.Empty, "reCAPTCHA verification is temporarily unavailable. Please try again.");
+                }
+                else
+                {
+                    _logger.LogWarning("Registration blocked due to invalid reCAPTCHA for email {Email}. ErrorCodes: {ErrorCodes}", 
+                        Input.Email, string.Join(", ", resultCaptcha.ErrorCodes));
+
+                    ModelState.AddModelError(string.Empty, "The reCAPTCHA is invalid.");
+                }
             }
 
             if (ModelState.IsValid)

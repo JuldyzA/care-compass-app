@@ -14,8 +14,8 @@ namespace TeamYellow.Services
         {
             [JsonProperty("success")]
             public bool Success { get; set; }
-            
-            [JsonProperty("hostname")] 
+
+            [JsonProperty("hostname")]
             public string? HostName { get; set; }
 
             [JsonProperty("challenge_ts")]
@@ -54,7 +54,11 @@ namespace TeamYellow.Services
             {
                 if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(captchaResponse))
                 {
-                    return new ReCaptchaValidationResult { Success = false };
+                    return new ReCaptchaValidationResult
+                    {
+                        Success = false,
+                        ErrorCodes = new List<string> { "missing-input" }
+                    };
                 }
 
                 var values = new List<KeyValuePair<string, string>>
@@ -63,35 +67,54 @@ namespace TeamYellow.Services
                     new("response", captchaResponse)
                 };
 
-                using var content = new FormUrlEncodedContent(values);
-                using var response = await _httpClient.PostAsync("/recaptcha/api/siteverify", content);
-                var verificationResponse = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new ReCaptchaValidationResult
-                    {
-                        Success = false,
-                        ErrorCodes = new List<string> { $"http-{(int)response.StatusCode}" }
-                    };
-                }
-
                 try
                 {
-                    var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
+                    using var content = new FormUrlEncodedContent(values);
+                    using var response = await _httpClient.PostAsync("/recaptcha/api/siteverify", content);
+                    var verificationResponse = await response.Content.ReadAsStringAsync();
 
-                    return result ?? new ReCaptchaValidationResult
+                    if (!response.IsSuccessStatusCode)
                     {
-                        Success = false,
-                        ErrorCodes = new List<string> { "empty-response" }
-                    };
+                        return new ReCaptchaValidationResult
+                        {
+                            Success = false,
+                            ErrorCodes = new List<string> { $"http-{(int)response.StatusCode}" }
+                        };
+                    }
+
+                    try
+                    {
+                        var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
+
+                        return result ?? new ReCaptchaValidationResult
+                        {
+                            Success = false,
+                            ErrorCodes = new List<string> { "empty-response" }
+                        };
+                    }
+                    catch (JsonException)
+                    {
+                        return new ReCaptchaValidationResult
+                        {
+                            Success = false,
+                            ErrorCodes = new List<string> { "invalid-json" }
+                        };
+                    }
                 }
-                catch (JsonException)
+                catch (HttpRequestException)
                 {
                     return new ReCaptchaValidationResult
                     {
                         Success = false,
-                        ErrorCodes = new List<string> { "invalid-json" }
+                        ErrorCodes = new List<string> { "http-request-failed" }
+                    };
+                }
+                catch (TaskCanceledException)
+                {
+                    return new ReCaptchaValidationResult
+                    {
+                        Success = false,
+                        ErrorCodes = new List<string> { "request-timeout" }
                     };
                 }
             }

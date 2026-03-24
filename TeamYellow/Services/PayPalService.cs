@@ -156,7 +156,7 @@ namespace TeamYellow.Services
         {
             var accessToken = await GetAccessToken();
 
-            _logger.LogInformation("Capturing PayPal order for token {Token}.", token);
+            _logger.LogInformation("Capturing PayPal order.");
 
             using var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
