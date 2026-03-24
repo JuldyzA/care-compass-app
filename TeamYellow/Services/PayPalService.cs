@@ -27,6 +27,7 @@ namespace TeamYellow.Services
         /// The application configuration. Reads <c>ApiKeys:PayPal:Mode</c> (defaults to <c>Sandbox</c>)
         /// to determine the PayPal API base URL.
         /// </param>
+        /// <param name="logger">The logger used for PayPal service diagnostics.</param>
         public PayPalService(HttpClient client, IConfiguration configuration, ILogger<PayPalService> logger)
         {
             _client = client;
@@ -45,7 +46,7 @@ namespace TeamYellow.Services
         /// <returns>A valid PayPal bearer access token.</returns>
         private async Task<string> GetAccessToken()
         {
-            if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
+            if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
             {
                 _logger.LogInformation("Using cached PayPal access token.");
                 return _cachedToken;
@@ -62,12 +63,12 @@ namespace TeamYellow.Services
 
             _logger.LogInformation("Requesting new PayPal access token.");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
             request.Headers.Authorization = new AuthenticationHeaderValue(
                 "Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}")));
             request.Content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
 
-            var response = await _client.SendAsync(request);
+            using var response = await _client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
@@ -119,11 +120,11 @@ namespace TeamYellow.Services
                 }
             };
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/v2/checkout/orders");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/v2/checkout/orders");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             request.Content = new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json");
 
-            var response = await _client.SendAsync(request);
+            using var response = await _client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
@@ -157,12 +158,12 @@ namespace TeamYellow.Services
 
             _logger.LogInformation("Capturing PayPal order for token {Token}.", token);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             request.Headers.Add("Prefer", "return=representation");
             request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
-            var response = await _client.SendAsync(request);
+            using var response = await _client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
