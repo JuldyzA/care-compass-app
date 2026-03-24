@@ -4,7 +4,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Services
 {
     /// <summary>
-    /// Defines operations for creating and capturing PayPal checkout orders.
+    /// Defines plan management operations for retrieving and updating subscription plans.
     /// </summary>
     public interface IPlanService
     {

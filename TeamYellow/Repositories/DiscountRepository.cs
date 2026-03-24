@@ -60,23 +60,6 @@ namespace TeamYellow.Repositories
         }
 
         /// <summary>
-        /// Retrieves a specific discount associated with a given plan.
-        /// </summary>
-        /// <param name="planId">The plan identifier.</param>
-        /// <param name="discountId">The discount identifier.</param>
-        /// <returns>The matching discount for the plan, or <c>null</c> if not found.</returns>
-        public async Task<Discount?> GetDiscountForPlanByIdAsync(int planId, int discountId)
-        {
-            return await _context.PlanDiscounts
-                .AsNoTracking()
-                .Where(pd =>
-                    pd.PlanId == planId &&
-                    pd.DiscountId == discountId)
-                .Select(pd => pd.Discount)
-                .FirstOrDefaultAsync();
-        }
-
-        /// <summary>
         /// Updates an existing discount entity in the database.
         /// </summary>
         /// <param name="entity">The Discount entity to update.</param>
