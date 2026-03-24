@@ -48,7 +48,7 @@ namespace TeamYellow.Services
         {
             if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
             {
-                _logger.LogInformation("Using cached PayPal access token.");
+                _logger.LogDebug("Using cached PayPal access token.");
                 return _cachedToken;
             }
 

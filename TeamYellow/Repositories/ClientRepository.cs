@@ -145,9 +145,16 @@ namespace TeamYellow.Repositories
         /// <returns>True if a client with this email exists in the database; otherwise, false.</returns>
         public async Task<bool> EmailExistsAsync(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }
+
+            var normalizedEmail = email.Trim();
+
             return await _context.Clients
                 .AsNoTracking()
-                .AnyAsync(c => c.Email.ToLower() == email.ToLower());
+                .AnyAsync(c => EF.Functions.Collate(c.Email, "NOCASE") == normalizedEmail);
         }
 
         /// <summary>
