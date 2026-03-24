@@ -13,13 +13,13 @@ namespace TeamYellow.Services
         public class ReCaptchaValidationResult
         {
             public bool Success { get; set; }
-            public string HostName { get; set; }
+            public string? HostName { get; set; }
 
             [JsonProperty("challenge_ts")]
-            public string TimeStamp { get; set; }
+            public string? TimeStamp { get; set; }
 
             [JsonProperty("error-codes")]
-            public List<string> ErrorCodes { get; set; }
+            public List<string> ErrorCodes { get; set; } = new();
         }
 
         /// <summary>
@@ -53,14 +53,13 @@ namespace TeamYellow.Services
 
                 var content = new FormUrlEncodedContent(values);
 
-                var response =
-                client.PostAsync("/recaptcha/api/siteverify", content).Result;
+                var response = client.PostAsync("/recaptcha/api/siteverify", content).Result;
 
-                string verificationResponse =
-                    response.Content.ReadAsStringAsync().Result;
+                string verificationResponse = response.Content.ReadAsStringAsync().Result;
 
-                return
-JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
+                var result = JsonConvert.DeserializeObject<ReCaptchaValidationResult>(verificationResponse);
+
+                return result ?? new ReCaptchaValidationResult { Success = false };
             }
         }
     }
