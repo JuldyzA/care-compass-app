@@ -1,18 +1,24 @@
 ﻿using TeamYellow.Models;
 
-namespace TeamYellow.DTOs;
-
-public class ClientDto
+namespace TeamYellow.DTOs
 {
-    public string FirstName { get; set; } = null!;
+    /// <summary>
+    /// Represents client data used for display and transfer between application layers.
+    /// </summary>
+    public class ClientDto
+    {
+        public int ClientId { get; set; }
 
-    public string LastName { get; set; } = null!;
+        public string FirstName { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+        public string LastName { get; set; } = null!;
 
-    public string Phone { get; set; } = null!;
+        public string Email { get; set; } = null!;
 
-    public ClientStatus Status { get; set; }
+        public string Phone { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+        public ClientStatus Status { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+    }
 }

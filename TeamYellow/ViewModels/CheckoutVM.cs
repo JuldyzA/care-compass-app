@@ -2,6 +2,10 @@
 
 namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing checkout details for a selected subscription plan,
+    /// including pricing, discount, and plan feature information.
+    /// </summary>
     public class CheckoutVM
     {
         public int PlanId { get; set; }

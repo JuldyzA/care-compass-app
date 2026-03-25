@@ -1,0 +1,272 @@
+﻿/* ========================================
+       Empty State Styling
+       ======================================== */
+
+.empty-state-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    padding: 3rem;
+    background-color: #f8f9fa;
+}
+
+.empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+.empty-state-icon {
+    font-size: 3.5rem;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+.empty-state-message {
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+/* Responsive empty state */
+@media (max-width: 768px) {
+    .empty-state-container {
+        min-height: 250px;
+        padding: 2rem;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+    }
+
+    .empty-state-message {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .empty-state-container {
+        min-height: 200px;
+        padding: 1.5rem;
+    }
+
+    .empty-state-icon {
+        font-size: 2.5rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.1rem;
+    }
+
+    .empty-state-message {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+       Avatar styles
+       ======================================== */
+
+.avatar-sm {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar-initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+    border-radius: 50%;
+}
+
+    .avatar-initial.bg-primary {
+        background-color: #3E8A90;
+    }
+
+/* ========================================
+       Sessions Table Styles
+       ======================================== */
+
+/* Table header improvements */
+.clients-table thead th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem 0.75rem;
+}
+
+.clients-table tbody td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: middle;
+}
+
+/* Sortable column hover effect */
+.sortable:hover {
+    background-color: #f1f5f9 !important;
+    cursor: pointer;
+}
+
+.sortable i {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+/* Search input styling */
+.client-search-input:focus {
+    border-color: #3E8A90;
+    box-shadow: 0 0 0 0.2rem rgba(62, 138, 144, 0.15);
+}
+
+.input-group-text {
+    background-color: white;
+}
+
+/* Row hover effect */
+.clients-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+    .clients-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+/* Badge adjustments */
+.clients-table .badge {
+    font-weight: 500;
+    padding: 0.35em 0.75em;
+    font-size: 0.8125rem;
+}
+
+/* Action buttons */
+.clients-table .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Pagination styling */
+.pagination-sm .page-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    margin: 0 2px;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+    .pagination-sm .page-link:hover {
+        background-color: #f1f5f9;
+        border-color: #3E8A90;
+        color: #3E8A90;
+    }
+
+.pagination-sm .page-item.active .page-link {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
+}
+
+.pagination-sm .page-item.disabled .page-link {
+    color: #cbd5e1;
+    pointer-events: none;
+    background-color: transparent;
+}
+
+/* Responsive Table Adjustments */
+@media (max-width: 992px) {
+    .card-header .d-flex {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .card-header .input-group {
+        width: 100% !important;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header .d-flex {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-header .input-group {
+        width: 100% !important;
+    }
+
+    .clients-table thead th {
+        font-size: 0.75rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .clients-table tbody td {
+        font-size: 0.875rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+
+    .avatar-initial {
+        font-size: 0.75rem;
+    }
+
+    .clients-table .btn-sm {
+        padding: 0.125rem 0.375rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .clients-table {
+        font-size: 0.8125rem;
+    }
+
+        .clients-table thead th {
+            font-size: 0.7rem;
+            padding: 0.5rem 0.375rem;
+        }
+
+        .clients-table tbody td {
+            font-size: 0.8125rem;
+            padding: 0.5rem 0.375rem;
+        }
+}
+
+#clientTableContainer .card-header {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    overflow: hidden;
+}

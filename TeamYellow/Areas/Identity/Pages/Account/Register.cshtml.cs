@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using TeamYellow.Data;
 using TeamYellow.Models;
 using TeamYellow.Services;
-using static TeamYellow.Services.ReCAPTCHA;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
 {
@@ -28,6 +28,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
+        private readonly ReCAPTCHA.ReCaptchaValidator _reCaptchaValidator;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -37,7 +38,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailService emailService,
             IConfiguration configuration,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            ReCAPTCHA.ReCaptchaValidator reCaptchaValidator)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -48,6 +50,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             _emailService = emailService;
             _configuration = configuration;
             _context = context;
+            _reCaptchaValidator = reCaptchaValidator;
         }
 
         /// <summary>
@@ -114,7 +117,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             public string LastName { get; set; }
         }
 
-
+        /// <summary>
+        /// Loads the registration page and prepares external login providers and reCAPTCHA settings.
+        /// </summary>
+        /// <param name="returnUrl">The URL to return to after registration completes.</param>
         public async Task OnGetAsync(string returnUrl = null)
         {
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
@@ -123,6 +129,15 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>
+        /// Processes the registration form submission, validates reCAPTCHA, creates the identity user,
+        /// assigns the default role, creates the related user profile, and sends a confirmation email.
+        /// </summary>
+        /// <param name="returnUrl">The URL to return to after registration completes.</param>
+        /// <returns>
+        /// A redirect to the confirmation page or return URL when successful; otherwise returns the current page
+        /// with validation or processing errors.
+        /// </returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {           
             returnUrl ??= Url.Content("~/");
@@ -130,18 +145,31 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            // Read the reCAPTCHA response posted from the form
-            string captchaResponse = Request.Form["g-Recaptcha-Response"];
-            string secret = _configuration["Recaptcha:SecretKey"];
+            string captchaResponse = Request.Form["g-recaptcha-response"];
+            string secret = _configuration["Recaptcha:SecretKey"] ?? string.Empty;
 
-            ReCaptchaValidationResult resultCaptcha =
-                ReCaptchaValidator.IsValid(secret, captchaResponse);
-
-            // Invalidate the form if the captcha is invalid.
+            ReCAPTCHA.ReCaptchaValidationResult resultCaptcha = await _reCaptchaValidator.IsValidAsync(secret, captchaResponse);
+            
             if (!resultCaptcha.Success)
             {
-                ModelState.AddModelError(string.Empty,
-                    "The ReCaptcha is invalid.");
+                var serviceFailure = resultCaptcha.ErrorCodes.Contains("http-request-failed") ||
+                    resultCaptcha.ErrorCodes.Contains("request-timeout") ||
+                    resultCaptcha.ErrorCodes.Any(e => e.StartsWith("http-"));
+
+                if (serviceFailure)
+                {
+                    _logger.LogWarning("Registration could not verify reCAPTCHA for email {Email} due to a verification service issue. ErrorCodes: {ErrorCodes}", 
+                        Input.Email, string.Join(", ", resultCaptcha.ErrorCodes));
+
+                    ModelState.AddModelError(string.Empty, "reCAPTCHA verification is temporarily unavailable. Please try again.");
+                }
+                else
+                {
+                    _logger.LogWarning("Registration blocked due to invalid reCAPTCHA for email {Email}. ErrorCodes: {ErrorCodes}", 
+                        Input.Email, string.Join(", ", resultCaptcha.ErrorCodes));
+
+                    ModelState.AddModelError(string.Empty, "The reCAPTCHA is invalid.");
+                }
             }
 
             if (ModelState.IsValid)
@@ -151,13 +179,18 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-                await using var transaction = await _context.Database.BeginTransactionAsync();
+                IDbContextTransaction transaction = null;
 
                 try
                 {
+                    transaction = await _context.Database.BeginTransactionAsync();
+
                     var result = await _userManager.CreateAsync(user, Input.Password);
                     if (!result.Succeeded)
                     {
+                        var createErrors = string.Join("; ", result.Errors.Select(e => $"[{e.Code}] {e.Description}"));
+                        _logger.LogWarning("Registration failed for email {Email} due to identity validation errors. Errors: {Errors}", Input.Email, createErrors);
+
                         foreach (var error in result.Errors)
                         {
                             ModelState.AddModelError(string.Empty, error.Description);
@@ -212,14 +245,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     _context.UserProfiles.Add(userProfile);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    _logger.LogInformation("Registration completed successfully for user {UserId}.", user.Id);
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
+                    if (transaction != null)
+                    {
+                        await transaction.RollbackAsync();
+                    }
                     _logger.LogError(ex, "Error occurred during registration for email {Email}.", Input.Email);
                     ModelState.AddModelError(string.Empty, "An error occurred while creating your account. Please try again.");
                     return Page();
                 }
+                finally
+                {
+                    if (transaction != null)
+                    {
+                        await transaction.DisposeAsync();
+                    }
+                }
+
                 try
                 {
                     var userId = await _userManager.GetUserIdAsync(user);
@@ -253,6 +298,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        _logger.LogWarning("Registration rolled back logically after email failure for user {UserId}.", user.Id);
                         ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try registering again later.");
                     }
                     return Page();
@@ -273,6 +319,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             return Page();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IdentityUser"/> instance for registration.
+        /// </summary>
+        /// <returns>A new <see cref="IdentityUser"/> instance.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when an <see cref="IdentityUser"/> instance cannot be created.
+        /// </exception>
         private IdentityUser CreateUser()
         {
             try
@@ -287,6 +340,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             }
         }
 
+        /// <summary>
+        /// Returns the email-enabled user store required by the default Identity registration flow.
+        /// </summary>
+        /// <returns>An <see cref="IUserEmailStore{IdentityUser}"/> instance.</returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the configured user store does not support email.
+        /// </exception>
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)

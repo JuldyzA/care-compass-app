@@ -1,21 +1,29 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TeamYellow.Models;
 
 namespace TeamYellow.ViewModels
 {
-    public class PlanVM
+    /// <summary>
+    /// View model representing subscription plan data used for listing, editing,
+    /// and validating plan details and features.
+    /// </summary>
+    public class PlanVM : IValidatableObject
     {
         public int PlanId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Plan name is required.")]
         [MaxLength(80)]
+        [DisplayName("Plan Name")]
         public string PlanName { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Plan description is required.")]
         [MaxLength(500)]
+        [DisplayName("Plan description")]
         public string PlanDescription { get; set; } = string.Empty;
 
         [Range(0, 10000)]
+        [DisplayName("Price")]
         public decimal Price { get; set; }
 
         [Required]
@@ -26,5 +34,24 @@ namespace TeamYellow.ViewModels
         public IEnumerable<Plan> Plans { get; set; } = new List<Plan>();
       
         public List<PlanFeatureVM> PlanFeatures { get; set; } = [];
+
+        /// <summary>
+        /// Validates plan pricing and feature-related rules, including decimal-place limits
+        /// and any cross-field constraints required before saving the plan.
+        /// </summary>
+        /// <param name="validationContext">Provides contextual information for validation.</param>
+        /// <returns>
+        /// A collection of <see cref="ValidationResult"/> values describing any validation errors.
+        /// Returns an empty collection when validation succeeds.
+        /// </returns>
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Price != decimal.Round(Price, 2, MidpointRounding.AwayFromZero))
+            {
+                yield return new ValidationResult(
+                    "Price can have at most 2 decimal places.",
+                    new[] { nameof(Price) });
+            }
+        }
     }
 }

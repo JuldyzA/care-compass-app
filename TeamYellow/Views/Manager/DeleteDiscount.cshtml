@@ -14,6 +14,8 @@
     <div class="alert alert-danger">
         This discount is currently applied to plans and cannot be deleted.
     </div>
+
+    <a asp-action="Discounts" class="btn btn-secondary">Back to Discounts</a>
 }
 else
 {
@@ -21,7 +23,7 @@ else
         <input type="hidden" name="id" value="@Model.DiscountId" />
 
         <button type="submit" class="btn btn-danger">Delete</button>
-        <a asp-action="Discounts" class="btn btn-secondary">Cancel</a>
+        <a asp-action="Discounts" class="btn btn-secondary">Back to Discounts</a>
     </form>
 }
 
