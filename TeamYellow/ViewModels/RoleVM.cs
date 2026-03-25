@@ -3,7 +3,7 @@
 namespace TeamYellow.ViewModels
 {
     /// <summary>
-    /// ViewModel representing a Role for UI forms and views.
+    /// View model representing a role used in role-related forms and views.
     /// </summary>
     public class RoleVM
     {

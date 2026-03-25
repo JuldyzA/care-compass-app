@@ -4,6 +4,10 @@ using TeamYellow.Models;
 
 namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing subscription plan data used for listing, editing,
+    /// and validating plan details and features.
+    /// </summary>
     public class PlanVM : IValidatableObject
     {
         public int PlanId { get; set; }
@@ -31,6 +35,15 @@ namespace TeamYellow.ViewModels
       
         public List<PlanFeatureVM> PlanFeatures { get; set; } = [];
 
+        /// <summary>
+        /// Validates plan pricing and feature-related rules, including decimal-place limits
+        /// and any cross-field constraints required before saving the plan.
+        /// </summary>
+        /// <param name="validationContext">Provides contextual information for validation.</param>
+        /// <returns>
+        /// A collection of <see cref="ValidationResult"/> values describing any validation errors.
+        /// Returns an empty collection when validation succeeds.
+        /// </returns>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Price != decimal.Round(Price, 2, MidpointRounding.AwayFromZero))

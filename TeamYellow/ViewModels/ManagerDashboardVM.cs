@@ -1,5 +1,9 @@
 ﻿namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing a single counsellor payment transaction row
+    /// on the manager dashboard.
+    /// </summary>
     public class ManagerDashboardVM
     {
         public int CounsellorId { get; set; }

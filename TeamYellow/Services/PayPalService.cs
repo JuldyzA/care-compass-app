@@ -4,216 +4,215 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace TeamYellow.Services;
-
-/// <summary>
-/// Service that communicates with the PayPal REST API to create and capture payment orders.
-/// Supports both Sandbox and Live environments, configurable via <c>ApiKeys:PayPal:Mode</c>.
-/// Access tokens are cached and refreshed automatically when they expire.
-/// </summary>
-public class PayPalService : IPayPalService
+namespace TeamYellow.Services
 {
-    private readonly HttpClient _client;
-    private readonly IConfiguration _configuration;
-
-    private static string? _cachedToken;
-    private static DateTime _tokenExpiry = DateTime.MinValue;
-
     /// <summary>
-    /// Initializes a new instance of <see cref="PayPalService"/>.
-    /// Sets the <see cref="HttpClient"/> base address based on the configured PayPal mode.
+    /// Service that communicates with the PayPal REST API to create and capture payment orders.
     /// </summary>
-    /// <param name="client">The <see cref="HttpClient"/> used to call the PayPal API.</param>
-    /// <param name="configuration">
-    /// The application configuration. Reads <c>ApiKeys:PayPal:Mode</c> (defaults to <c>Sandbox</c>)
-    /// to determine the PayPal API base URL.
-    /// </param>
-    public PayPalService(HttpClient client, IConfiguration configuration)
+    public class PayPalService : IPayPalService
     {
-        _client = client;
-        _configuration = configuration;
+        private readonly HttpClient _client;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<PayPalService> _logger;
 
-        // Configuration key: ApiKeys:PayPal:Mode
-        // Expected values:
-        //   - "Sandbox" (default if not set) -> uses https://api-m.sandbox.paypal.com
-        //   - "Live"                        -> uses https://api-m.paypal.com
-        var mode = _configuration["ApiKeys:PayPal:Mode"] ?? "Sandbox";
-        _client.BaseAddress = new Uri(mode == "Live"
-            ? "https://api-m.paypal.com"
-            : "https://api-m.sandbox.paypal.com");
-    }
+        private static string? _cachedToken;
+        private static DateTime _tokenExpiry = DateTime.MinValue;
 
-    /// <summary>
-    /// Retrieves a cached OAuth 2.0 access token from PayPal, or requests a new one if
-    /// the cached token is absent or has expired.
-    /// </summary>
-    /// <returns>A valid PayPal Bearer access token string.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <c>ApiKeys:PayPal:ClientId</c> or <c>ApiKeys:PayPal:ClientSecret</c>
-    /// are not configured in application secrets.
-    /// </exception>
-    /// <exception cref="Exception">Thrown if the PayPal token response does not contain an access token.</exception>
-    private async Task<string> GetAccessToken()
-    {
-        if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
-            return _cachedToken;
-
-        var clientId = _configuration["ApiKeys:PayPal:ClientId"];
-        var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
-
-        if (string.IsNullOrEmpty(clientId))
-            throw new InvalidOperationException("PayPal ClientId is not configured. Set ApiKeys:PayPal:ClientId in secrets.json.");
-
-        if (string.IsNullOrEmpty(clientSecret))
-            throw new InvalidOperationException("PayPal ClientSecret is not configured. Set ApiKeys:PayPal:ClientSecret in secrets.json.");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
-        request.Headers.Authorization = new AuthenticationHeaderValue(
-            "Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}")));
-        request.Content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
-
-        var response = await _client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-        var json = JsonNode.Parse(content);
-
-        _cachedToken = json?["access_token"]?.ToString() ?? throw new Exception("Failed to get access token");
-        var expiresIn = json?["expires_in"]?.GetValue<int>() ?? 32400;
-        _tokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60);
-
-        return _cachedToken;
-    }
-
-    /// <summary>
-    /// Creates a PayPal checkout order for a given amount and returns the buyer approval URL.
-    /// The <paramref name="customId"/> is embedded in the order so it can be retrieved after capture.
-    /// </summary>
-    /// <param name="amount">The monetary amount to charge, in the specified currency.</param>
-    /// <param name="currency">The ISO 4217 currency code (e.g., <c>CAD</c>, <c>USD</c>).</param>
-    /// <param name="returnUrl">The URL PayPal redirects the buyer to after approval.</param>
-    /// <param name="cancelUrl">The URL PayPal redirects the buyer to if they cancel.</param>
-    /// <param name="customId">
-    /// An application-defined identifier embedded in the order (e.g., the plan ID),
-    /// returned in the capture response for reconciliation.
-    /// </param>
-    /// <returns>The PayPal buyer approval URL that the user should be redirected to.</returns>
-    /// <exception cref="Exception">Thrown if the PayPal response does not include an approval link.</exception>
-    public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
-    {
-        var accessToken = await GetAccessToken();
-
-        var orderRequest = new
+        /// <summary>
+        /// Initializes a new instance of <see cref="PayPalService"/>.
+        /// Sets the <see cref="HttpClient"/> base address based on the configured PayPal mode.
+        /// </summary>
+        /// <param name="client">The <see cref="HttpClient"/> used to call the PayPal API.</param>
+        /// <param name="configuration">
+        /// The application configuration. Reads <c>ApiKeys:PayPal:Mode</c> (defaults to <c>Sandbox</c>)
+        /// to determine the PayPal API base URL.
+        /// </param>
+        /// <param name="logger">The logger used for PayPal service diagnostics.</param>
+        public PayPalService(HttpClient client, IConfiguration configuration, ILogger<PayPalService> logger)
         {
-            intent = "CAPTURE",
-            purchase_units = new[]
-            {
-                new
-                {
-                    custom_id = customId,
-                    amount = new
-                    {
-                        currency_code = currency,
-                        value = amount.ToString("F2", CultureInfo.InvariantCulture)
-                    }
-                }
-            },
-            application_context = new
-            {
-                return_url = returnUrl,
-                cancel_url = cancelUrl
-            }
-        };
+            _client = client;
+            _configuration = configuration;
+            _logger = logger;
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v2/checkout/orders");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        request.Content = new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json");
-
-        var response = await _client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-        var json = JsonNode.Parse(content);
-
-        // Find the 'approve' link
-        var links = json?["links"]?.AsArray();
-        var approveLink = links?.FirstOrDefault(l => l?["rel"]?.ToString() == "approve")?["href"]?.ToString();
-
-        return approveLink ?? throw new Exception("PayPal approval link not found");
-    }
-
-    /// <summary>
-    /// Captures a previously approved PayPal order using its approval token.
-    /// Returns the PayPal capture ID, the custom ID embedded when the order was created,
-    /// and the total captured amount for the single purchase unit used by this application.
-    /// </summary>
-    /// <param name="token">The PayPal order approval token (returned by PayPal as the <c>token</c> query parameter).</param>
-    /// <returns>
-    /// A tuple containing:
-    /// <list type="bullet">
-    ///   <item><description><c>CaptureId</c> – the PayPal capture transaction identifier.</description></item>
-    ///   <item><description><c>CustomId</c> – the application-defined value set when the order was created (e.g., plan ID).</description></item>
-    ///   <item><description><c>CapturedAmount</c> – the total monetary amount captured for the single purchase unit
-    ///   used by this application, parsed from PayPal's capture response using invariant culture.</description></item>
-    /// </list>
-    /// </returns>
-    /// <exception cref="Exception">
-    /// Thrown if the PayPal response is missing <c>custom_id</c>, does not contain exactly one purchase unit,
-    /// is missing capture amounts, or if the payment capture status is not <c>COMPLETED</c>.
-    /// </exception>
-    public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
-    {
-        var accessToken = await GetAccessToken();
-
-        var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        request.Headers.Add("Prefer", "return=representation");
-        request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
-
-        var response = await _client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-        var json = JsonNode.Parse(content);
-
-        var status = json?["status"]?.ToString();
-
-        var purchaseUnitsNode = json?["purchase_units"];
-        if (purchaseUnitsNode is not JsonArray purchaseUnitsArray || purchaseUnitsArray.Count != 1)
-            throw new Exception("PayPal response must contain exactly one purchase unit.");
-
-        var purchaseUnit = purchaseUnitsArray[0];
-
-        var captureId = purchaseUnit?["payments"]?["captures"]?[0]?["id"]?.ToString()
-            ?? json?["id"]?.ToString()
-            ?? token;
-
-        var customId = purchaseUnit?["custom_id"]?.ToString()
-            ?? purchaseUnit?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
-            ?? throw new Exception("PayPal response missing custom_id");
-
-        var capturesNode = purchaseUnit?["payments"]?["captures"];
-        if (capturesNode is not JsonArray capturesArray || capturesArray.Count == 0)
-            throw new Exception("PayPal response missing captured amount.");
-
-        decimal capturedAmount = 0m;
-
-        foreach (var capture in capturesArray)
-        {
-            var amountText = capture?["amount"]?["value"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(amountText) ||
-                !decimal.TryParse(amountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
-            {
-                throw new Exception("PayPal response contained an invalid captured amount.");
-            }
-
-            capturedAmount += amount;
+            var mode = _configuration["ApiKeys:PayPal:Mode"] ?? "Sandbox";
+            _client.BaseAddress = new Uri(mode == "Live"
+                ? "https://api-m.paypal.com"
+                : "https://api-m.sandbox.paypal.com");
         }
 
-        if (status == "COMPLETED")
-            return (captureId, customId, capturedAmount);
+        /// <summary>
+        /// Retrieves a cached OAuth access token from PayPal, or requests a new one if needed.
+        /// </summary>
+        /// <returns>A valid PayPal bearer access token.</returns>
+        private async Task<string> GetAccessToken()
+        {
+            if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
+            {
+                _logger.LogDebug("Using cached PayPal access token.");
+                return _cachedToken;
+            }
 
-        throw new Exception($"Payment capture failed. Status: {status}");
+            var clientId = _configuration["ApiKeys:PayPal:ClientId"];
+            var clientSecret = _configuration["ApiKeys:PayPal:ClientSecret"];
+
+            if (string.IsNullOrEmpty(clientId))
+                throw new InvalidOperationException("PayPal ClientId is not configured. Set ApiKeys:PayPal:ClientId in secrets.json.");
+
+            if (string.IsNullOrEmpty(clientSecret))
+                throw new InvalidOperationException("PayPal ClientSecret is not configured. Set ApiKeys:PayPal:ClientSecret in secrets.json.");
+
+            _logger.LogInformation("Requesting new PayPal access token.");
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/v1/oauth2/token");
+            request.Headers.Authorization = new AuthenticationHeaderValue(
+                "Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}")));
+            request.Content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+            using var response = await _client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(content);
+
+            _cachedToken = json?["access_token"]?.ToString() ?? throw new Exception("Failed to get access token");
+            var expiresIn = json?["expires_in"]?.GetValue<int>() ?? 32400;
+            _tokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60);
+
+            _logger.LogInformation("PayPal access token acquired successfully.");
+
+            return _cachedToken;
+        }
+
+        /// <summary>
+        /// Creates a PayPal checkout order for a given amount and returns the buyer approval URL.
+        /// </summary>
+        /// <param name="amount">The monetary amount to charge.</param>
+        /// <param name="currency">The ISO currency code.</param>
+        /// <param name="returnUrl">The URL PayPal redirects to after approval.</param>
+        /// <param name="cancelUrl">The URL PayPal redirects to if the buyer cancels.</param>
+        /// <param name="customId">The application-defined identifier to embed in the order.</param>
+        /// <returns>The PayPal buyer approval URL.</returns>
+        public async Task<string> CreateOrder(decimal amount, string currency, string returnUrl, string cancelUrl, string customId)
+        {
+            var accessToken = await GetAccessToken();
+
+            _logger.LogInformation("Creating PayPal order for amount {Amount} {Currency}.", amount, currency);
+
+            var orderRequest = new
+            {
+                intent = "CAPTURE",
+                purchase_units = new[]
+                {
+                    new
+                    {
+                        custom_id = customId,
+                        amount = new
+                        {
+                            currency_code = currency,
+                            value = amount.ToString("F2", CultureInfo.InvariantCulture)
+                        }
+                    }
+                },
+                application_context = new
+                {
+                    return_url = returnUrl,
+                    cancel_url = cancelUrl
+                }
+            };
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/v2/checkout/orders");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = new StringContent(JsonSerializer.Serialize(orderRequest), Encoding.UTF8, "application/json");
+
+            using var response = await _client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(content);
+
+            // Find the 'approve' link
+            var links = json?["links"]?.AsArray();
+            var approveLink = links?.FirstOrDefault(l => l?["rel"]?.ToString() == "approve")?["href"]?.ToString();
+
+            if (approveLink == null)
+            {
+                _logger.LogError("PayPal approval link was not found in the create order response.");
+                throw new Exception("PayPal approval link not found");
+            }
+
+            _logger.LogInformation("PayPal order created successfully.");
+            return approveLink;
+        }
+
+        /// <summary>
+        /// Captures a previously approved PayPal order using its approval token.
+        /// </summary>
+        /// <param name="token">The PayPal order approval token.</param>
+        /// <returns>
+        /// A tuple containing the PayPal capture identifier, embedded custom identifier,
+        /// and total captured amount.
+        /// </returns>
+        public async Task<(string CaptureId, string CustomId, decimal CapturedAmount)> CaptureOrder(string token)
+        {
+            var accessToken = await GetAccessToken();
+
+            _logger.LogInformation("Capturing PayPal order.");
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/v2/checkout/orders/{token}/capture");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Headers.Add("Prefer", "return=representation");
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            using var response = await _client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(content);
+
+            var status = json?["status"]?.ToString();
+
+            var purchaseUnitsNode = json?["purchase_units"];
+            if (purchaseUnitsNode is not JsonArray purchaseUnitsArray || purchaseUnitsArray.Count != 1)
+                throw new Exception("PayPal response must contain exactly one purchase unit.");
+
+            var purchaseUnit = purchaseUnitsArray[0];
+
+            var captureId = purchaseUnit?["payments"]?["captures"]?[0]?["id"]?.ToString()
+                ?? json?["id"]?.ToString()
+                ?? token;
+
+            var customId = purchaseUnit?["custom_id"]?.ToString()
+                ?? purchaseUnit?["payments"]?["captures"]?[0]?["custom_id"]?.ToString()
+                ?? throw new Exception("PayPal response missing custom_id");
+
+            var capturesNode = purchaseUnit?["payments"]?["captures"];
+            if (capturesNode is not JsonArray capturesArray || capturesArray.Count == 0)
+                throw new Exception("PayPal response missing captured amount.");
+
+            decimal capturedAmount = 0m;
+
+            foreach (var capture in capturesArray)
+            {
+                var amountText = capture?["amount"]?["value"]?.ToString();
+
+                if (string.IsNullOrWhiteSpace(amountText) ||
+                    !decimal.TryParse(amountText, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+                {
+                    throw new Exception("PayPal response contained an invalid captured amount.");
+                }
+
+                capturedAmount += amount;
+            }
+
+            if (status == "COMPLETED")
+            {
+                _logger.LogInformation("PayPal capture completed successfully. CaptureId {CaptureId}, Amount {CapturedAmount}.", captureId, capturedAmount);
+
+                return (captureId, customId, capturedAmount);
+            }
+
+            _logger.LogError("PayPal capture failed. Status: {Status}", status);
+            throw new Exception($"Payment capture failed. Status: {status}");
+        }
     }
 }

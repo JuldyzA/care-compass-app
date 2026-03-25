@@ -1,5 +1,8 @@
 ﻿namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing summary statistics displayed on the manager dashboard.
+    /// </summary>
     public class DashboardStatsVM
     {
         public int TotalTransactions { get; set; }

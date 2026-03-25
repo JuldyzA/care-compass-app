@@ -8,9 +8,14 @@ namespace TeamYellow.Services
     /// Service that implements plan management business logic by delegating
     /// data access operations to <see cref="IPlanRepository"/>.
     /// </summary>
-    public class PlanService(IPlanRepository planRepository) : IPlanService
+    public class PlanService : IPlanService
     {
-        private readonly IPlanRepository _planRepository = planRepository;
+        private readonly IPlanRepository _planRepository;
+
+        public PlanService(IPlanRepository planRepository)
+        {
+            _planRepository = planRepository;
+        }
 
         /// <summary>
         /// Retrieves all currently active subscription plans.
@@ -31,6 +36,11 @@ namespace TeamYellow.Services
             return await _planRepository.GetByIdWithFeaturesAsync(id);
         }
 
+        /// <summary>
+        /// Updates a plan and its related features using the submitted view model.
+        /// </summary>
+        /// <param name="vm">The view model containing the updated plan data.</param>
+        /// <returns><c>true</c> if the update succeeds; otherwise <c>false</c>.</returns>
         public async Task<bool> UpdatePlansWithFeaturesAsync(PlanVM vm)
         {
             var plan = new Plan

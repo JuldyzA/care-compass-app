@@ -97,6 +97,14 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             ReturnUrl = returnUrl;
         }
 
+        /// <summary>
+        /// Processes the login form submission, signs the user in if credentials are valid,
+        /// and records the login session in the user log.
+        /// </summary>
+        /// <param name="returnUrl">The URL to return to after successful login.</param>
+        /// <returns>
+        /// A redirect to the requested page when login succeeds, or the current page when login fails.
+        /// </returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -105,8 +113,6 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
@@ -142,7 +148,6 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
     }

@@ -5,6 +5,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing discount data used for create, edit, list, and validation workflows.
+    /// </summary>
     public class DiscountVM : IValidatableObject
     {
         public int DiscountId { get; set; }
@@ -42,6 +45,12 @@ namespace TeamYellow.ViewModels
         public bool IsExpired { get; set; }
         public bool HasPlans { get; set; }
 
+        /// <summary>
+        /// Validates the discount view model for required dates, date range rules,
+        /// and discount value constraints based on the selected discount type.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <returns>A collection of validation results for invalid fields.</returns>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var isStartDateDefault = StartDateTime == default;

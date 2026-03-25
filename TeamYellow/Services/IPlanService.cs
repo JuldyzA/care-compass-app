@@ -3,6 +3,9 @@ using TeamYellow.ViewModels;
 
 namespace TeamYellow.Services
 {
+    /// <summary>
+    /// Defines plan management operations for retrieving and updating subscription plans.
+    /// </summary>
     public interface IPlanService
     {
         Task<List<Plan>> GetActivePlans();

@@ -1,35 +1,47 @@
-namespace TeamYellow.Services;
-
-public enum SubscriptionResult
+namespace TeamYellow.Services
 {
-    Created,
-    AlreadySubscribed,
-    PlanChanged
-}
+    /// <summary>
+    /// Represents the possible outcomes of a subscription creation workflow.
+    /// </summary>
+    public enum SubscriptionResult
+    {
+        Created,
+        AlreadySubscribed,
+        PlanChanged
+    }
 
-public class SubscriptionCheckoutResult
-{
-    public bool RequiresPayPal { get; set; }
-    public bool IsActualFreePlan { get; set; }
-    public int? DiscountId { get; set; }
-    public string? ApprovalUrl { get; set; }
-}
+    /// <summary>
+    /// Represents the result of starting a subscription checkout flow,
+    /// including whether PayPal is required, whether the selected plan is effectively free,
+    /// the applied discount identifier, and the approval URL when payment is needed.
+    /// </summary>
+    public class SubscriptionCheckoutResult
+    {
+        public bool RequiresPayPal { get; set; }
+        public bool IsActualFreePlan { get; set; }
+        public int? DiscountId { get; set; }
+        public string? ApprovalUrl { get; set; }
+    }
 
-public interface ISubscriptionService
-{
-    Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId);
+    /// <summary>
+    /// Defines business operations for creating checkout flows and managing subscriptions.
+    /// </summary>
+    public interface ISubscriptionService
+    {
+        Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId);
 
-    Task<SubscriptionCheckoutResult> CreatePayPalOrder(
-        int planId,
-        string? discountCode,
-        string returnUrl,
-        string cancelUrl);
+        Task<SubscriptionCheckoutResult> CreatePayPalOrder(
+            int planId,
+            string? discountCode,
+            string returnUrl,
+            string cancelUrl);
 
-    Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
-        int counsellorId,
-        string payerName,
-        int planId,
-        int? discountId);
+        Task<SubscriptionResult> SubscribeDiscountedZeroAmount(
+            int counsellorId,
+            string payerName,
+            int planId,
+            int? discountId);
 
-    Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string payerName);
+        Task<SubscriptionResult> CompletePayPalSubscription(string token, int counsellorId, string payerName);
+    }
 }

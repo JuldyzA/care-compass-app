@@ -15,6 +15,16 @@ namespace TeamYellow.Helpers
         public bool HasPreviousPage => PageIndex > 1;
         public bool HasNextPage => PageIndex < TotalPages;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaginatedList{T}"/> class.
+        /// </summary>
+        /// <param name="items">The items contained in the current page.</param>
+        /// <param name="count">The total number of records in the full result set.</param>
+        /// <param name="pageIndex">The requested page index.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown when <paramref name="pageSize"/> is less than or equal to zero.
+        /// </exception>
         public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
         {
             if (pageSize <= 0)
@@ -47,6 +57,13 @@ namespace TeamYellow.Helpers
         /// Asynchronously creates a paginated list from an IQueryable source.
         /// Executes two queries: one for the total count, one for the current page items.
         /// </summary>
+        /// <param name="source">The queryable source to paginate.</param>
+        /// <param name="pageIndex">The requested page index.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A populated paginated list for the requested page.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown when <paramref name="pageSize"/> is less than or equal to zero.
+        /// </exception>
         public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
         {
             if (pageSize <= 0)
