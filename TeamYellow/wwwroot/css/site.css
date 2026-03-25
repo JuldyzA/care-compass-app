@@ -13,13 +13,10 @@ html {
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-body {
-/*  margin-bottom: 60px;*/
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-bottom: 60px;
 }
 
 :root {
@@ -32,7 +29,7 @@ body {
     --success-green: #10B981;
     --special-violet: #7C3AED;
     --active-cta: #2563EB;
-    --primary: #2F6F73;;
+    --primary: #2F6F73;
     --primary-dark: #3a6259;
     --primary-light: #e8f4f1;
     --accent: #7c9885;

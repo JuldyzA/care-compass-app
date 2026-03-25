@@ -68,7 +68,7 @@
     <div class="container footer-shell">
         <div class="row g-4 align-items-start">
             <div class="col-12 col-md-6 col-lg-4 footer-brand-col">
-                <a href="/" class="footer-brand text-decoration-none">
+                <a asp-controller ="Home" asp-action ="Index" class="footer-brand text-decoration-none">
                     <img src='@Url.Content("~/Images/compass-logo-dark1.png")' alt="CareCompass Logo" class="footer-brand-mark">
                     <span class="fw-bold brand-name header-logo-name footer-brand-name">
                         <span>Care</span>
@@ -84,10 +84,10 @@
             <div class="col-md-6 col-lg-4 footer-nav-group">
                 <h6 class="footer-title">Solution</h6>
                 <ul class="footer-links">
-                    <li><a href="/Home/Solution">Features</a></li>
-                    <li><a href="/Plan">Pricing</a></li>
+                    <li><a asp-controller="Home" asp-action="Solution">Features</a></li>
+                    <li><a asp-controller="Plan" asp-action="Index">Pricing</a></li>
                     <li><a href="#">Case studies</a></li>
-                    <li><a class="footer-accent-link" href="/#testimonials">Testimonials</a></li>
+                    <li><a class="footer-accent-link" asp-controller="Home" asp-action="Index" asp-fragment="testimonials">Testimonials</a></li>
                 </ul>
             </div>
 
