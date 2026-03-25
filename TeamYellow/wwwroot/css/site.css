@@ -315,6 +315,11 @@ p {
     overflow: hidden;
     position: relative;
 }
+    .solution-image-placeholder img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover
+    }
 
 .solution-image-placeholder::before {
     content: '';
