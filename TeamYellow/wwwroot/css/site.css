@@ -751,20 +751,20 @@ p {
         box-shadow: 0 8px 20px rgba(47, 111, 115, 0.08);
 }
 
-    .nav-link:hover {
+ .navbar .nav-link:hover {
         color: var(--primary);
         background-color: rgba(47, 110, 115, 0.29);
          /* box-shadow: 0 8px 20px rgba(47, 110, 115, 0.535); */
     }
 
-.nav-icon {
+.navbar .nav-icon {
     width: 1.1rem;
     height: 1.1rem;
     flex-shrink: 0;
     transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
-.nav-link:hover .nav-icon {
+.navbar .nav-link:hover .nav-icon {
     opacity: 0.9;
     filter: saturate(1.15);
 }
