@@ -2,99 +2,147 @@
     ViewData["Title"] = "Home Page";
 }
 
-<section class="row align-items-center my-5">
-    <div class="col-md-5">
-        <h1>Grow your mental health practice with confidence</h1>
-        <p>CareCompass is the all-in-one practice management software trusted by hundreds of practitioners to organize their services, streamline operations, and provide a secure, professional experience for clients.</p>
-        <div class="row mt-3">
-            <a class="btn btn-primary col-md-5 me-2" href="#">Start Free Trial</a>
-            <a class="btn btn-outline-primary col-md-5" href="#">Take a Product Tour</a>
-        </div>
-    </div>
-    <div class="col-md-7 text-center">
-        <img src="images/heroImg.png" alt="CareCompass dashboard preview" class="img-fluid rounded" />
-    </div>
-</section>
-
-<section class="bg-light w-100 py-5">
+<!-- Hero Section -->
+<section class="hero">
     <div class="container">
-    <h2 class="text-center mb-5">Powerful Features for Every Practitioner</h2>
-    <div class="row text-center">
-        <div class="col-md-4 mb-4">
-                <img src="images/profileManagement.png" alt="Profile Management" class="mb-3" width="150" height="150" />
-            <h3>Profile Management</h3>
-            <p class="text-start">Keep your profile professional and up-to-date. Add your license, specialties, expertise, and a short bio to let clients and colleagues know who you are.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-                <img src="images/documentation&Forms.png" alt="Documentation & Forms" class="mb-3" width="150" height="150" />
-                <h3>Documentation & Forms</h3>
-                <p class="text-start">Easily create, send, and manage intake forms, consent documents, and session notes. Clients can securely complete forms online, and all files are accessible directly in your dashboard.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-                <img src="images/practitionerDashboard.png" alt="Practitioner Dashboard" class="mb-3" width="150" height="150" />
-            <h3>Practioner Dashboard</h3>
-            <p class="text-start">Organize your client information, track sessions, and manage notes for individual, couples, or family sessions—all in one place.</p>
-        </div>
-        </<div>
-
-    </div>
-</section>
-
-<section class="row align-items-center my-5">
-    <div class="container">
-    <h2 class="text-center mb-4">Work with clients seamlessly</h2>
-    <div class="col-12 text-center">
-        <video class="video-placeholder" controls width="80%"></video>
-    </div>
-    </div>
-</section>
-
-<section class="bg-light py-5">
-    <div class="container">
-    <h2 class="text-center mb-3">CareCompass works for a diverse range of professionals</h2>
-    <p class="text-center mb-5">CareCompass is designed for mental health professionals, from independent counselors to large practices and partnered organizations.</p>
-    <div class="row text-center">
-        <div class="col-md-4 mb-4">
-            <img src="images/independentPractitioners.png" alt="Independent practitioners" class="mb-3" width="150" height="150" />
-            <h3>Independent Practitioners</h3>
-            <p class="text-start">Whether your individual practice sdees clients in person or virtually carecompass will streamline the admin process and make sure you can devote your tiem to what matters, your clients.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-            <img src="images/establishedPractices.png" alt="Established Practices" class="mb-3" width="150" height="150" />
-            <h3>Established Practices</h3>
-            <p class="text-start">Streamline operations across multiple practitioners, track payments, and maintain a professional standard for every client interaction.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-            <img src="images/otherHealthProviders.png" alt="Other Health Providers" class="mb-3" width="150" height="150" />
-            <h3>Other Health Providers</h3>
-            <p class="text-start">Currently our platform has been geared toward mental health practitioners, but we are expanding to include other practitioners! Whether you are a chiropractor, RMT, Reiki practitioner, or Doula - soon you'll have the ability to upload your own forms and have the flexibility to adjust documentation to your specific needs!'</p>
-        </div>
+        <div class="row align-items-center">
+            <div class="col-lg-5 col-md-6">
+                <h1>Grow your <span class="hero-italic-accent">mental health</span> practice with confidence</h1>
+                <p>The all-in-one practice management software trusted by hundreds of practitioners to organize services, streamline operations, and provide a secure, professional client experience.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-primary" asp-controller="Plan" asp-action="Index">Start Free Trial</a>
+                    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Solution">Take a Product Tour</a>
+                </div>
+            </div>
+            <div class="col-lg-7 col-md-6 mt-4 mt-md-0">
+                <img src="~/Images/heroImg.png" alt="CareCompass dashboard preview" class="img-fluid hero-image" />
+            </div>
         </div>
     </div>
 </section>
 
-<section class="py-5">
+<!-- Features Section -->
+<section class="features-section">
     <div class="container">
-    <h2 class="text-center mb-5">Testimonials</h2>
-    <div class="row text-center">
-        <div class="col-md-4 mb-4">
-            <img class="rounded-circle mb-3" src="images/dr.EmilyChen.png" alt="User Testimonial" width="150" height="150" />
-            <h3>Dr. Emily Chen</h3>
-            <p class="text-start">“CareCompass has completely transformed the way I manage my practice. Client intake, session notes, and payments are all in one secure dashboard.”</p>
-            <blockquote>RCC at Wellness Initiative</blockquote>
+        <div class="section-header">
+            <h2>Powerful Features for Every Practitioner</h2>
         </div>
-        <div class="col-md-4 mb-4">
-            <img class="rounded-circle mb-3" src="images/michaelPatel.png" alt="User Testimonial" width="150" height="150" />
-            <h3>Michael Patel</h3>
-            <p class="text-start">“I love how easy it is to track session data and client forms. The dashboard is intuitive, and my clients love the professional feel.”</p>
-            <blockquote>Independent Counsellor at Holistic Health</blockquote>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <img src="~/Images/profileManagement.png" alt="Profile Management" />
+                    <h3>Profile Management</h3>
+                    <p>Keep your profile professional and up-to-date. Add your license, specialties, expertise, and a short bio to let clients and colleagues know who you are.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <img src="~/Images/documentation&Forms.png" alt="Documentation & Forms" />
+                    <h3>Documentation & Forms</h3>
+                    <p>Easily create, send, and manage intake forms, consent documents, and session notes. Clients can securely complete forms online, accessible directly in your dashboard.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <img src="~/Images/practitionerDashboard.png" alt="Practitioner Dashboard" />
+                    <h3>Practitioner Dashboard</h3>
+                    <p>Organize your client information, track sessions, and manage notes for individual, couples, or family sessions—all in one place.</p>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <img class="rounded-circle mb-3" src="images/saraGomez.png" alt="User Testimonial" width="150" height="150" />
-            <h3>Sara Gomez</h3>
-            <p class="text-start">“The booking system and client note organization save me hours every week. Highly recommend CareCompass for any mental health practice.”</p>
-            <blockquote>Independent Counselor</blockquote>
+    </div>
+</section>
+
+<!-- Video Section -->
+<section class="video-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Work with clients seamlessly</h2>
         </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="video-wrapper">
+                    <video controls preload="metadata" poster="@Url.Content("~/Images/video-poster.png")" aria-label="CareCompass plan overview video">
+                         <source src="@Url.Content("~/Images/compass-video.mp4")" type="video/mp4" />
+                        Your browser does not support the video element. A static preview image is shown.
+                    </video>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Audience Section -->
+<section class="audience-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>CareCompass works for diverse professionals</h2>
+            <p>Designed for mental health professionals, from independent counselors to large practices and partnered organizations.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="audience-card">
+                    <img src="~/Images/independentPractitioners.png" alt="Independent practitioners" />
+                    <div class="audience-card-overlay">
+                        <h3>Independent Practitioners</h3>
+                        <p>Whether your individual practice sees clients in person or virtually, CareCompass streamlines admin so you can focus on what matters—your clients.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="audience-card">
+                    <img src="~/Images/establishedPractices.png" alt="Established Practices" />
+                    <div class="audience-card-overlay">
+                        <h3>Established Practices</h3>
+                        <p>Streamline operations across multiple practitioners, track payments, and maintain a professional standard for every client interaction.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="audience-card">
+                    <img src="~/Images/otherHealthProviders.png" alt="Other Health Providers" />
+                    <div class="audience-card-overlay">
+                        <h3>Other Health Providers</h3>
+                        <p>Expanding beyond mental health—chiropractors, RMTs, Reiki practitioners, and doulas will soon have flexible documentation options.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section id="testimonials" class="testimonials-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Trusted by practitioners</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <img src="~/Images/dr.EmilyChen.png" alt="Dr. Emily Chen" />
+                    <p>"CareCompass has completely transformed the way I manage my practice. Client intake, session notes, and payments are all in one secure dashboard."</p>
+                    <h3>Dr. Emily Chen</h3>
+                    <span class="role">RCC at Wellness Initiative</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <img src="~/Images/michaelPatel.png" alt="Michael Patel" />
+                    <p>"I love how easy it is to track session data and client forms. The dashboard is intuitive, and my clients love the professional feel."</p>
+                    <h3>Michael Patel</h3>
+                    <span class="role">Counsellor at Holistic Health</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <img src="~/Images/saraGomez.png" alt="Sara Gomez" />
+                    <p>"The booking system and client note organization save me hours every week. Highly recommend for any mental health practice."</p>
+                    <h3>Sara Gomez</h3>
+                    <span class="role">Independent Counselor</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>

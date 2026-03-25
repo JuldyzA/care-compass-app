@@ -41,6 +41,11 @@ namespace TeamYellow.Controllers
         /// <returns>The privacy view.</returns>
         public IActionResult Privacy()
         {
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Solution()
+        {
             return View();
         }
 

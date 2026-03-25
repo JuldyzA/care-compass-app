@@ -128,3 +128,4 @@ src/.vs/config/applicationhost.config
 *.db-shm
 *.db-wal
 *.db
+/TeamYellow/app.db
