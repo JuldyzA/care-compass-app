@@ -1,10 +1,15 @@
 using TeamYellow.DTOs;
 using TeamYellow.Models;
 
-namespace TeamYellow.Repositories;
-
-public interface ITransactionRepository
+namespace TeamYellow.Repositories
 {
-    Task<PaymentTransaction> CreateTransaction(AddTransactionDto addTransactionDto);
-    Task<bool> ExistsByProviderOrderId(string providerOrderId);
+    /// <summary>
+    /// Defines data access operations for <see cref="PaymentTransaction"/> entities.
+    /// </summary>
+    public interface ITransactionRepository
+    {
+        Task<PaymentTransaction> CreateTransaction(AddTransactionDto addTransactionDto);
+
+        Task<bool> ExistsByProviderOrderId(string providerOrderId);
+    }
 }

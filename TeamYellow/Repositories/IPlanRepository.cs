@@ -2,6 +2,9 @@ using TeamYellow.Models;
 
 namespace TeamYellow.Repositories
 {
+    /// <summary>
+    /// Defines data access operations for <see cref="Plan"/> entities.
+    /// </summary>
     public interface IPlanRepository
     {
         Task<IEnumerable<Plan>> GetAllAsync();

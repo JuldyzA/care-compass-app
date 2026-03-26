@@ -3,7 +3,7 @@
 namespace TeamYellow.ViewModels
 {
     /// <summary>
-    /// ViewModel for displaying user information in lists or dropdowns
+    /// View model for displaying user information in lists and dropdowns.
     /// </summary>
     public class UserVM
     {

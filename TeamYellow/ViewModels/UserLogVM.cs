@@ -3,7 +3,7 @@
 namespace TeamYellow.ViewModels
 {
     /// <summary>
-    /// ViewModel for displaying user session log information in the UI.
+    /// View model for displaying user session log information in the user interface.
     /// </summary>
     public class UserLogVM
     {

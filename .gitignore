@@ -124,7 +124,11 @@ src/.vs/config/applicationhost.config
 # Personal notes  
 .notes.md
 
+# Secrets
+secrets.json
+
 #Database files
 *.db-shm
 *.db-wal
 *.db
+/TeamYellow/app.db

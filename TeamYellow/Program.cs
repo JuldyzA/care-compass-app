@@ -7,7 +7,7 @@ using TeamYellow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure infrastructure services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
@@ -30,16 +30,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
-// Services
+// Register application services
 builder.Services.AddScoped<CounsellorService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddTransient<IEmailService, BrevoEmailService>();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ReCAPTCHA.ReCaptchaValidator>(client =>
+{
+    client.BaseAddress = new Uri("https://www.google.com");
+});
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
-// Repositories
+// Register repositories
 builder.Services.AddScoped<CounsellorRepository>();
 builder.Services.AddScoped<ClientRepository>();
 builder.Services.AddScoped<UserRepository>();
@@ -52,7 +56,7 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 
-// Seeders
+// Register seeders
 builder.Services.AddTransient<RoleSeeder>();
 builder.Services.AddTransient<IdentitySeeder>();
 builder.Services.AddTransient<UserProfileSeeder>();
@@ -76,7 +80,7 @@ else
     app.UseHsts();
 }
 
-// Seeding
+// Seed development data
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();

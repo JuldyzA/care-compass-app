@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamYellow.ViewModels
 {
+    /// <summary>
+    /// View model representing a single subscription plan feature.
+    /// </summary>
     public class PlanFeatureVM
     {
         public int PlanFeatureId { get; set; }

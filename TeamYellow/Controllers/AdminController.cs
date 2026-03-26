@@ -6,9 +6,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Controllers
 {
     /// <summary>
-    /// Controller responsible for managing application users and roles,
-    /// and displaying user logs.
-    /// Access is restricted to Administrator.
+    /// Manages administrator-only workflows for users, roles, and user log records.
     /// </summary>
     [Authorize(Roles = "Administrator")]
     public class AdminController : Controller
@@ -19,6 +17,14 @@ namespace TeamYellow.Controllers
         private readonly UserRoleRepository _userRoleRepository;
         private readonly UserLogRepository _userLogRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdminController"/> class.
+        /// </summary>
+        /// <param name="logger">Logs controller events and warning conditions.</param>
+        /// <param name="roleRepository">Provides access to role lookup and management operations.</param>
+        /// <param name="userRepository">Provides access to user lookup and list operations.</param>
+        /// <param name="userRoleRepository">Provides access to user-role assignment operations.</param>
+        /// <param name="userLogRepo">Provides access to user login and logout audit logs.</param>
         public AdminController(ILogger<AdminController> logger,
                                RoleRepository roleRepository,
                                UserRepository userRepository,
@@ -35,6 +41,10 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a paginated, sortable, and filterable list of users in the system.
         /// </summary>
+        /// <param name="sortOrder">The current sort order for the user list.</param>
+        /// <param name="emailFilter">An optional email filter applied to the user list.</param>
+        /// <param name="pageNumber">The requested page number.</param>
+        /// <returns>The user role index view with paginated user data.</returns>
         public async Task<IActionResult> UserRoleIndex(string? sortOrder, string? emailFilter, int? pageNumber)
         {
             string currentSortOrder = string.IsNullOrEmpty(sortOrder) ? "email_asc" : sortOrder;
@@ -43,7 +53,6 @@ namespace TeamYellow.Controllers
 
             ViewBag.EmailSortParam = currentSortOrder == "email_asc" ? "email_desc" : "email_asc";
 
-            // Will change this later accordingly
             int pageSize = 5;
             int safePageNumber = Math.Max(1, pageNumber ?? 1);
 
@@ -52,8 +61,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays all available roles assigned to user in the system.
+        /// Displays the roles currently assigned to a specific user.
         /// </summary>
+        /// <param name="userName">The email or user name of the selected user.</param>
+        /// <param name="message">An optional status message to display in the view.</param>
+        /// <param name="isError">Indicates whether the supplied status message represents an error.</param>
+        /// <returns>The user role detail view for the selected user.</returns>
         public async Task<IActionResult> UserRoleDetail(string userName, string message = "", bool isError = false)
         {
             var roles = await _userRoleRepository.GetUserRolesAsync(userName);
@@ -65,8 +78,10 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the form for assigning a role to a user.
+        /// Displays the form used to assign a role to a user.
         /// </summary>
+        /// <param name="email">An optional email to preselect in the user dropdown.</param>
+        /// <returns>The user role creation view.</returns>
         [HttpGet]
         public async Task<IActionResult> UserRoleCreate(string? email)
         {
@@ -77,8 +92,12 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Assigns a selected role to a user.
+        /// Assigns the selected role to the specified user.
         /// </summary>
+        /// <param name="userRoleVM">The submitted user-role assignment data.</param>
+        /// <returns>
+        /// A redirect to the user role detail page when successful; otherwise returns the form with validation errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UserRoleCreate(UserRoleVM userRoleVM)
@@ -112,6 +131,11 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a confirmation page before removing a role from a user.
         /// </summary>
+        /// <param name="email">The email of the user whose role is being removed.</param>
+        /// <param name="roleName">The role to remove.</param>
+        /// <returns>
+        /// The confirmation view when the parameters are valid; otherwise redirects to the user list.
+        /// </returns>
         [HttpGet]
         public IActionResult UserRoleDelete(string email, string roleName)
         {
@@ -131,8 +155,13 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Removes a role from a user securely using POST and Anti-Forgery validation.
+        /// Removes a role from a user after confirmation.
+        /// Prevents an administrator from removing the Administrator role from their own account.
         /// </summary>
+        /// <param name="userRoleVM">The submitted user-role removal data.</param>
+        /// <returns>
+        /// A redirect to the user role detail page when successful; otherwise returns the confirmation view with errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UserRoleDelete(UserRoleVM userRoleVM)
@@ -171,6 +200,8 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays all available roles in the system.
         /// </summary>
+        /// <param name="message">An optional status message to display in the view.</param>
+        /// <returns>The role index view.</returns>
         public async Task<IActionResult> RoleIndex(string message = "")
         {
             IEnumerable<RoleVM> roles = await _roleRepository.GetAllRolesVMAsync();
@@ -182,6 +213,7 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays the form for creating a new role.
         /// </summary>
+        /// <returns>The role creation view.</returns>
         [HttpGet]
         public IActionResult RoleCreate()
         {
@@ -191,6 +223,10 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Creates a new role if it does not already exist.
         /// </summary>
+        /// <param name="roleVM">The submitted role creation data.</param>
+        /// <returns>
+        /// A redirect to the role index when successful; otherwise returns the form with validation errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RoleCreate(RoleVM roleVM)
@@ -221,6 +257,10 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a confirmation page before removing a role.
         /// </summary>
+        /// <param name="roleName">The name of the role to remove.</param>
+        /// <returns>
+        /// The confirmation view when the role exists; otherwise redirects to the role index.
+        /// </returns>
         [HttpGet]
         public async Task<IActionResult> RoleDelete(string roleName)
         {
@@ -243,9 +283,13 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Deletes a role securely using POST and Anti-Forgery Token validation.
+        /// Deletes a role after confirmation.
         /// A role cannot be deleted if users are currently assigned to it.
         /// </summary>
+        /// <param name="roleVM">The submitted role deletion data.</param>
+        /// <returns>
+        /// A redirect to the role index when successful; otherwise returns the confirmation view with errors.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RoleDelete(RoleVM roleVM)
@@ -276,6 +320,13 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays a paginated, sortable, and filterable list of user logs in the system.
         /// </summary>
+        /// <param name="sortOrder">The current sort order for the log list.</param>
+        /// <param name="emailFilter">An optional email filter.</param>
+        /// <param name="abandonedFilter">An optional abandoned-session filter.</param>
+        /// <param name="startDate">An optional inclusive start date.</param>
+        /// <param name="endDate">An optional inclusive end date.</param>
+        /// <param name="pageNumber">The requested page number.</param>
+        /// <returns>The user log list view.</returns>
         public async Task<IActionResult> UserLogAll(string? sortOrder, string? emailFilter, string? abandonedFilter, DateTime? startDate, DateTime? endDate, int? pageNumber)
         {
             string currentSortOrder = string.IsNullOrEmpty(sortOrder) ? "login_desc" : sortOrder;
@@ -305,7 +356,6 @@ namespace TeamYellow.Controllers
             ViewBag.EmailSortParam = currentSortOrder == "email_asc" ? "email_desc" : "email_asc";
             ViewBag.LoginSortParam = currentSortOrder == "login_asc" ? "login_desc" : "login_asc";
 
-            // Will change this later accordingly
             int pageSize = 10;
             int safePageNumber = Math.Max(1, pageNumber ?? 1);
 
