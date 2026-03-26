@@ -35,8 +35,8 @@ namespace TeamYellow.ViewModels
         [StringLength(20, MinimumLength = 7, ErrorMessage = "Phone must be between 7 and 20 characters.")]
         public string Phone { get; set; } = null!;
 
-    [DisplayName("Client Status")]
-    public bool Status { get; set; } = true;
+        [DisplayName("Client Status")]
+        public bool Status { get; set; } = true;
 
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
