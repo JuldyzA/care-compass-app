@@ -45,7 +45,7 @@ namespace TeamYellow.Repositories
             {
                 _context.Subscriptions.Add(subscription);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Subscription {SubscriptionId} created successfully for counsellor {CounsellorId} and plan {PlanId}.", 
+                _logger.LogInformation("Subscription {SubscriptionId} created successfully for counsellor {CounsellorId} and plan {PlanId}.",
                     subscription.SubscriptionId, subscription.CounsellorId, subscription.PlanId);
                 return subscription;
             }
@@ -125,5 +125,19 @@ namespace TeamYellow.Repositories
                 throw;
             }
         }
+
+        /// <summary>
+        /// Retrieves all active subscriptions where the billing cycle has passed.
+        /// </summary>
+        /// <returns>A list of active subscriptions with an expired cycle end date.</returns>
+        public async Task<List<Subscription>> GetActiveExpiredSubscriptionsAsync()
+        {
+            return await _context.Subscriptions
+                .Where(s => s.Status == SubscriptionStatus.Active && s.CycleEnd < DateTime.UtcNow)
+                .ToListAsync();
+        }
+
     }
+
+
 }
