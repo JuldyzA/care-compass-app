@@ -133,8 +133,26 @@ namespace TeamYellow.Repositories
         public async Task<List<Subscription>> GetActiveExpiredSubscriptionsAsync()
         {
             return await _context.Subscriptions
-                .Where(s => s.Status == SubscriptionStatus.Active && s.CycleEnd < DateTime.UtcNow)
+                .Include(s => s.Counsellor)
+                .ThenInclude(c => c.User)
+                .Where(s => s.Status == SubscriptionStatus.Active && s.CycleEnd <= DateTime.UtcNow)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Performs a bulk update on multiple subscriptions, setting their UpdatedAt timestamp to the current UTC time.
+        /// </summary>
+        /// <param name="subscriptions">The list of subscription entities to update.</param>
+        /// <returns>A task that represents the asynchronous bulk update operation.</returns>
+        public async Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions)
+        {
+            foreach (var sub in subscriptions)
+            {
+                sub.UpdatedAt = DateTime.UtcNow;
+                _context.Subscriptions.Update(sub);
+            }
+
+            await _context.SaveChangesAsync();
         }
 
     }

@@ -17,5 +17,7 @@ namespace TeamYellow.Repositories
         Task UpdateSubscription(Subscription subscription);
 
         Task<List<Subscription>> GetActiveExpiredSubscriptionsAsync();
+
+        Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions);
     }
 }
