@@ -45,7 +45,7 @@ namespace TeamYellow.Workers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during expiry check. Will retry at the next scheduled run time.");
+                    _logger.LogError(ex, "Error during expiry check. Will retry in approximately 1 minute.");
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
