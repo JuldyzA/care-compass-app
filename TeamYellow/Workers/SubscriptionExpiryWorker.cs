@@ -90,11 +90,24 @@ namespace TeamYellow.Workers
                     continue;
                 }
 
-                await userRoleRepo.RemoveUserRoleAsync(email, "Free_Counselor");
-                await userRoleRepo.RemoveUserRoleAsync(email, "Paid_Counselor");
-                await userRoleRepo.AddUserRoleAsync(email, "Registered_Visitor");
-                _logger.LogInformation("Role downgraded to Registered_Visitor for CounsellorId {CounsellorId}", sub.CounsellorId);
+                var removedFree = await userRoleRepo.RemoveUserRoleAsync(email, "Free_Counselor");
+                var removedPaid = await userRoleRepo.RemoveUserRoleAsync(email, "Paid_Counselor");
+                var addedVisitor = await userRoleRepo.AddUserRoleAsync(email, "Registered_Visitor");
 
+                if (removedFree && removedPaid && addedVisitor)
+                {
+                    _logger.LogInformation("Role downgraded to Registered_Visitor for CounsellorId {CounsellorId}", sub.CounsellorId);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Role downgrade to Registered_Visitor for CounsellorId {CounsellorId} may be incomplete. " +
+                        "RemovedFree={RemovedFree}, RemovedPaid={RemovedPaid}, AddedVisitor={AddedVisitor}",
+                        sub.CounsellorId,
+                        removedFree,
+                        removedPaid,
+                        addedVisitor);
+                }
             }
 
 
