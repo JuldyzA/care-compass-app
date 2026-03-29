@@ -149,7 +149,6 @@ namespace TeamYellow.Repositories
             foreach (var sub in subscriptions)
             {
                 sub.UpdatedAt = DateTime.UtcNow;
-                _context.Subscriptions.Update(sub);
             }
 
             await _context.SaveChangesAsync();
