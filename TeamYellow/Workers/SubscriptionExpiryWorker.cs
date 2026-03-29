@@ -1,26 +1,8 @@
-using System.Composition;
-using Microsoft.Extensions.Options;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
 
 namespace TeamYellow.Workers
 {
-    /// <summary>
-    /// Configuration settings for the background worker.
-    /// </summary>
-    public class WorkerSettings
-    {
-        /// <summary>
-        /// The hour (0-23) at which the worker should run.
-        /// </summary>
-        public int RunAtHour { get; set; } = 0;
-
-        /// <summary>
-        /// The minute (0-59) at which the worker should run.
-        /// </summary>
-        public int RunAtMinute { get; set; } = 1;
-    }
-
     /// <summary>
     /// Background worker that checks for expired subscriptions and marks them as expired.
     /// </summary>
@@ -28,24 +10,19 @@ namespace TeamYellow.Workers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<SubscriptionExpiryWorker> _logger;
-        private readonly WorkerSettings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubscriptionExpiryWorker"/> class.
         /// </summary>
         /// <param name="scopeFactory">Factory for creating service scopes.</param>
         /// <param name="logger">Logger instance.</param>
-        /// <param name="settings">Worker settings containing scheduled run time.</param>
         public SubscriptionExpiryWorker(
             IServiceScopeFactory scopeFactory,
-            ILogger<SubscriptionExpiryWorker> logger,
-            IOptions<WorkerSettings> settings)
+            ILogger<SubscriptionExpiryWorker> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
-            _settings = settings.Value;
         }
-
         /// <summary>
         /// Executes the background service, checking for expired subscriptions at scheduled intervals.
         /// </summary>
@@ -59,16 +36,8 @@ namespace TeamYellow.Workers
             {
                 try
                 {
-                    var delay = GetDelayUntilNextRun();
-                    var nextRun = DateTime.UtcNow.Add(delay);
-                    _logger.LogInformation("Next scheduled run at {NextRun} UTC (in {Delay}).", nextRun, delay);
-
-                    await Task.Delay(delay, stoppingToken);
-
-                    if (stoppingToken.IsCancellationRequested) break;
-
-                    _logger.LogInformation("Expiry check triggered by: schedule.");
                     await ExpireSubscriptionsAsync(stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -82,19 +51,6 @@ namespace TeamYellow.Workers
             }
 
             _logger.LogInformation("SubscriptionExpiryWorker stopped.");
-        }
-
-        /// <summary>              
-        /// Calculates the delay until the next scheduled run time based on <see cref="WorkerSettings"/>.
-        /// </summary>
-        /// <returns>A <see cref="TimeSpan"/> representing the time until the next run.</returns>
-        private TimeSpan GetDelayUntilNextRun()
-        {
-            var now = DateTime.UtcNow;
-            var nextRun = new DateTime(now.Year, now.Month, now.Day, _settings.RunAtHour, _settings.RunAtMinute, 0, DateTimeKind.Utc);
-            if (now > nextRun)
-                nextRun = nextRun.AddDays(1);
-            return nextRun - now;
         }
 
         /// <summary>
@@ -130,7 +86,7 @@ namespace TeamYellow.Workers
                 var email = sub.Counsellor?.User?.Email;
                 if (email == null)
                 {
-                    _logger.LogWarning("Could not find email for CounselorId {CounsellorId}, cannt perform role downgrade.", sub.CounsellorId);
+                    _logger.LogWarning("Could not find email for CounselorId {CounsellorId}, cannot perform role downgrade.", sub.CounsellorId);
                     continue;
                 }
 

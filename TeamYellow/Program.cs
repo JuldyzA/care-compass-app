@@ -43,11 +43,6 @@ builder.Services.AddHttpClient<ReCAPTCHA.ReCaptchaValidator>(client =>
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-builder.Services.AddOptions<WorkerSettings>()
-    .Bind(builder.Configuration.GetSection("WorkerSettings"))
-    .Validate(s => s.RunAtHour >= 0 && s.RunAtHour <= 23, "RunAtHour must be between 0 and 23.")
-    .Validate(s => s.RunAtMinute >= 0 && s.RunAtMinute <= 59, "RunAtMinute must be between 0 and 59")
-    .ValidateOnStart();
 builder.Services.AddHostedService<SubscriptionExpiryWorker>();
 
 
