@@ -114,7 +114,7 @@ namespace TeamYellow.Controllers
             {
                 if (plan.Price == 0)
                 {
-                    TempData["Message"] = "You cannot downgrade to the Free plan from here.";
+                    TempData["Message"] = "You cannot downgrade to the Free plan.";
                     TempData["MessageType"] = "warning";
                     return RedirectToAction(nameof(Index));
                 }

@@ -151,6 +151,13 @@ namespace TeamYellow.Controllers
                         return RedirectToAction("Index", "Plan");
                     }
 
+                    if (result == SubscriptionResult.PaidToFreeDowngradeNotAllowed)
+                    {
+                        TempData["Message"] = "You are currently on a paid plan and cannot switch to the Free plan.";
+                        TempData["MessageType"] = "warning";
+                        return RedirectToAction("Index", "Plan");
+                    }
+
                     try
                     {
                         await AssignCounsellorRoleAsync(user.Id, roleToAssign);
