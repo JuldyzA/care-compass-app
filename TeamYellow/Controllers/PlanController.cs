@@ -46,16 +46,19 @@ namespace TeamYellow.Controllers
 
         /// <summary>
         /// Displays a list of all active subscription plans.
-        /// If the current user is an authenticated <c>Paid_Counselor</c>, their current plan ID
-        /// is injected into <see cref="Controller.ViewData"/> so the view can highlight it.
+        /// For authenticated users, injects the current active plan ID into
+        /// <see cref="Controller.ViewData"/> and indicates whether the user
+        /// has already used the free trial so the view can adjust available actions.
         /// </summary>
-        /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns>
+        /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns> objects.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var plans = await _planService.GetActivePlans();
 
-            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Paid_Counselor"))
+            bool hasUsedFreeTrial = false;
+
+            if (User.Identity?.IsAuthenticated == true)
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
@@ -65,9 +68,13 @@ namespace TeamYellow.Controllers
                     {
                         var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
                         ViewData["CurrentPlanId"] = subscription?.PlanId;
+
+                        hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(counsellor.CounsellorId);
                     }
                 }
             }
+
+            ViewData["HasUsedFreeTrial"] = hasUsedFreeTrial;
 
             if (TempData.ContainsKey("Message"))
                 ViewData["Message"] = TempData["Message"];
@@ -79,13 +86,14 @@ namespace TeamYellow.Controllers
 
         /// <summary>
         /// Displays the checkout page for the specified plan.
-        /// Redirects back to the plan index with an appropriate error message if the user
-        /// is already subscribed to the requested plan or attempts an invalid plan change.
+        /// Redirects back to the plan index with an appropriate message if the user
+        /// is already subscribed to the requested plan, attempts to reselect the free plan,
+        /// or attempts to downgrade from a paid plan to the free plan from this workflow.
         /// </summary>
         /// <param name="id">The ID of the plan the user wants to check out.</param>
         /// <returns>
         /// The checkout view for the requested plan, or a redirect/not-found result
-        /// if the plan is unavailable or the user is already subscribed.
+        /// if the plan is unavailable or the requested change is not allowed.
         /// </returns>
         [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
         public async Task<IActionResult> Checkout(int id, string? discountCode = null)

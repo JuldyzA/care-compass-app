@@ -53,16 +53,18 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Initiates the subscription process for the specified plan.
         /// Creates a counsellor profile if one does not yet exist for the current user.
-        /// True free plans and paid plans discounted to zero are completed immediately without PayPal.
+        /// True free plans and paid plans discounted to zero are processed immediately without PayPal.
         /// Paid plans with a remaining balance create a PayPal order and redirect the user
-        /// to the PayPal approval page.
+        /// to the PayPal approval page. If the user is already subscribed to the selected plan
+        /// or has already used the free trial, the action redirects back to the plan page
+        /// with an appropriate message.
         /// </summary>
         /// <param name="planId">The ID of the plan the user wants to subscribe to.</param>
         /// <param name="discountCode">Optional discount code applied during checkout.</param>
         /// <returns>
         /// Redirects to the PayPal approval URL for paid plans requiring payment,
-        /// returns a success view for zero-amount flows,
-        /// or returns an error result for invalid requests.
+        /// returns a success view for eligible zero-amount flows,
+        /// or redirects/returns an error result for invalid requests.
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -139,6 +141,13 @@ namespace TeamYellow.Controllers
                     {
                         TempData["Message"] = "You are already subscribed to this plan.";
                         TempData["MessageType"] = "info";
+                        return RedirectToAction("Index", "Plan");
+                    }
+
+                    if (result == SubscriptionResult.FreeTrialAlreadyUsed)
+                    {
+                        TempData["Message"] = "You have already used your free trial. Please choose a paid plan.";
+                        TempData["MessageType"] = "warning";
                         return RedirectToAction("Index", "Plan");
                     }
 

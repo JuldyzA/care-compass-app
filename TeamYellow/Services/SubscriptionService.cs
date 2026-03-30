@@ -46,7 +46,7 @@ namespace TeamYellow.Services
         /// <param name="planId">The free plan identifier.</param>
         /// <returns>
         /// A result indicating whether the subscription was created, changed from an existing plan,
-        /// or was already active.
+        /// was already active, or was blocked because the counsellor has already used the free trial.
         /// </returns>
         public async Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId)
         {
@@ -60,11 +60,17 @@ namespace TeamYellow.Services
                 throw new InvalidOperationException($"Plan {planId} is not a free plan.");
 
             var existing = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellorId);
-
             if (existing != null && existing.PlanId == planId)
             {
                 _logger.LogWarning("Free subscription skipped because counsellor {CounsellorId} is already subscribed to plan {PlanId}.", counsellorId, planId);
                 return SubscriptionResult.AlreadySubscribed;
+            }
+
+            var hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(counsellorId);
+            if (hasUsedFreeTrial)
+            {
+                _logger.LogWarning("Free subscription blocked because counsellor {CounsellorId} has already used the free trial.", counsellorId);
+                return SubscriptionResult.FreeTrialAlreadyUsed;
             }
 
             await using var tx = await _context.Database.BeginTransactionAsync();

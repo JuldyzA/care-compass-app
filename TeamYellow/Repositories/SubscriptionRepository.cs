@@ -154,6 +154,22 @@ namespace TeamYellow.Repositories
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Determines whether the specified counsellor has previously used a free-plan subscription.
+        /// </summary>
+        /// <param name="counsellorId">The counsellor identifier.</param>
+        /// <returns>
+        /// <c>true</c> if the counsellor has at least one subscription associated with a plan
+        /// whose price is 0; otherwise, <c>false</c>.
+        /// </returns>
+        public async Task<bool> HasUsedFreeTrialAsync(int counsellorId)
+        {
+            return await _context.Subscriptions
+                .AnyAsync(s =>
+                    s.CounsellorId == counsellorId &&
+                    s.Plan != null &&
+                    s.Plan.Price == 0);
+        }
     }
 
 
