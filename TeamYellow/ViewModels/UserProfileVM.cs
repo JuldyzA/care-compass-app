@@ -22,6 +22,10 @@ public class UserProfileVM
     [Display(Name = "Last Name")]
     public string LastName { get; set; } = string.Empty;
 
+    [StringLength(100, ErrorMessage = "Display name cannot exceed 100 characters.")]
+    [Display(Name = "Display Name")]
+    public string? DisplayName { get; set; }
+
     [Phone(ErrorMessage = "Invalid phone format")]
     [RegularExpression(@"^\+?[0-9\-\s\(\)]{7,20}$", ErrorMessage = "Phone must be 7-20 digits and may include '+', spaces, dashes or parentheses.")]
     [StringLength(20, MinimumLength = 7, ErrorMessage = "Phone must be between 7 and 20 characters.")]
