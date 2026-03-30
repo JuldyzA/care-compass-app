@@ -4,6 +4,7 @@ using TeamYellow.Data;
 using TeamYellow.Data.Seed;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
+using TeamYellow.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,8 @@ builder.Services.AddHttpClient<ReCAPTCHA.ReCaptchaValidator>(client =>
 builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddHostedService<SubscriptionExpiryWorker>();
+
 
 // Register repositories
 builder.Services.AddScoped<CounsellorRepository>();
