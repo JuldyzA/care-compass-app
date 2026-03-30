@@ -159,6 +159,7 @@
 }
 
 .detail-header-info p {
+    color: #ffffff;
     font-size: 0.95rem;
     margin: 0;
     opacity: 0.95;
@@ -182,6 +183,11 @@
 .detail-section:not(:last-child) {
     padding-bottom: 2rem;
     border-bottom: 2px solid var(--border-color);
+}
+
+#profile-photo-detail-section {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 .detail-section-title {

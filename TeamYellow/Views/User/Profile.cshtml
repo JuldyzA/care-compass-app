@@ -1,0 +1,179 @@
+@using TeamYellow.ViewModels
+@model UserProfileVM
+
+@{
+    ViewData["Title"] = $"{Model.FullName} - My Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+    <div class="detail-header">
+        <a href="@Url.Action("Index", "Home")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <!-- Profile Header -->
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-avatar">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePhotoUrl))
+                    {
+                        <img src="@Model.ProfilePhotoUrl" 
+                             alt="@Model.FullName" 
+                             class="profile-avatar-img" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" 
+                             onerror="this.style.display='none'; this.parentElement.textContent=this.alt.charAt(0).toUpperCase() + (this.alt.split(' ')[1] ? this.alt.split(' ')[1].charAt(0).toUpperCase() : '');" />
+                    }
+                    else
+                    {
+                        @Model.FirstName.FirstOrDefault().ToString().ToUpper()@Model.LastName.FirstOrDefault().ToString().ToUpper()
+                    }
+                </div>
+                <div class="detail-header-info">
+                    <h1>@Model.FullName</h1>
+                    <p>@Model.Email</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Body -->
+        <div class="detail-card-body">
+
+            @await Html.PartialAsync("_AlertMessages")
+
+            <!-- Contact Information Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-envelope"></i> Contact Information
+                </div>
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Email Address</span>
+                        <span class="detail-field-value">
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Phone Number</span>
+                        <span class="detail-field-value">
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                <a href="tel:@Model.Phone">@Model.Phone</a>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-geo-alt"></i> Address Information
+                </div>
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Street Address</span>
+                        <span class="detail-field-value">
+                            @if (!string.IsNullOrEmpty(Model.Street))
+                            {
+                                <span>@Model.Street</span>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Unit Number</span>
+                        <span class="detail-field-value">
+                            @if (Model.UnitNumber.HasValue)
+                            {
+                                <span>#@Model.UnitNumber</span>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">City</span>
+                        <span class="detail-field-value">
+                            @if (!string.IsNullOrEmpty(Model.City))
+                            {
+                                <span>@Model.City</span>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Province</span>
+                        <span class="detail-field-value">
+                            @if (!string.IsNullOrEmpty(Model.Province))
+                            {
+                                <span>@Model.Province</span>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-field">
+                        <span class="detail-field-label">Postal Code</span>
+                        <span class="detail-field-value">
+                            @if (!string.IsNullOrEmpty(Model.PostalCode))
+                            {
+                                <span>@Model.PostalCode</span>
+                            }
+                            else
+                            {
+                                <span style="color: #6c757d;">Not provided</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-clock-history"></i> Account Information
+                </div>
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Member Since</span>
+                        <span class="detail-field-value">@Model.CreatedAt.ToLocalTime().ToString("MMMM dd, yyyy")</span>
+                    </div>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div class="detail-field">
+                            <span class="detail-field-label">Last Updated</span>
+                            <span class="detail-field-value">@Model.UpdatedAt.Value.ToLocalTime().ToString("MMMM dd, yyyy")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="detail-card-footer">
+            <a href="@Url.Action("EditProfile", "User")" class="detail-action-button detail-action-primary">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
