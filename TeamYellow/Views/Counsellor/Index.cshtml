@@ -27,13 +27,9 @@
     <link rel="stylesheet" href="~/css/client/client-table.css" asp-append-version="true" />
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<div class="m-3">
+    @await Html.PartialAsync("_AlertMessages")
+</div>
 
 <div class="dashboard-preview-wrapper">
     <div class="dashboard-content-area">

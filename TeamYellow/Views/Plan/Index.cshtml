@@ -5,7 +5,7 @@
     var message = ViewData["Message"] as string;
     var messageType = ViewData["MessageType"] as string ?? "warning";
     var hasUsedFreeTrial = ViewData["HasUsedFreeTrial"] is bool used && used;
-    var currentPlanId = ViewData["CurrentPlanId"] is int id ? id : (int?)null;
+    var currentPlanId = ViewData["CurrentPlanId"] as int?;
 }
 
 @if (!string.IsNullOrEmpty(message))
