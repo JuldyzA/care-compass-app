@@ -50,7 +50,7 @@ namespace TeamYellow.Controllers
         /// <see cref="Controller.ViewData"/> and indicates whether the user
         /// has already used the free trial so the view can adjust available actions.
         /// </summary>
-        /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns> objects.</returns>
+        /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
