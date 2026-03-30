@@ -259,5 +259,28 @@ namespace TeamYellow.Controllers
             TempData["SuccessMessage"] = "Client has been deleted successfully.";
             return RedirectToAction(nameof(Clients));
         }
+
+        /// <summary>
+        /// Placeholder action for future session notes feature (not yet implemented).
+        /// Currently displays a coming soon page with a redirect link to the dashboard.
+        /// </summary>
+        /// <returns>A view indicating the feature is under development.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public IActionResult Appointments()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Displays the notifications page for counsellors.
+        /// </summary>
+        /// <returns>A view indicating the feature is under development.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public IActionResult Notifications()
+        {
+            return View();
+        }
     }
 }
