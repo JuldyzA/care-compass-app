@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = $"{Model.FullName} - My Profile";
+    bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
 }
 
 @section Styles {
@@ -71,6 +72,13 @@
                             }
                         </span>
                     </div>
+                    @if (isCounsellor && !string.IsNullOrEmpty(Model.DisplayName))
+                    {
+                        <div class="detail-field">
+                            <span class="detail-field-label">Display Name</span>
+                            <span class="detail-field-value">@Model.DisplayName</span>
+                        </div>
+                    }
                 </div>
             </div>
 

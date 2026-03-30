@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Edit Profile";
+    bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
 }
 
 @section Styles {
@@ -66,6 +67,14 @@
                             <input asp-for="LastName" class="edit-input" placeholder="Enter your last name" />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
+                        @if (isCounsellor)
+                        {
+                            <div class="detail-field">
+                                <label asp-for="DisplayName" class="detail-field-label">Display Name</label>
+                                <input asp-for="DisplayName" class="edit-input" placeholder="e.g., John Smith" />
+                                <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                            </div>
+                        }
                         <div class="detail-field">
                             <label asp-for="Phone" class="detail-field-label">Phone Number</label>
                             <input asp-for="Phone" class="edit-input" placeholder="e.g., 604-555-0123" />
