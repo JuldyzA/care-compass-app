@@ -87,8 +87,10 @@ namespace TeamYellow.Controllers
         /// <summary>
         /// Displays the checkout page for the specified plan.
         /// Redirects back to the plan index with an appropriate message if the user
-        /// is already subscribed to the requested plan, attempts to reselect the free plan,
-        /// or attempts to downgrade from a paid plan to the free plan from this workflow.
+        /// is already subscribed to the requested plan, if a free counsellor attempts
+        /// to re-open the free plan, or if a paid counsellor attempts to downgrade
+        /// to the free plan. Free-trial eligibility is enforced later in the
+        /// subscription workflow.
         /// </summary>
         /// <param name="id">The ID of the plan the user wants to check out.</param>
         /// <returns>
