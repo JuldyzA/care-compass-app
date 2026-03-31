@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Unauthorized";
+    Layout = "_ErrorLayout";
+}
+
+<section class="status-page status-page-401 w-100">
+    <div class="container">
+        <div class="status-card text-center">
+            <span class="status-badge">401</span>
+            <h1>Authentication required</h1>
+            <p>You need to sign in before accessing this resource.</p>
+            <div class="status-actions">
+                <a class="btn status-btn-primary" asp-area="Identity" asp-page="/Account/Login">Go to Login</a>
+            </div>
+        </div>
+    </div>
+</section>

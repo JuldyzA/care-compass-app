@@ -68,11 +68,16 @@ namespace TeamYellow.Controllers
                     Response.StatusCode = 500;
                     return View("~/Views/Shared/ServerError.cshtml");
                 case 403:
-                case 401:
                     Response.StatusCode = 403;
                     return View("~/Views/Shared/Forbidden.cshtml");
+                case 401:
+                    Response.StatusCode = 401;
+                    return View("~/Views/Shared/Unauthorized.cshtml");
 
                 default:
+                    Response.StatusCode = (statusCode.Value >= 400 && statusCode.Value <= 599)
+                    ? statusCode.Value
+                    : 500;
                     return View("~/Views/Shared/Error.cshtml");
             }
         }
