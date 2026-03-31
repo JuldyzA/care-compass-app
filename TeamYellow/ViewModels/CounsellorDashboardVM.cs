@@ -34,14 +34,6 @@ namespace TeamYellow.ViewModels
 
         public int InactiveClientCount { get; set; }
 
-        public int TotalSubscriptionDays { get; set; }
-
-        public int RemainingSubscriptionDays { get; set; }
-
-        public int RemainingSubscriptionHours { get; set; }
-
-        public int RemainingSubscriptionMinutes { get; set; }
-
         public string RemainingSubscriptionText { get; set; } = string.Empty;
     }
 }

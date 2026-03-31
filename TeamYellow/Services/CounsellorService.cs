@@ -79,7 +79,7 @@ namespace TeamYellow.Services
             if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("Unable to extract user ID from claims.");
-                return (false, false, null, null, string.Empty);
+                return (true, false, "We could not verify your identity. Please sign out and sign in again.", null, string.Empty);
             }
 
             Counsellor? counsellor = await _counsellorRepository.GetByUserIdAsync(userId);
@@ -96,7 +96,7 @@ namespace TeamYellow.Services
             if (counsellor == null)
             {
                 _logger.LogWarning("No counsellor record found for user ID {UserId}.", userId);
-                return (false, false, null, profilePhotoUrl, displayName);
+                return (true, false, "We could not load your counsellor profile. Please sign out and sign in again.", profilePhotoUrl, displayName);
             }
 
             var activeSubscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);

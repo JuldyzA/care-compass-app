@@ -204,7 +204,6 @@ namespace TeamYellow.Repositories
         public async Task<bool> HasPaidPlanHistoryAsync(int counsellorId)
         {
             return await _context.Subscriptions
-                .Include(s => s.Plan)
                 .AnyAsync(s =>
                     s.CounsellorId == counsellorId &&
                     s.Plan != null &&

@@ -2,12 +2,11 @@
 @model TeamYellow.ViewModels.CounsellorDashboardVM
 
 @{
-    bool isLockedDashboard = ViewData["IsCounsellorAccessLocked"] as bool? == true;
+    bool isLockedDashboard = (ViewData["IsCounsellorAccessLocked"] as bool? == true) || Model.IsDashboardLocked;
 
     Layout = "_DashboardLayout";
     ViewData["DisablePageScroll"] = isLockedDashboard;
     
-    int total = Model.TotalSubscriptionDays;
     string remainderText = Model.RemainingSubscriptionText;
     double percentageRemaining = 0;
     bool isHealthy = false;
@@ -220,7 +219,6 @@
         })();
 
         const now = new Date();
-        const currentMonthFull = now.toLocaleString('default', { month: 'long' });
 
         const monthsStartingFromNow = Array.from({ length: 12 }, (_, i) => {
             const date = new Date(now);
