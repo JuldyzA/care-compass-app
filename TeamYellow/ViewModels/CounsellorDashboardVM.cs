@@ -18,10 +18,6 @@ namespace TeamYellow.ViewModels
 
         public bool IsDashboardLocked { get; set; }
 
-        public bool ShouldRefreshSignIn { get; set; }
-
-        public string? ErrorMessage { get; set; }
-
         public DateTime CycleStart { get; set; }
 
         public DateTime CycleEnd { get; set; }

@@ -84,15 +84,18 @@ namespace TeamYellow.Controllers
 
             string? actionName = context.ActionDescriptor.RouteValues["action"];
 
-            if (accessState.IsLocked && !string.Equals(actionName, nameof(Index), StringComparison.OrdinalIgnoreCase))
+            if (accessState.IsLocked)
             {
                 if (TempData["ErrorMessage"] == null)
                 {
                     TempData["ErrorMessage"] = "Your subscription is inactive or expired. Please activate a plan to continue.";
                 }
 
-                context.Result = RedirectToAction(nameof(Index));
-                return;
+                if (!string.Equals(actionName, nameof(Locked), StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Result = RedirectToAction(nameof(Locked));
+                    return;
+                }
             }
 
             await next();
@@ -107,6 +110,33 @@ namespace TeamYellow.Controllers
         {
             CounsellorDashboardVM dashboardVM = await _counsellorService.GetCounsellorDashboardAsync(User);
             return View(dashboardVM);
+        }
+
+        /// <summary>
+        /// Displays a minimal locked dashboard state when subscription access is restricted.
+        /// This avoids sending the full dashboard data payload to locked users.
+        /// </summary>
+        /// <returns>The counsellor dashboard view populated with a minimal locked-state model.</returns>
+        [HttpGet]
+        public IActionResult Locked()
+        {
+            ViewData["IsCounsellorAccessLocked"] = true;
+            ViewData["DisablePageScroll"] = true;
+
+            var vm = new CounsellorDashboardVM
+            {
+                IsDashboardLocked = true,
+                IsSubscriptionActive = false,
+                RemainingSubscriptionText = "expired",
+                MonthlyClientCounts = new int[12],
+                ActiveClientCount = 0,
+                InactiveClientCount = 0,
+                ClientGrowthFromLastMonth = 0,
+                CycleStart = DateTime.MinValue,
+                CycleEnd = DateTime.MinValue
+            };
+
+            return View(nameof(Index), vm);
         }
 
         /// <summary>
@@ -310,5 +340,7 @@ namespace TeamYellow.Controllers
             TempData["SuccessMessage"] = "Client has been deleted successfully.";
             return RedirectToAction(nameof(Clients));
         }
+
+
     }
 }

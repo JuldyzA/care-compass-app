@@ -146,7 +146,12 @@ namespace TeamYellow.Repositories
         /// <returns>A task that represents the asynchronous bulk update operation.</returns>
         public async Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions)
         {
-            if (subscriptions == null || subscriptions.Count == 0)
+            if (subscriptions == null)
+            {
+                throw new ArgumentNullException(nameof(subscriptions));
+            }
+
+            if (subscriptions.Count == 0)
             {
                 return;
             }
