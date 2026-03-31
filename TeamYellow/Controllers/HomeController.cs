@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using TeamYellow.Models;
 
 namespace TeamYellow.Controllers
 {
@@ -50,15 +48,46 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
+        /// Displays a generic status-code page using shared views.
+        /// </summary>
+        /// <param name="statusCode">The HTTP status code captured by the status code pages middleware.</param>
+        /// <returns>A status-specific error view.</returns>
+        public IActionResult StatusCodeError(int? statusCode)
+        {
+            if (!statusCode.HasValue)
+            {
+                return RedirectToAction(nameof(Error));
+            }
+
+            switch (statusCode.Value)
+            {
+                case 404:
+                    Response.StatusCode = 404;
+                    return View("~/Views/Shared/NotFound.cshtml");
+                case 500:
+                    Response.StatusCode = 500;
+                    return View("~/Views/Shared/ServerError.cshtml");
+                case 403:
+                case 401:
+                    Response.StatusCode = 403;
+                    return View("~/Views/Shared/Forbidden.cshtml");
+
+                default:
+                    return View("~/Views/Shared/Error.cshtml");
+            }
+        }
+
+        /// <summary>
         /// Displays the application error page.
         /// </summary>
         /// <returns>
-        /// The error view populated with the current request identifier.
+        /// A generic error view.
         /// </returns>
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            Response.StatusCode = 500;
+            return View("~/Views/Shared/Error.cshtml");
         }
     }
 }
