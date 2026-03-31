@@ -255,7 +255,7 @@ p {
 
 .footer-shell {
     max-width: 1180px;
-    margin-left: 1rem;
+    margin: 0 auto;
 }
 
 .footer-brand-col {
@@ -360,7 +360,6 @@ p {
 .navbar-nav{
     display: flex;
         gap: 1rem;
-    padding-left: 1rem;
     padding: 1.2rem;
 }
 
@@ -476,7 +475,7 @@ p {
         justify-content:center;
         gap: 2rem;
     }
-.site-footer .row div{
+.site-footer .row > div{
     width: 12rem;
 }
     .footer-meta {
@@ -533,7 +532,7 @@ p {
     .footer-social-col {
         text-align: left;
     }
-        .site-footer .row div{
+        .site-footer .row > div{
             width: 10rem;
         }
 .site-footer .row {
