@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 {
@@ -91,6 +88,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage("./SetPassword");
             }
 
+            SetParentLayout();
             return Page();
         }
 
@@ -98,6 +96,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
         {
             if (!ModelState.IsValid)
             {
+                SetParentLayout();
                 return Page();
             }
 
@@ -114,6 +113,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+
+                SetParentLayout();
                 return Page();
             }
 
@@ -122,6 +123,18 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             StatusMessage = "Your password has been changed.";
 
             return RedirectToPage();
+        }
+
+        /// <summary>
+        /// Sets the parent layout based on user authentication status.
+        /// For authenticated dashboard users, uses the dashboard layout; otherwise uses the default identity layout.
+        /// </summary>
+        private void SetParentLayout()
+        {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                ViewData["ParentLayout"] = "/Views/Shared/_DashboardLayout.cshtml";
+            }
         }
     }
 }

@@ -94,6 +94,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
+            SetParentLayout();
             await LoadAsync(user);
             return Page();
         }
@@ -108,6 +109,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
+                SetParentLayout();
                 await LoadAsync(user);
                 return Page();
             }
@@ -140,6 +142,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 {
                     _logger.LogError(ex, "Failed to send email change confirmation to {Email}", Input.NewEmail);
                     ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try again later.");
+                    SetParentLayout();
                     await LoadAsync(user);
                     return Page();
                 }
@@ -162,6 +165,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
+                SetParentLayout();
                 await LoadAsync(user);
                 return Page();
             }
@@ -192,12 +196,25 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             {
                 _logger.LogError(ex, "Failed to send email verification to {Email}", email);
                 ModelState.AddModelError(string.Empty, "We couldn't send the verification email. Please try again later.");
+                SetParentLayout();
                 await LoadAsync(user);
                 return Page();
             }
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();
+        }
+
+        /// <summary>
+        /// Sets the parent layout based on user authentication status.
+        /// For authenticated dashboard users, uses the dashboard layout; otherwise uses the default identity layout.
+        /// </summary>
+        private void SetParentLayout()
+        {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                ViewData["ParentLayout"] = "/Views/Shared/_DashboardLayout.cshtml";
+            }
         }
     }
 }
