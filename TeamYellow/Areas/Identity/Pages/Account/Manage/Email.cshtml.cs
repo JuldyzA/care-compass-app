@@ -2,33 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using TeamYellow.Models;
+using TeamYellow.Services;
 
 namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 {
     public class EmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<EmailModel> _logger;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+            IEmailService emailService,
+            ILogger<EmailModel> logger)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -123,10 +123,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                     pageHandler: null,
                     values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
                     protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(
-                    Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                try
+                {
+                    ComposeEmailModel payload = new ComposeEmailModel
+                    {
+                        Email = Input.NewEmail,
+                        Subject = "Confirm your email",
+                        Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                    };
+
+                    using var response = await _emailService.SendEmailAsync(payload);
+                    _logger.LogInformation("Email change confirmation sent to {Email}", Input.NewEmail);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send email change confirmation to {Email}", Input.NewEmail);
+                    ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try again later.");
+                    await LoadAsync(user);
+                    return Page();
+                }
 
                 StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
@@ -159,10 +175,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+            try
+            {
+                ComposeEmailModel payload = new ComposeEmailModel
+                {
+                    Email = email,
+                    Subject = "Confirm your email",
+                    Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                };
+
+                using var response = await _emailService.SendEmailAsync(payload);
+                _logger.LogInformation("Email verification sent to {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email verification to {Email}", email);
+                ModelState.AddModelError(string.Empty, "We couldn't send the verification email. Please try again later.");
+                await LoadAsync(user);
+                return Page();
+            }
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

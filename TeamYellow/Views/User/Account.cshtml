@@ -6,11 +6,14 @@
     ViewData["Title"] = "Account Settings";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
 <div class="detail-container">
     <div class="detail-header">
-        <a class="detail-back-button" asp-controller="Counsellor" asp-action="Index">
-            <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            <span>Back</span>
+        <a href="@Url.Action("Index", "Counsellor")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
     </div>
 
@@ -30,25 +33,29 @@
 
         <!-- Card Body -->
         <div class="detail-card-body">
+
+            @await Html.PartialAsync("_AlertMessages")
+
+            <!-- Login Credentials Section -->
             <div class="detail-section">
-                <h2 class="detail-section-title">
+                <div class="detail-section-title">
                     <i class="bi bi-key" aria-hidden="true"></i>
                     Login Credentials
-                </h2>
+                </div>
 
                 <div class="detail-fields-grid">
                     <div class="detail-field">
-                        <label class="detail-field-label">Email Address</label>
-                        <div class="detail-field-value">
+                        <span class="detail-field-label">Email Address</span>
+                        <span class="detail-field-value">
                             @Model.Email
-                        </div>
+                        </span>
                     </div>
 
                     <div class="detail-field">
-                        <label class="detail-field-label">Password</label>
-                        <div class="detail-field-value">
+                        <span class="detail-field-label">Password</span>
+                        <span class="detail-field-value">
                             @Model.MaskedPassword
-                        </div>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -56,7 +63,11 @@
 
         <!-- Card Footer -->
         <div class="detail-card-footer">
-            <a asp-area="Identity" asp-page="/Account/Manage/ChangePassword" class="detail-action-button detail-action-primary">
+            <a asp-area="Identity" asp-page="/Account/Manage/Email" class="detail-action-button detail-action-primary">
+                <i class="bi bi-envelope" aria-hidden="true"></i>
+                <span>Change Email</span>
+            </a>
+            <a asp-area="Identity" asp-page="/Account/Manage/ChangePassword" class="detail-action-button detail-action-secondary">
                 <i class="bi bi-pencil-square" aria-hidden="true"></i>
                 <span>Change Password</span>
             </a>
