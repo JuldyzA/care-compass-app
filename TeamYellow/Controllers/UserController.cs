@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using TeamYellow.Configurations;
+using TeamYellow.DTOs;
 using TeamYellow.Services;
 using TeamYellow.ViewModels;
 
@@ -102,5 +104,55 @@ public class UserController : Controller
 
         TempData["SuccessMessage"] = "Your profile has been updated successfully.";
         return RedirectToAction(nameof(Profile));
+    }
+
+    /// <summary>
+    /// Uploads a cropped profile image to Azure Blob Storage.
+    /// </summary>
+    /// <param name="dto">The profile image upload data transfer object.</param>
+    /// <returns>
+    /// A JSON response containing the new image URL on success; 
+    /// otherwise returns an error response.
+    /// </returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Consumes("application/json")]
+    public async Task<IActionResult> UploadProfileImage([FromBody] ProfileImageUploadDto dto)
+    {
+        var (success, errorMessage, imageUrl) = await _userProfileService.UploadProfileImageAsync(dto, User);
+
+        if (!success)
+        {
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                TempData["ErrorMessage"] = errorMessage;
+                ModelState.AddModelError(string.Empty, errorMessage);
+            }
+
+            // Determine appropriate HTTP response code based on error type
+            if (errorMessage == ImageUploadMessages.NoImageDataProvided ||
+                errorMessage == ImageUploadMessages.InvalidImageDataFormat ||
+                errorMessage == ImageUploadMessages.InvalidBase64Data ||
+                errorMessage?.StartsWith(ImageUploadMessages.FileSizeExceedsPrefix) == true)
+            {
+                return BadRequest(new { success = false, message = errorMessage });
+            }
+
+            if (errorMessage == ImageUploadMessages.UserNotIdentified)
+            {
+                return Unauthorized(new { success = false, message = errorMessage });
+            }
+
+            return StatusCode(500, new { success = false, message = errorMessage ?? ImageUploadMessages.UploadError });
+        }
+
+        TempData["SuccessMessage"] = ImageUploadMessages.UploadSuccess;
+
+        return Ok(new
+        {
+            success = true,
+            imageUrl,
+            message = ImageUploadMessages.UploadSuccess
+        });
     }
 }

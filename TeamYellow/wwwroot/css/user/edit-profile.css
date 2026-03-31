@@ -1,0 +1,197 @@
+﻿.profile-photo-upload-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-photo-preview-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #6c757d;
+    position: relative;
+}
+
+    .profile-photo-preview-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.profile-photo-upload-controls {
+    flex: 1 1 220px;
+    min-width: 220px;
+}
+
+    .profile-photo-upload-controls .btn-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 4px;
+        border: 1px solid #0d6efd;
+        background-color: #0d6efd;
+        color: #fff;
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+
+        .profile-photo-upload-controls .btn-upload:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+    .profile-photo-upload-controls small {
+        display: block;
+        margin-top: 0.35rem;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+.profile-photo-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.profile-photo-modal {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.profile-photo-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+    .profile-photo-modal-header h5 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+.profile-photo-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.profile-photo-crop-area {
+    position: relative;
+    width: 100%;
+    max-height: 350px;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background-color: #000;
+    overflow: hidden;
+    padding: 0;
+}
+
+.profile-photo-crop-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+}
+
+    .profile-photo-crop-inner:active {
+        cursor: grabbing;
+    }
+
+.profile-photo-crop-area img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    max-width: none;
+}
+
+/* Circular overlay: dark outside, clear circle in center */
+.profile-photo-crop-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.8);
+    -webkit-mask-image: radial-gradient(circle at center, transparent 50%, black 51%);
+    mask-image: radial-gradient(circle at center, transparent 50%, black 51%);
+}
+
+/* Fallback if mask is not supported: draw a large white circle outline */
+@supports not ((-webkit-mask-image: radial-gradient(circle, #000 0, #000 0)) or (mask-image: radial-gradient(circle, #000 0, #000 0))) {
+    .profile-photo-crop-overlay::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+    }
+}
+
+.profile-photo-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.btn-outline-secondary,
+.btn-primary {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    border-width: 1px;
+    cursor: pointer;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+    background-color: #fff;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+    }
+
+.btn-primary {
+    border-color: #0d6efd;
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0b5ed7;
+    }
+
+.profile-photo-error {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}

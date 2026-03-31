@@ -1,5 +1,7 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TeamYellow.Configurations;
 using TeamYellow.Data;
 using TeamYellow.Data.Seed;
 using TeamYellow.Repositories;
@@ -29,6 +31,23 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+
+// Register centralized configuration services
+builder.Services.AddScoped<AzureStorageConfiguration>();
+builder.Services.AddScoped<SeedConfiguration>();
+
+// Configure Azure Blob Storage
+var azureConfig = new AzureStorageConfiguration(builder.Configuration);
+var profilePicturesContainerName = azureConfig.ProfilePicturesContainer;
+
+builder.Services.AddSingleton(
+    new BlobContainerClient(
+        new Uri($"https://{azureConfig.AccountName}.blob.core.windows.net/{profilePicturesContainerName}"),
+        new Azure.Storage.StorageSharedKeyCredential(
+            azureConfig.AccountName,
+            azureConfig.AccountKey)));
+
+builder.Services.AddScoped<IAzureBlobStorageService, AzureBlobStorageService>();
 
 // Register application services
 builder.Services.AddScoped<CounsellorService>();
