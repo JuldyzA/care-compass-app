@@ -88,6 +88,10 @@
     transform: translateY(-2px);
 }
 
+.hero-actions {
+    justify-content: center;
+}
+
 .features-section {
     padding: 4rem 0;
     background: var(--bg-light);
@@ -338,6 +342,10 @@
     .hero {
         text-align: left;
         padding: 4rem 0;
+    }
+
+    .hero-actions {
+        justify-content: flex-start;
     }
 
     .hero h1 {
