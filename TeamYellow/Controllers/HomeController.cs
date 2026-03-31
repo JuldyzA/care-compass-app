@@ -44,6 +44,10 @@ namespace TeamYellow.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Displays the Solution page with information about the CareCompass platform.
+        /// </summary>
+        /// <returns>The Solution view.</returns>
         public IActionResult Solution()
         {
             return View();

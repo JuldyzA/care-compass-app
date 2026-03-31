@@ -9,7 +9,8 @@ namespace TeamYellow.Services
         AlreadySubscribed,
         PlanChanged,
         FreeTrialAlreadyUsed,
-        PaidToFreeDowngradeNotAllowed
+        PaidToFreeDowngradeNotAllowed,
+        PaidHistoryBlocksFreePlan
     }
 
     /// <summary>

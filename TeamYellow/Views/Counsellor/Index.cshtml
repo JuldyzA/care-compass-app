@@ -2,22 +2,28 @@
 @model TeamYellow.ViewModels.CounsellorDashboardVM
 
 @{
-    bool isLockedDashboard = User.IsInRole("Registered_Visitor");
+    bool isLockedDashboard = ViewData["IsCounsellorAccessLocked"] as bool? == true;
 
     Layout = "_DashboardLayout";
-    ViewData["UserProfilePicture"] = Model.ProfilePhotoUrl;
-    ViewData["DisplayName"] = Model.DisplayName;
     ViewData["DisablePageScroll"] = isLockedDashboard;
     
     int total = Model.TotalSubscriptionDays;
-    int remainder = Model.RemainingSubscriptionDays;
+    string remainderText = Model.RemainingSubscriptionText;
     double percentageRemaining = 0;
     bool isHealthy = false;
-    if (total > 0)
+    
+    if (Model.IsSubscriptionActive && Model.CycleEnd > Model.CycleStart)
     {
-        percentageRemaining = Math.Round((remainder * 100.0) / total, 2);
-        isHealthy = percentageRemaining > 20;
+        var totalHours = (Model.CycleEnd - Model.CycleStart).TotalHours;
+        var remainingHours = Math.Max(0, (Model.CycleEnd - DateTime.UtcNow).TotalHours);
+
+        if (totalHours > 0)
+        {
+            percentageRemaining = Math.Round((remainingHours * 100.0) / totalHours, 2);
+            isHealthy = percentageRemaining > 20;
+        }
     }
+
     string gaugeColor = isHealthy ? "#2ECC71" : "#E74C3C";
     string textColorClass = isHealthy ? "text-success" : "text-danger";
 }
@@ -180,10 +186,20 @@
     </div>
 
     <div class="footer-banner @(isLockedDashboard ? "locked-footer-banner" : "")">
-        <p class="@textColorClass mb-0">
-            <i class="bi bi-@(isHealthy ? "check-circle-fill" : "exclamation-triangle-fill") me-2"></i>
-            Your plan is ending in @Model.RemainingSubscriptionDays days
-        </p>
+        @if (isLockedDashboard)
+        {
+            <p class="text-danger mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Your dashboard is locked because your subscription is inactive or expired.
+            </p>
+        }
+        else
+        {
+            <p class="@textColorClass mb-0">
+                <i class="bi bi-@(isHealthy ? "check-circle-fill" : "exclamation-triangle-fill") me-2"></i>
+                Your plan is ending in @Model.RemainingSubscriptionText
+            </p>
+        }
     </div>
 </div>
 
@@ -1026,7 +1042,7 @@
                             fontSize: "22px",
                             color: gaugeColor,
                             formatter: function (val) {
-                                return '@remainder' + " Days";
+                                return '@remainderText';
                             },
                         },
                     },

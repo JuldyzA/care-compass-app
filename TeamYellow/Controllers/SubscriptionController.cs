@@ -158,6 +158,13 @@ namespace TeamYellow.Controllers
                         return RedirectToAction("Index", "Plan");
                     }
 
+                    if (result == SubscriptionResult.PaidHistoryBlocksFreePlan)
+                    {
+                        TempData["Message"] = "You cannot select the Free plan because you have already purchased a Monthly or Yearly plan before.";
+                        TempData["MessageType"] = "warning";
+                        return RedirectToAction("Index", "Plan");
+                    }
+
                     try
                     {
                         await AssignCounsellorRoleAsync(user.Id, roleToAssign);

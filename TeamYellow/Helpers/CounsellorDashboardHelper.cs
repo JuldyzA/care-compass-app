@@ -55,6 +55,46 @@ namespace TeamYellow.Helpers
                 return new CounsellorDashboardVM();
             }
 
+            TimeSpan remaining = dto.IsSubscriptionActive ? dto.CycleEnd - DateTime.UtcNow : TimeSpan.Zero;
+
+            if (remaining < TimeSpan.Zero)
+            {
+                remaining = TimeSpan.Zero;
+            }
+
+            int totalDays = dto.IsSubscriptionActive ? Math.Max(0, (int)Math.Ceiling((dto.CycleEnd - dto.CycleStart).TotalDays)) : 0;
+
+            int remainingDays = dto.IsSubscriptionActive ? Math.Max(0, (int)Math.Floor(remaining.TotalDays)) : 0;
+
+            int remainingHours = dto.IsSubscriptionActive ? Math.Max(0, (int)Math.Floor(remaining.TotalHours)) : 0;
+
+            int remainingMinutes = dto.IsSubscriptionActive ? Math.Max(0, (int)Math.Ceiling(remaining.TotalMinutes)) : 0;
+
+            string remainingText;
+
+            if (!dto.IsSubscriptionActive)
+            {
+                remainingText = "expired";
+            }
+            else if (remaining.TotalDays >= 1)
+            {
+                remainingText = $"{remainingDays} day{(remainingDays == 1 ? "" : "s")}";
+            }
+            else if (remaining.TotalHours >= 1)
+            {
+                int hoursToShow = Math.Max(1, (int)Math.Ceiling(remaining.TotalHours));
+                remainingText = $"{hoursToShow} hour{(hoursToShow == 1 ? "" : "s")}";
+            }
+            else if (remaining.TotalMinutes >= 1)
+            {
+                int minutesToShow = Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes));
+                remainingText = $"{minutesToShow} minute{(minutesToShow == 1 ? "" : "s")}";
+            }
+            else
+            {
+                remainingText = "less than a minute";
+            }
+
             return new CounsellorDashboardVM
             {
                 ProfilePhotoUrl = dto.ProfilePhotoUrl,
@@ -67,8 +107,11 @@ namespace TeamYellow.Helpers
                 ClientGrowthFromLastMonth = CalculateGrowth(dto.MonthlyClientCounts[10], dto.MonthlyClientCounts[11]),
                 ActiveClientCount = dto.ActiveClientCount,
                 InactiveClientCount = dto.InactiveClientCount,
-                TotalSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - dto.CycleStart.Date).TotalDays : 0,
-                RemainingSubscriptionDays = dto.IsSubscriptionActive ? (int)(dto.CycleEnd.Date - DateTime.UtcNow.Date).TotalDays : 0
+                TotalSubscriptionDays = totalDays,
+                RemainingSubscriptionDays = remainingDays,
+                RemainingSubscriptionHours = remainingHours,
+                RemainingSubscriptionMinutes = remainingMinutes,
+                RemainingSubscriptionText = remainingText
             };
         }
 
