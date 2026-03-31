@@ -15,5 +15,11 @@ namespace TeamYellow.Repositories
         Task<Subscription?> GetActiveSubscriptionWithPlanByCounsellorId(int counsellorId);
 
         Task UpdateSubscription(Subscription subscription);
+
+        Task<List<Subscription>> GetActiveExpiredSubscriptionsAsync();
+
+        Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions);
+
+        Task<bool> HasUsedFreeTrialAsync(int counsellorId);
     }
 }

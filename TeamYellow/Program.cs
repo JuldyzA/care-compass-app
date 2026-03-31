@@ -6,6 +6,7 @@ using TeamYellow.Data;
 using TeamYellow.Data.Seed;
 using TeamYellow.Repositories;
 using TeamYellow.Services;
+using TeamYellow.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,7 @@ builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddHostedService<SubscriptionExpiryWorker>();
 
 // Register repositories
 builder.Services.AddScoped<CounsellorRepository>();
@@ -85,6 +87,12 @@ builder.Services.AddTransient<CounsellorSeeder>();
 builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+});
 
 var app = builder.Build();
 
