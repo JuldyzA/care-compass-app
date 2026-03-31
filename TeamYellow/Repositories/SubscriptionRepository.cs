@@ -159,7 +159,6 @@ namespace TeamYellow.Repositories
                 {
                     sub.UpdatedAt = utcNow;
                 }
-                _context.Subscriptions.UpdateRange(subscriptions);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Bulk update of {SubscriptionCount} subscriptions completed successfully.", subscriptions.Count);
             }

@@ -99,7 +99,7 @@ namespace TeamYellow.Services
                 return (true, false, "We could not load your counsellor profile. Please sign out and sign in again.", profilePhotoUrl, displayName);
             }
 
-            var activeSubscription = await _subscriptionRepository.GetActiveSubscriptionWithPlanByCounsellorId(counsellor.CounsellorId);
+            var activeSubscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
 
             bool shouldLock = activeSubscription == null ||
                 activeSubscription.Status == SubscriptionStatus.Expired ||
