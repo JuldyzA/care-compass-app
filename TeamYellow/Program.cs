@@ -69,6 +69,12 @@ builder.Services.AddTransient<ClientSeeder>();
 builder.Services.AddTransient<SubscriptionSeeder>();
 builder.Services.AddTransient<PaymentTransactionSeeder>();
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
