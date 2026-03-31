@@ -83,6 +83,26 @@ public class UserProfileService
     }
 
     /// <summary>
+    /// Retrieves the user account credentials for the authenticated user.
+    /// </summary>
+    /// <param name="user">The current authenticated user.</param>
+    /// <returns>A user account view model with email and masked password; otherwise <c>null</c>.</returns>
+    public async Task<UserAccountVM?> GetAccountAsync(ClaimsPrincipal user)
+    {
+        IdentityUser? identityUser = await _userManager.GetUserAsync(user);
+
+        if (identityUser == null)
+        {
+            _logger.LogWarning("Identity user not found during retrieve account.");
+            return null;
+        }
+
+        UserAccountVM vm = UserHelper.MapToVM(identityUser);
+
+        return vm;
+    }
+
+    /// <summary>
     /// Uploads a profile image for the specified user and returns the blob URL.
     /// </summary>
     /// <param name="dto">The profile image upload DTO.</param>

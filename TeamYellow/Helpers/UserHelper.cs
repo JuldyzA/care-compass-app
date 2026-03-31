@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using TeamYellow.Models;
 using TeamYellow.ViewModels;
 
@@ -31,6 +32,19 @@ public class UserHelper
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
             Email = email
+        };
+    }
+
+    /// <summary>
+    /// Maps an identity user to an account view model with masked credentials.
+    /// </summary>
+    /// <param name="identityUser">The identity user entity.</param>
+    /// <returns>A populated user account view model with masked password.</returns>
+    public static UserAccountVM MapToVM(IdentityUser identityUser)
+    {
+        return new UserAccountVM
+        {
+            Email = identityUser.Email ?? string.Empty
         };
     }
 

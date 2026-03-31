@@ -107,6 +107,27 @@ public class UserController : Controller
     }
 
     /// <summary>
+    /// Displays the user account credentials page with email and masked password.
+    /// </summary>
+    /// <returns>
+    /// The account view with user email and masked password; 
+    /// otherwise redirects to home page.
+    /// </returns>
+    [HttpGet]
+    public async Task<IActionResult> Account()
+    {
+        UserAccountVM? vm = await _userProfileService.GetAccountAsync(User);
+
+        if (vm == null)
+        {
+            TempData["ErrorMessage"] = "Unable to load your account information. Please try again later.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        return View(vm);
+    }
+
+    /// <summary>
     /// Uploads a cropped profile image to Azure Blob Storage.
     /// </summary>
     /// <param name="dto">The profile image upload data transfer object.</param>
