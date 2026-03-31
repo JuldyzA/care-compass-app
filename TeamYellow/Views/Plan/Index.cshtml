@@ -6,6 +6,10 @@
     var messageType = ViewData["MessageType"] as string ?? "warning";
 }
 
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/solution-plan.css" asp-append-version="true" />
+}
+
 @if (!string.IsNullOrEmpty(message))
 {
     <div class="container mt-3">
