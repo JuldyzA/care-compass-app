@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Server Error";
+    Layout = "_ErrorLayout";
+}
+
+<section class="status-page status-page-500 w-100">
+    <div class="container">
+        <div class="status-card text-center">
+            <span class="status-badge">500</span>
+            <h1>Server error</h1>
+            <p>Something went wrong on our side. Please try again in a moment.</p>
+            <div class="status-actions">
+                <a class="btn status-btn-primary" asp-controller="Home" asp-action="Index">Go to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
