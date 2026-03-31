@@ -4,6 +4,8 @@
     ViewData["Title"] = "Plan";
     var message = ViewData["Message"] as string;
     var messageType = ViewData["MessageType"] as string ?? "warning";
+    var hasUsedFreeTrial = ViewData["HasUsedFreeTrial"] is bool used && used;
+    var currentPlanId = ViewData["CurrentPlanId"] as int?;
 }
 
 @if (!string.IsNullOrEmpty(message))
@@ -72,16 +74,13 @@
                         </ul>
 
                         <div class="mt-4">
-                            @{
-                                var currentPlanId = ViewData["CurrentPlanId"] as int?;
-                            }
                             @if (User.IsInRole("Free_Counselor") && plan.Price == 0)
                             {
                                 <button class="btn w-100 btn-secondary" disabled>Current Plan</button>
                             }
-                            else if (User.IsInRole("Paid_Counselor") && plan.Price == 0)
+                            else if (plan.Price == 0 && hasUsedFreeTrial)
                             {
-                                <button class="btn w-100 btn-outline-secondary" disabled>Not Available</button>
+                                <button class="btn w-100 btn-outline-secondary" disabled>Free Trial Used</button>
                             }
                             else if (User.IsInRole("Paid_Counselor") && currentPlanId == plan.PlanId)
                             {

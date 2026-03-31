@@ -27,6 +27,10 @@
     <link rel="stylesheet" href="~/css/client/client-table.css" asp-append-version="true" />
 }
 
+<div class="m-3">
+    @await Html.PartialAsync("_AlertMessages")
+</div>
+
 <div class="dashboard-preview-wrapper">
     <div class="dashboard-content-area">
         <div class="dashboard-content @(isLockedDashboard ? "locked-dashboard" : "")"
