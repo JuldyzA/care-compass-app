@@ -1,4 +1,6 @@
-﻿@{
+﻿@model TeamYellow.Models.ErrorViewModel
+
+@{
     ViewData["Title"] = "Error";
     Layout = "_ErrorLayout";
 }
@@ -9,6 +11,10 @@
             <span class="status-badge">ERROR</span>
             <h1>Something went wrong</h1>
             <p>We could not process your request right now. Please try again later.</p>
+            @if (Model?.ShowRequestId == true)
+            {
+                <p class="text-muted mb-3"><small>Request ID: @Model.RequestId</small></p>
+            }
             <div class="status-actions">
                 <a class="btn status-btn-primary" asp-controller="Home" asp-action="Index">Go to Home</a>
             </div>

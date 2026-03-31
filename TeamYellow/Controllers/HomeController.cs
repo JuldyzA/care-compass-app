@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace TeamYellow.Controllers
 {
@@ -7,6 +8,15 @@ namespace TeamYellow.Controllers
     /// </summary>
     public class HomeController : Controller
     {
+        private readonly ILogger<HomeController> _logger;
+        private readonly IWebHostEnvironment _environment;
+
+        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment environment)
+        {
+            _logger = logger;
+            _environment = environment;
+        }
+
         /// <summary>
         /// Displays the landing page for unauthenticated users or redirects authenticated users to the appropriate dashboard based on their role.
         /// </summary>
@@ -91,8 +101,14 @@ namespace TeamYellow.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
+            var traceId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            _logger.LogError("Unhandled application error. TraceId: {TraceId}", traceId);
+
             Response.StatusCode = 500;
-            return View("~/Views/Shared/Error.cshtml");
+            return View("~/Views/Shared/Error.cshtml", new Models.ErrorViewModel
+            {
+                RequestId = _environment.IsDevelopment() ? traceId : null
+            });
         }
     }
 }
