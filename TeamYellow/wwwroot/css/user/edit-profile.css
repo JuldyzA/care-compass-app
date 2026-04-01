@@ -66,15 +66,18 @@
     align-items: center;
     justify-content: center;
     z-index: 1050;
+    padding: 1rem;
 }
 
-.profile-photo-modal {
+.profile-photo-modal {  
     background: #fff;
     border-radius: 8px;
     padding: 1rem 1.25rem;
     max-width: 520px;
     width: 100%;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .profile-photo-modal-header {
@@ -194,4 +197,47 @@
     color: #dc3545;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+}
+
+/* Responsive: Small screens */
+@media (max-width: 576px) {
+    .profile-photo-modal {
+        padding: 0.75rem 1rem;
+    }
+
+    .profile-photo-crop-area {
+        max-height: 280px;
+        aspect-ratio: 1 / 1;
+    }
+
+    .profile-photo-modal-header h5 {
+        font-size: 0.95rem;
+    }
+
+    .profile-photo-modal-footer {
+        gap: 0.35rem;
+    }
+
+    .btn-outline-secondary,
+    .btn-primary {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.6rem;
+    }
+
+    .profile-photo-upload-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .profile-photo-preview-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-photo-upload-controls {
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: auto;
+    }
 }
