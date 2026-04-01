@@ -114,11 +114,12 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             }
 
             var email = await _userManager.GetEmailAsync(user);
-            if (Input.NewEmail != email)
+            // Use case-insensitive comparison to check if the email has actually changed
+            if (!string.Equals(Input.NewEmail, email, StringComparison.OrdinalIgnoreCase))
             {
-                // Check if the new email already exists in the database
+                // Check if the new email already exists in the database (for a different user)
                 var existingUser = await _userManager.FindByEmailAsync(Input.NewEmail);
-                if (existingUser != null)
+                if (existingUser != null && !string.Equals(existingUser.Id, user.Id, StringComparison.Ordinal))
                 {
                     _logger.LogWarning("Email change attempt failed: email {NewEmail} is already in use by another user.", Input.NewEmail);
                     TempData["ErrorMessage"] = "This email address is already in use. Please use a different email.";
