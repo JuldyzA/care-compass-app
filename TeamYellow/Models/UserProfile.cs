@@ -22,6 +22,7 @@ namespace TeamYellow.Models
         public string LastName { get; set; } = string.Empty;
 
         [Column("phone")]
+        [MaxLength(20)]
         public string? Phone { get; set; }
 
         [Column("createdAt")]
@@ -37,15 +38,19 @@ namespace TeamYellow.Models
         public int? UnitNumber { get; set; }
 
         [Column("street")]
+        [MaxLength(120)]
         public string? Street { get; set; }
 
         [Column("city")]
+        [MaxLength(80)]
         public string? City { get; set; }
 
         [Column("province")]
+        [MaxLength(2)]
         public string? Province { get; set; }
 
         [Column("postalCode")]
+        [MaxLength(7)]
         public string? PostalCode { get; set; }
 
         [Required]
