@@ -137,7 +137,7 @@ namespace TeamYellow.Services
                             </div>
                         </div>
                         <div class='email-footer'>
-                            <p>© 2026 CareCompass. All rights reserved.</p>
+                            <p>© {DateTime.Now.ToLocalTime().Year} CareCompass. All rights reserved.</p>
                             <p>This is an automated message. Please do not reply to this email.</p>
                         </div>
                     </div>
@@ -284,7 +284,7 @@ namespace TeamYellow.Services
                             </div>
                         </div>
                         <div class='email-footer'>
-                            <p>© 2026 CareCompass. All rights reserved.</p>
+                            <p>© {DateTime.Now.ToLocalTime().Year} CareCompass. All rights reserved.</p>
                             <p>This is an automated message. Please do not reply to this email.</p>
                         </div>
                     </div>
