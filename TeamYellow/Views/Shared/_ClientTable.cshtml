@@ -5,34 +5,36 @@
     string today = DateTime.Today.ToLocalTime().ToString("yyyy-MM-dd");
 }
 
-<div class="card-header d-flex justify-content-between align-items-center">
+<div class="card-header">
     <h5 class="mb-0">Client List</h5>
-    <div class="d-flex gap-2">
+    <div class="card-header-controls">
         @if (!Model.IsDashboard)
         {
-            <div class="d-flex align-items-center gap-2">
-                <div class="d-flex align-items-center gap-1">
-                    <label for="clientStartDate" class="form-label small mb-0 me-1">From</label>
+            <div class="filter-date-group">
+                <div class="filter-date-item">
+                    <label for="clientStartDate" class="form-label small mb-0">From</label>
                     <input type="date" id="clientStartDate" class="form-control form-control-sm" value="@(Model.StartDate ?? "")" max="@today" />
                 </div>
-                <div class="d-flex align-items-center gap-1">
-                    <label for="clientEndDate" class="form-label small mb-0 me-1">To</label>
+                <div class="filter-date-item">
+                    <label for="clientEndDate" class="form-label small mb-0">To</label>
                     <input type="date" id="clientEndDate" class="form-control form-control-sm" value="@(Model.EndDate ?? "")" max="@today" />
                 </div>
             </div>
         }
-        <div class="input-group input-group-sm" style="width: 250px;">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-search"></i>
-            </span>
-            <input type="text" id="clientSearchInput" class="client-search-input form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
+        <div class="filter-search-group">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="clientSearchInput" class="client-search-input form-control border-start-0" placeholder="Search clients..." value="@(Model.SearchTerm ?? "")">
+            </div>
+            <button class="btn btn-sm btn-outline-primary" type="button" id="clientFilterBtn" title="Filter results">
+                <i class="bi bi-funnel"></i> Filter
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" id="clientClearBtn" title="Clear search">
+                <i class="bi bi-x-lg"></i> Clear
+            </button>
         </div>
-        <button class="btn btn-sm btn-outline-primary" type="button" id="clientFilterBtn">
-            <i class="bi bi-funnel"></i> Filter
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" type="button" id="clientClearBtn" title="Clear search">
-            <i class="bi bi-x-lg"></i> Clear
-        </button>
     </div>
 </div>
 
@@ -58,6 +60,7 @@
     }
     else
     {
+        <!-- Desktop Table View -->
         <div class="table-responsive">
             <table id="clientsTable" class="clients-table table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -125,10 +128,64 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-clients-list">
+            @foreach (ClientVM c in Model.Clients)
+            {
+                <div class="client-card">
+                    <div class="client-card-header">
+                        <div class="client-card-name">
+                            <div class="avatar-sm">
+                                <span class="avatar-initial rounded-circle bg-avatar-primary">@c.Initials</span>
+                            </div>
+                            <span>@c.FirstName @c.LastName</span>
+                        </div>
+                        <div class="client-card-status">
+                            <span class="badge @(c.Status == true ? "bg-success" : "bg-danger")">@(c.Status == true ? "Active" : "Inactive")</span>
+                        </div>
+                    </div>
+
+                    <div class="client-card-body">
+                        <div class="client-card-row">
+                            <label>Date:</label>
+                            <value>@c.CreatedAt.ToShortDateString()</value>
+                        </div>
+
+                        <div class="client-card-row">
+                            <label>Time:</label>
+                            <value>@c.CreatedAt.ToShortTimeString()</value>
+                        </div>
+
+                        <div class="client-card-row">
+                            <label>Email:</label>
+                            <value>@c.Email</value>
+                        </div>
+
+                        @if (!Model.IsDashboard)
+                        {
+                            <div class="client-card-row">
+                                <label>Phone:</label>
+                                <value>@c.Phone</value>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!Model.IsDashboard)
+                    {
+                        <div class="client-card-footer">
+                            <a href="@Url.Action("ClientDetail", "Counsellor", new { id = c.ClientId })" class="btn btn-sm btn-outline-primary w-100" title="View Details">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     }
 </div>
 
-<div class="d-flex justify-content-between align-items-center p-3 border-top">
+<div class="pagination-footer">
     <div class="text-muted small">
         Showing <span id="showingStart">@Model.StartEntry</span> to <span id="showingEnd">@Model.EndEntry</span> of <span id="totalEntries">@Model.TotalCount</span> entries
     </div>
