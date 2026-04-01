@@ -213,5 +213,33 @@ namespace TeamYellow.Repositories
                     s.Plan != null &&
                     s.Plan.Price > 0m);
         }
+
+        /// <summary>
+        /// Retrieves the current valid active subscriptions for the specified counsellors in a single query.
+        /// </summary>
+        /// <param name="counsellorIds">The counsellor identifiers to check.</param>
+        /// <param name="utcNow">The UTC timestamp used to determine whether a subscription is still valid.</param>
+        /// <returns>
+        /// A dictionary keyed by counsellor identifier containing the valid active subscription
+        /// for each counsellor that currently has one.
+        /// </returns>
+        public async Task<Dictionary<int, Subscription>> GetValidActiveSubscriptionsByCounsellorIdsAsync(IEnumerable<int> counsellorIds, DateTime utcNow)
+        {
+            var ids = counsellorIds.Distinct().ToList();
+
+            if (ids.Count == 0)
+            {
+                return new Dictionary<int, Subscription>();
+            }
+
+            return await _context.Subscriptions
+                .Where(s =>
+                    ids.Contains(s.CounsellorId) &&
+                    s.Status == SubscriptionStatus.Active &&
+                    s.CycleEnd > utcNow)
+                .GroupBy(s => s.CounsellorId)
+                .Select(g => g.OrderByDescending(s => s.CycleEnd).First())
+                .ToDictionaryAsync(s => s.CounsellorId);
+        }
     }
 }

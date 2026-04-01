@@ -83,14 +83,17 @@ namespace TeamYellow.Workers
             }
             await repo.BulkUpdateSubscriptionsAsync(expired);
 
+            var utcNow = DateTime.UtcNow;
+
+            var counsellorIds = expired.Select(s => s.CounsellorId)
+                .Distinct()
+                .ToList();
+
+            var activeSubscriptionsByCounsellorId = await repo.GetValidActiveSubscriptionsByCounsellorIdsAsync(counsellorIds, utcNow);
+
             foreach (var sub in expired)
-            {
-                var currentActive = await repo.GetActiveSubscriptionByCounsellorId(sub.CounsellorId);
-                bool hasValidActiveSubscription = currentActive != null &&
-                    currentActive.Status == SubscriptionStatus.Active &&
-                    currentActive.CycleEnd > DateTime.UtcNow;
-                
-                if (hasValidActiveSubscription)
+            {   
+                if (activeSubscriptionsByCounsellorId.TryGetValue(sub.CounsellorId, out var currentActive))
                 {
                     _logger.LogInformation("Skipping role downgrade for CounsellorId {CounsellorId} because active subscription {SubscriptionId} exists until {CycleEnd}", 
                         sub.CounsellorId, currentActive!.SubscriptionId, currentActive.CycleEnd);
