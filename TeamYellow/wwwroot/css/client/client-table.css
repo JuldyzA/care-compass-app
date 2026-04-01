@@ -97,11 +97,11 @@
 }
 
 .avatar-initial.bg-primary {
-    background-color: #3E8A90;
+    background-color: #3e8a90;
 }
 
 .avatar-initial.bg-avatar-primary {
-    background-color: #3E8A90;
+    background-color: #3e8a90;
 }
 
 /* ========================================
@@ -230,7 +230,7 @@
 
 /* Search input styling */
 .client-search-input:focus {
-    border-color: #3E8A90;
+    border-color: #3e8a90;
     box-shadow: 0 0 0 0.2rem rgba(62, 138, 144, 0.15);
 }
 
@@ -251,12 +251,12 @@
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
     white-space: nowrap;
-    border-color: #3E8A90;
-    color: #3E8A90;
+    border-color: #3e8a90;
+    color: #3e8a90;
 }
 
 .clients-table .btn-sm:hover {
-    background-color: #3E8A90;
+    background-color: #3e8a90;
     color: white;
 }
 
@@ -265,29 +265,29 @@
    ======================================== */
 
 .btn-primary {
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #2D6570;
-    border-color: #2D6570;
+    background-color: #2d6570;
+    border-color: #2d6570;
     color: white;
 }
 
 .btn-primary:focus,
 .btn-primary:focus-visible {
-    background-color: #2D6570;
-    border-color: #2D6570;
+    background-color: #2d6570;
+    border-color: #2d6570;
     color: white;
     outline: none;
     box-shadow: 0 0 0 0.25rem rgba(62, 138, 144, 0.25);
 }
 
 .btn-primary:active {
-    background-color: #2D6570;
-    border-color: #2D6570;
+    background-color: #2d6570;
+    border-color: #2d6570;
     color: white;
 }
 
@@ -296,29 +296,29 @@
    ======================================== */
 
 .btn-outline-primary {
-    color: #3E8A90;
-    border-color: #3E8A90;
+    color: #3e8a90;
+    border-color: #3e8a90;
     background-color: white;
 }
 
 .btn-outline-primary:hover {
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     color: white;
 }
 
 .btn-outline-primary:focus,
 .btn-outline-primary:focus-visible {
     color: white;
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     outline: none;
     box-shadow: 0 0 0 0.25rem rgba(62, 138, 144, 0.25);
 }
 
 .btn-outline-primary:active {
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     color: white;
 }
 
@@ -327,14 +327,14 @@
    ======================================== */
 
 #clientFilterBtn {
-    color: #3E8A90;
-    border-color: #3E8A90;
+    color: #3e8a90;
+    border-color: #3e8a90;
     white-space: nowrap;
 }
 
 #clientFilterBtn:hover {
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     color: white;
 }
 
@@ -354,13 +354,13 @@
 
 .pagination-sm .page-link:hover {
     background-color: #f1f5f9;
-    border-color: #3E8A90;
-    color: #3E8A90;
+    border-color: #3e8a90;
+    color: #3e8a90;
 }
 
 .pagination-sm .page-item.active .page-link {
-    background-color: #3E8A90;
-    border-color: #3E8A90;
+    background-color: #3e8a90;
+    border-color: #3e8a90;
     color: white;
 }
 
@@ -637,7 +637,7 @@
 
     .client-card:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border-color: #3E8A90;
+        border-color: #3e8a90;
     }
 
     .client-card-header {
@@ -690,7 +690,7 @@
         min-width: 50px;
     }
 
-    .client-card-row value {
+    .client-card-row .card-value {
         color: #212529;
         flex: 1;
         text-align: right;
@@ -863,4 +863,11 @@
     .clients-table thead th {
         background-color: #f8f9fa;
     }
+}
+
+.card-value {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    word-break: break-word;
 }

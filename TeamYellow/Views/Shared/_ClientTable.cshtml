@@ -149,24 +149,24 @@
                     <div class="client-card-body">
                         <div class="client-card-row">
                             <label>Date:</label>
-                            <value>@c.CreatedAt.ToShortDateString()</value>
+                            <span class="card-value">@c.CreatedAt.ToShortDateString()</span>
                         </div>
 
                         <div class="client-card-row">
                             <label>Time:</label>
-                            <value>@c.CreatedAt.ToShortTimeString()</value>
+                            <span class="card-value">@c.CreatedAt.ToShortTimeString()</span>
                         </div>
 
                         <div class="client-card-row">
                             <label>Email:</label>
-                            <value>@c.Email</value>
+                            <span class="card-value">@c.Email</span>
                         </div>
 
                         @if (!Model.IsDashboard)
                         {
                             <div class="client-card-row">
                                 <label>Phone:</label>
-                                <value>@c.Phone</value>
+                                <span class="card-value">@c.Phone</span>
                             </div>
                         }
                     </div>
