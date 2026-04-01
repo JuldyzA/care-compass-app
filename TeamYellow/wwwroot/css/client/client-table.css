@@ -1,4 +1,35 @@
 ﻿/* ========================================
+       Page Header Styling - Matching Billing Page
+       ======================================== */
+
+.clients-header-wrapper {
+    padding: 1.5rem 0;
+    padding-top: 0;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 2rem !important;
+    gap: 2rem;
+}
+
+.clients-header {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+/* ========================================
        Empty State Styling
        ======================================== */
 
@@ -296,6 +327,22 @@
 }
 
 @media (max-width: 768px) {
+    .clients-header-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem 0;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .clients-header-wrapper .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
     .card-header .d-flex {
         flex-direction: column;
         gap: 0.75rem;
@@ -331,19 +378,32 @@
 }
 
 @media (max-width: 576px) {
+    .page-title {
+        font-size: 1.25rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .clients-header-wrapper {
+        padding: 1rem 0;
+        margin-bottom: 1rem !important;
+    }
+
     .clients-table {
         font-size: 0.8125rem;
     }
 
-        .clients-table thead th {
-            font-size: 0.7rem;
-            padding: 0.5rem 0.375rem;
-        }
+    .clients-table thead th {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.375rem;
+    }
 
-        .clients-table tbody td {
-            font-size: 0.8125rem;
-            padding: 0.5rem 0.375rem;
-        }
+    .clients-table tbody td {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.375rem;
+    }
 }
 
 #clientTableContainer .card-header {
