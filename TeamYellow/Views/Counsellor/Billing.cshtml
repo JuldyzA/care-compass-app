@@ -112,6 +112,7 @@
             }
             else
             {
+                <!-- Desktop Table View -->
                 <div class="table-responsive">
                     <table class="transactions-table table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -185,6 +186,80 @@
                             }
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="mobile-transactions-list">
+                    @foreach (var transaction in Model.Transactions.OrderByDescending(t => t.PaidAt))
+                    {
+                        <div class="transaction-card">
+                            <div class="transaction-card-header">
+                                <div>
+                                    <div class="transaction-card-date">
+                                        @transaction.PaidAt.ToString("MMM dd, yyyy")
+                                        <small>@transaction.PaidAt.ToString("hh:mm tt")</small>
+                                    </div>
+                                </div>
+                                <div class="transaction-card-status">
+                                    @{
+                                        var statusClass = transaction.Status == "Paid" ? "status-paid" : "status-failed";
+                                        var statusIcon = transaction.Status == "Paid" ? "check-circle" : "x-circle";
+                                    }
+                                    <span class="status-badge @statusClass">
+                                        <i class="bi bi-@statusIcon"></i>
+                                        @transaction.Status
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="transaction-card-body">
+                                <div class="transaction-card-row">
+                                    <label>Plan:</label>
+                                    <value>@transaction.PlanName</value>
+                                </div>
+
+                                <div class="transaction-card-row">
+                                    <label>Type:</label>
+                                    <value>
+                                        <span class="badge bg-light text-dark">
+                                            @transaction.BillingType
+                                        </span>
+                                    </value>
+                                </div>
+
+                                <div class="transaction-card-row">
+                                    <label>Provider:</label>
+                                    <value>
+                                        @if (transaction.Provider.Equals("PayPal", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span><i class="bi bi-paypal"></i> PayPal</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@transaction.Provider</span>
+                                        }
+                                    </value>
+                                </div>
+
+                                <div class="transaction-card-amount">
+                                    <div class="transaction-card-amount-label">Amount Paid</div>
+                                    <span class="transaction-card-amount-value">@transaction.Amount.ToString("C")</span>
+                                    <small style="color: #6c757d; font-size: 0.75rem;">@transaction.Currency</small>
+                                </div>
+                            </div>
+
+                            <div class="transaction-card-footer">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#transactionModal_@transaction.PaymentTransactionId"
+                                        aria-label="View transaction details"
+                                        title="View Details">
+                                    <i class="bi bi-eye"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
         </div>
