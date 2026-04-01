@@ -117,6 +117,17 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             var email = await _userManager.GetEmailAsync(user);
             if (Input.NewEmail != email)
             {
+                // Check if the new email already exists in the database
+                var existingUser = await _userManager.FindByEmailAsync(Input.NewEmail);
+                if (existingUser != null)
+                {
+                    _logger.LogWarning("Email change attempt failed: email {NewEmail} is already in use by another user.", Input.NewEmail);
+                    TempData["ErrorMessage"] = "This email address is already in use. Please use a different email.";
+                    SetParentLayout();
+                    await LoadAsync(user);
+                    return Page();
+                }
+
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -141,7 +152,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to send email change confirmation to {Email}", Input.NewEmail);
-                    ModelState.AddModelError(string.Empty, "We couldn't send the confirmation email. Please try again later.");
+                    TempData["ErrorMessage"] = "We couldn't send the confirmation email. Please try again later.";
                     SetParentLayout();
                     await LoadAsync(user);
                     return Page();
@@ -195,7 +206,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send email verification to {Email}", email);
-                ModelState.AddModelError(string.Empty, "We couldn't send the verification email. Please try again later.");
+                TempData["ErrorMessage"] = "We couldn't send the verification email. Please try again later.";
                 SetParentLayout();
                 await LoadAsync(user);
                 return Page();
