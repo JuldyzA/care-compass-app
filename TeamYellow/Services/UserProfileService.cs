@@ -3,7 +3,6 @@ using System.Security.Claims;
 using TeamYellow.Configurations;
 using TeamYellow.DTOs;
 using TeamYellow.Helpers;
-using TeamYellow.Models;
 using TeamYellow.Repositories;
 using TeamYellow.ViewModels;
 
@@ -205,7 +204,7 @@ public class UserProfileService
             string fileName = $"profile-{userId}-{DateTime.UtcNow:yyyyMMddHHmmss}.jpg";
 
             using MemoryStream memoryStream = new MemoryStream(imageBytes);
-            string blobUrl = await _blobStorageService.UploadFileAsync(memoryStream, fileName, _profilePicturesContainer);
+            string blobUrl = await _blobStorageService.UploadFileAsync(memoryStream, fileName);
 
             _logger.LogInformation("Profile image uploaded successfully for user {UserId}", userId);
 

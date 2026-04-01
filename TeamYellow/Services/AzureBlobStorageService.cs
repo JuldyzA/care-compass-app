@@ -12,21 +12,19 @@ public interface IAzureBlobStorageService
     /// </summary>
     /// <param name="fileStream">The file stream to upload.</param>
     /// <param name="fileName">The name of the file in blob storage.</param>
-    /// <param name="containerName">The container name in blob storage.</param>
     /// <returns>The URI of the uploaded blob.</returns>
-    Task<string> UploadFileAsync(Stream fileStream, string fileName, string containerName);
+    Task<string> UploadFileAsync(Stream fileStream, string fileName);
 
     /// <summary>
     /// Deletes a file from Azure Blob Storage.
     /// </summary>
     /// <param name="blobUri">The URI of the blob to delete.</param>
-    /// <param name="containerName">The container name in blob storage.</param>
     /// <returns><c>true</c> if the deletion was successful; otherwise <c>false</c>.</returns>
-    Task<bool> DeleteFileAsync(string blobUri, string containerName);
+    Task<bool> DeleteFileAsync(string blobUri);
 }
 
 /// <summary>
-/// Implementation of Azure Blob Storage service.
+/// Implementation of Azure Blob Storage service for profile pictures.
 /// </summary>
 public class AzureBlobStorageService : IAzureBlobStorageService
 {
@@ -45,15 +43,13 @@ public class AzureBlobStorageService : IAzureBlobStorageService
     }
 
     /// <summary>
-    /// Uploads a file stream to the specified blob storage container.
+    /// Uploads a file stream to the profile pictures blob storage container.
     /// </summary>
     /// <param name="fileStream">The stream containing the file data to upload.</param>
     /// <param name="fileName">The name to assign to the file in storage.</param>
-    /// <param name="containerName">The name of the target container.</param>
     /// <returns>A task that represents the asynchronous operation, containing the URI of the uploaded blob.</returns>
     /// <exception cref="Exception">Thrown when the upload process fails. Errors are logged before re-throwing.</exception>
-
-    public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string containerName)
+    public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
     {
         try
         {
@@ -61,28 +57,27 @@ public class AzureBlobStorageService : IAzureBlobStorageService
 
             await blobClient.UploadAsync(fileStream, overwrite: true);
 
-            _logger.LogInformation("File '{FileName}' uploaded successfully to container '{ContainerName}'", fileName, containerName);
+            _logger.LogInformation("File '{FileName}' uploaded successfully to blob storage.", fileName);
 
             return blobClient.Uri.ToString();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file '{FileName}' to container '{ContainerName}'", fileName, containerName);
+            _logger.LogError(ex, "Error uploading file '{FileName}' to blob storage.", fileName);
             throw;
         }
     }
 
     /// <summary>
-    /// Deletes a file from the blob storage container using its URI.
+    /// Deletes a file from the profile pictures blob storage container using its URI.
     /// </summary>
     /// <param name="blobUri">The full URI of the blob to be deleted.</param>
-    /// <param name="containerName">The name of the container where the file is stored.</param>
     /// <returns>A task representing the asynchronous operation, returning <see langword="true"/> if the deletion was successful; otherwise, <see langword="false"/>.</returns>
     /// <remarks>
     /// This method extracts the filename from the URI and attempts to delete it. 
     /// Any exceptions encountered during the process are caught and logged.
     /// </remarks>
-    public async Task<bool> DeleteFileAsync(string blobUri, string containerName)
+    public async Task<bool> DeleteFileAsync(string blobUri)
     {
         try
         {
@@ -96,13 +91,13 @@ public class AzureBlobStorageService : IAzureBlobStorageService
 
             await blobClient.DeleteAsync();
 
-            _logger.LogInformation("File '{FileName}' deleted successfully from container '{ContainerName}'", fileName, containerName);
+            _logger.LogInformation("File '{FileName}' deleted successfully from blob storage.", fileName);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting file from container '{ContainerName}'", containerName);
+            _logger.LogError(ex, "Error deleting file from blob storage.");
             return false;
         }
     }
