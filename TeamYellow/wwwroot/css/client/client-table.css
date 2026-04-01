@@ -104,9 +104,13 @@
     border-radius: 50%;
 }
 
-    .avatar-initial.bg-primary {
-        background-color: #3E8A90;
-    }
+.avatar-initial.bg-primary {
+    background-color: #3E8A90;
+}
+
+.avatar-initial.bg-avatar-primary {
+    background-color: #3E8A90;
+}
 
 /* ========================================
        Sessions Table Styles
@@ -170,6 +174,83 @@
 .clients-table .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+}
+
+/* ========================================
+   Primary Button Override - Green Theme
+   ======================================== */
+
+.btn-primary {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2D6570;
+    border-color: #2D6570;
+    color: white;
+}
+
+.btn-primary:focus,
+.btn-primary:focus-visible {
+    background-color: #2D6570;
+    border-color: #2D6570;
+    color: white;
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(62, 138, 144, 0.25);
+}
+
+.btn-primary:active {
+    background-color: #2D6570;
+    border-color: #2D6570;
+    color: white;
+}
+
+/* ========================================
+   Outline Primary Button Override - Green Theme
+   ======================================== */
+
+.btn-outline-primary {
+    color: #3E8A90;
+    border-color: #3E8A90;
+    background-color: white;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
+}
+
+.btn-outline-primary:focus,
+.btn-outline-primary:focus-visible {
+    color: white;
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(62, 138, 144, 0.25);
+}
+
+.btn-outline-primary:active {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
+}
+
+/* ========================================
+   Filter Button Styling
+   ======================================== */
+
+#clientFilterBtn {
+    color: #3E8A90;
+    border-color: #3E8A90;
+}
+
+#clientFilterBtn:hover {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
 }
 
 /* Pagination styling */
