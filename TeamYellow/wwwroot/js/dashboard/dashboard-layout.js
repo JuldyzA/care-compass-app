@@ -152,7 +152,7 @@ function setActiveNavLink() {
             return;
         }
 
-        // Match Counsellor subpages (CreateClient, ClientDetail, EditClient, Appointments)
+        // Match Counsellor subpages (CreateClient, ClientDetail, EditClient, Email/Password change)
         if (href.includes('/counsellor/clients') &&
             (currentPath.includes('/counsellor/createclient') ||
              currentPath.includes('/counsellor/clientdetail') ||
