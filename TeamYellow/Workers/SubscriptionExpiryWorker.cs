@@ -54,7 +54,9 @@ namespace TeamYellow.Workers
         }
 
         /// <summary>
-        /// Queries for active subscriptions with a past cycle end date and marks them as expired.
+        /// Queries for active subscriptions whose billing cycle has ended, marks them as expired,
+        /// and downgrades affected users to Registered_Visitor only when they do not already
+        /// have another valid active subscription.
         /// </summary>
         /// <param name="stoppingToken">Token to signal when the service should stop.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -83,10 +85,22 @@ namespace TeamYellow.Workers
 
             foreach (var sub in expired)
             {
+                var currentActive = await repo.GetActiveSubscriptionByCounsellorId(sub.CounsellorId);
+                bool hasValidActiveSubscription = currentActive != null &&
+                    currentActive.Status == SubscriptionStatus.Active &&
+                    currentActive.CycleEnd > DateTime.UtcNow;
+                
+                if (hasValidActiveSubscription)
+                {
+                    _logger.LogInformation("Skipping role downgrade for CounsellorId {CounsellorId} because active subscription {SubscriptionId} exists until {CycleEnd}", 
+                        sub.CounsellorId, currentActive!.SubscriptionId, currentActive.CycleEnd);
+                    continue;
+                }
+
                 var email = sub.Counsellor?.User?.Email;
                 if (email == null)
                 {
-                    _logger.LogWarning("Could not find email for CounselorId {CounsellorId}, cannot perform role downgrade.", sub.CounsellorId);
+                    _logger.LogWarning("Could not find email for CounsellorId {CounsellorId}, cannot perform role downgrade.", sub.CounsellorId);
                     continue;
                 }
 

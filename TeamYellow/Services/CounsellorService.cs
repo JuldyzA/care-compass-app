@@ -65,12 +65,22 @@ namespace TeamYellow.Services
 
         /// <summary>
         /// Evaluates whether the current counsellor user should be locked out of counsellor pages
-        /// because the active subscription is missing or expired.
+        /// based on their effective role and subscription access state.
+        /// Visitor-only users are locked and prompted to activate a subscription.
+        /// Counsellor users are locked when their active subscription is missing or expired.
+        /// If an expired counsellor is successfully downgraded to Registered_Visitor,
+        /// the method signals that the sign-in cookie should be refreshed.
         /// </summary>
         /// <param name="user">The current authenticated user.</param>
         /// <returns>
-        /// A tuple containing lock state, sign-in refresh requirement, optional error message,
-        /// profile photo URL, and display name.
+        /// A tuple containing:
+        /// <list type="bullet">
+        /// <item><description>Whether counsellor access should be locked.</description></item>
+        /// <item><description>Whether the user's sign-in should be refreshed.</description></item>
+        /// <item><description>An optional message explaining the current access state.</description></item>
+        /// <item><description>The user's profile photo URL, if available.</description></item>
+        /// <item><description>The counsellor display name, if available.</description></item>
+        /// </list>
         /// </returns>
         public async Task<(bool IsLocked, bool ShouldRefreshSignIn, string? ErrorMessage, string? ProfilePhotoUrl, string DisplayName)> GetCounsellorPageAccessStateAsync(ClaimsPrincipal user)
         {
@@ -88,9 +98,12 @@ namespace TeamYellow.Services
             string displayName = counsellor?.DisplayName ?? string.Empty;
             string? profilePhotoUrl = profile?.ProfilePhotoUrl;
 
-            if (user.IsInRole("Registered_Visitor"))
+            bool isVisitorOnly = user.IsInRole("Registered_Visitor") &&
+                !user.IsInRole("Free_Counselor") && !user.IsInRole("Paid_Counselor");
+
+            if (isVisitorOnly)
             {
-                return (true, false, null, profilePhotoUrl, displayName);
+                return (true, false, "Please activate your subscription to access the counsellor dashboard.", profilePhotoUrl, displayName);
             }
 
             if (counsellor == null)

@@ -141,11 +141,24 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     _logger.LogWarning("User account locked out.");
                     return RedirectToPage("./Lockout");
                 }
-                else
+                if (result.IsNotAllowed)
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+                    if (user != null && !await _signInManager.UserManager.IsEmailConfirmedAsync(user))
+                    {
+                        ModelState.AddModelError(string.Empty, "Please check your email and click the confirmation link to activate your account before logging in.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Your account is not allowed to sign in at this time.");
+                    }
+
                     return Page();
                 }
+
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return Page();
             }
 
             return Page();
