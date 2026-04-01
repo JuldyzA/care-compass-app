@@ -476,6 +476,17 @@
 }
 
 /* ========================================
+   Card Value Styling
+   ======================================== */
+
+.card-value {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    word-break: break-word;
+}
+
+/* ========================================
    Responsive Design
    ======================================== */
 
@@ -773,7 +784,7 @@
         min-width: 80px;
     }
 
-    .transaction-card-row value {
+    .transaction-card-row .card-value {
         color: #212529;
         flex: 1;
         text-align: right;

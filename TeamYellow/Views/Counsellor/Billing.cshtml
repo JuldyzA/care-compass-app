@@ -215,21 +215,21 @@
                             <div class="transaction-card-body">
                                 <div class="transaction-card-row">
                                     <label>Plan:</label>
-                                    <value>@transaction.PlanName</value>
+                                    <span class="card-value">@transaction.PlanName</span>
                                 </div>
 
                                 <div class="transaction-card-row">
                                     <label>Type:</label>
-                                    <value>
+                                    <span class="card-value">
                                         <span class="badge bg-light text-dark">
                                             @transaction.BillingType
                                         </span>
-                                    </value>
+                                    </span>
                                 </div>
 
                                 <div class="transaction-card-row">
                                     <label>Provider:</label>
-                                    <value>
+                                    <span class="card-value">
                                         @if (transaction.Provider.Equals("PayPal", StringComparison.OrdinalIgnoreCase))
                                         {
                                             <span><i class="bi bi-paypal"></i> PayPal</span>
@@ -238,7 +238,7 @@
                                         {
                                             <span>@transaction.Provider</span>
                                         }
-                                    </value>
+                                    </span>
                                 </div>
 
                                 <div class="transaction-card-amount">
