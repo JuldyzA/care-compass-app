@@ -57,7 +57,8 @@
         <link rel="stylesheet" href="~/css/dashboard/dashboard-layout.css" asp-append-version="true" />
 
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-        @RenderSection("Styles", required: false)
+        @await RenderSectionAsync("PageStyles", required: false)
+        @await RenderSectionAsync("Styles", required: false)
     </head>
     <body class="@(ViewData["DisablePageScroll"] as bool? == true ? "locked-page-scroll" : "")">
 
