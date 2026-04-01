@@ -146,12 +146,37 @@ namespace TeamYellow.Repositories
         /// <returns>A task that represents the asynchronous bulk update operation.</returns>
         public async Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions)
         {
-            foreach (var sub in subscriptions)
+            if (subscriptions == null)
             {
-                sub.UpdatedAt = DateTime.UtcNow;
+                throw new ArgumentNullException(nameof(subscriptions));
             }
 
-            await _context.SaveChangesAsync();
+            if (subscriptions.Count == 0)
+            {
+                return;
+            }
+
+            var utcNow = DateTime.UtcNow;
+
+            try
+            {
+                foreach (var sub in subscriptions)
+                {
+                    sub.UpdatedAt = utcNow;
+                }
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Bulk update of {SubscriptionCount} subscriptions completed successfully.", subscriptions.Count);
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error during bulk update of {SubscriptionCount} subscriptions.", subscriptions.Count);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during bulk update of {SubscriptionCount} subscriptions.", subscriptions.Count);
+                throw;
+            }
         }
 
         /// <summary>
@@ -170,7 +195,23 @@ namespace TeamYellow.Repositories
                     s.Plan != null &&
                     s.Plan.Price == 0);
         }
+
+        /// <summary>
+        /// Determines whether the specified counsellor has any subscription history
+        /// for a paid plan, such as a monthly or yearly plan.
+        /// </summary>
+        /// <param name="counsellorId">The unique identifier of the counsellor.</param>
+        /// <returns>
+        /// <c>true</c> if the counsellor has previously subscribed to any paid plan;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        public async Task<bool> HasPaidPlanHistoryAsync(int counsellorId)
+        {
+            return await _context.Subscriptions
+                .AnyAsync(s =>
+                    s.CounsellorId == counsellorId &&
+                    s.Plan != null &&
+                    s.Plan.Price > 0m);
+        }
     }
-
-
 }

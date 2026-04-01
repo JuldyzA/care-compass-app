@@ -60,7 +60,7 @@ namespace TeamYellow.Workers
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ExpireSubscriptionsAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Running expiry check...");
+            _logger.LogDebug("Running expiry check...");
 
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
@@ -70,7 +70,7 @@ namespace TeamYellow.Workers
 
             if (!expired.Any())
             {
-                _logger.LogInformation("No expired subscriptions found.");
+                _logger.LogDebug("No expired subscriptions found.");
                 return;
             }
 
@@ -90,26 +90,17 @@ namespace TeamYellow.Workers
                     continue;
                 }
 
-                var removedFree = await userRoleRepo.RemoveUserRoleAsync(email, "Free_Counselor");
-                var removedPaid = await userRoleRepo.RemoveUserRoleAsync(email, "Paid_Counselor");
-                var addedVisitor = await userRoleRepo.AddUserRoleAsync(email, "Registered_Visitor");
+                var downgraded = await userRoleRepo.DowngradeCounsellorToRegisteredVisitorAsync(email);
 
-                if (removedFree && removedPaid && addedVisitor)
+                if (downgraded)
                 {
                     _logger.LogInformation("Role downgraded to Registered_Visitor for CounsellorId {CounsellorId}", sub.CounsellorId);
                 }
                 else
                 {
-                    _logger.LogWarning(
-                        "Role downgrade to Registered_Visitor for CounsellorId {CounsellorId} may be incomplete. " +
-                        "RemovedFree={RemovedFree}, RemovedPaid={RemovedPaid}, AddedVisitor={AddedVisitor}",
-                        sub.CounsellorId,
-                        removedFree,
-                        removedPaid,
-                        addedVisitor);
+                    _logger.LogWarning("Role downgrade to Registered_Visitor for CounsellorId {CounsellorId} may be incomplete.", sub.CounsellorId);
                 }
             }
-
 
             _logger.LogInformation("Expired {Count} subscription(s).", expired.Count);
         }

@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<TeamYellow.ViewModels.RoleVM>
 
 @{
-    ViewData["Title"] = "Roles";
+    ViewData["Title"] = "Role Management";
 }
 
-<h1>Role Management</h1>
+<h1>@ViewData["Title"]</h1>
 
 @if (!string.IsNullOrEmpty(ViewBag.Message))
 {

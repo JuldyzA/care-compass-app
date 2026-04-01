@@ -21,5 +21,7 @@ namespace TeamYellow.Repositories
         Task BulkUpdateSubscriptionsAsync(List<Subscription> subscriptions);
 
         Task<bool> HasUsedFreeTrialAsync(int counsellorId);
+
+        Task<bool> HasPaidPlanHistoryAsync(int counsellorId);
     }
 }

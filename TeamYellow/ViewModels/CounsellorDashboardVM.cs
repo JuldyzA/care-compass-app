@@ -4,7 +4,7 @@ namespace TeamYellow.ViewModels
 {
     /// <summary>
     /// View model representing counsellor dashboard information, including subscription
-    /// details, client statistics, and growth metrics.
+    /// details, client statistics, growth metrics, and dashboard access state.
     /// </summary>
     public class CounsellorDashboardVM
     {
@@ -15,6 +15,8 @@ namespace TeamYellow.ViewModels
         public SubscriptionStatus Status { get; set; }
 
         public bool IsSubscriptionActive { get; set; }
+
+        public bool IsDashboardLocked { get; set; }
 
         public DateTime CycleStart { get; set; }
 
@@ -28,8 +30,6 @@ namespace TeamYellow.ViewModels
 
         public int InactiveClientCount { get; set; }
 
-        public int TotalSubscriptionDays { get; set; }
-
-        public int RemainingSubscriptionDays { get; set; }
+        public string RemainingSubscriptionText { get; set; } = string.Empty;
     }
 }
