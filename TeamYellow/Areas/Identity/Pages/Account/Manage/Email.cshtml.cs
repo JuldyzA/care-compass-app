@@ -22,7 +22,6 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
             IEmailService emailService,
             ILogger<EmailModel> logger)
         {
