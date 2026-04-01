@@ -111,7 +111,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
             {
                 foreach (var error in changePasswordResult.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    TempData["ErrorMessage"] = error.Description;
                 }
 
                 SetParentLayout();
@@ -120,7 +120,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
             await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation("User changed their password successfully.");
-            StatusMessage = "Your password has been changed.";
+            TempData["SuccessMessage"] = "Your password has been changed successfully.";
 
             return RedirectToPage();
         }
