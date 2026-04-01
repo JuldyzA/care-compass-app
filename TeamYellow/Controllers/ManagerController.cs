@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TeamYellow.Models;
 using TeamYellow.Repositories;
@@ -19,6 +21,8 @@ namespace TeamYellow.Controllers
         private readonly IPlanRepository _planRepository;
         private readonly IPlanService _planService;
         private readonly DiscountRepository _discountRepository;
+        private readonly UserProfileRepository _userProfileRepository;
+        private readonly UserManager<IdentityUser> _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagerController"/> class.
@@ -27,12 +31,56 @@ namespace TeamYellow.Controllers
         /// <param name="planRepository">Provides access to plan lookup operations.</param>
         /// <param name="planService">Provides plan update operations and related business logic.</param>
         /// <param name="discountRepository">Provides access to discount lookup and management operations.</param>
-        public ManagerController(CounsellorRepository counsellorRepository, IPlanRepository planRepository, IPlanService planService, DiscountRepository discountRepository)
+        /// <param name="userProfileRepository">Provides access to user profile details such as display name and avatar.</param>
+        /// <param name="userManager">Provides access to the current Identity user.</param>
+        public ManagerController(
+            CounsellorRepository counsellorRepository,
+            IPlanRepository planRepository,
+            IPlanService planService,
+            DiscountRepository discountRepository,
+            UserProfileRepository userProfileRepository,
+            UserManager<IdentityUser> userManager)
         {
             _counsellorRepository = counsellorRepository;
             _planRepository = planRepository;
             _planService = planService;
             _discountRepository = discountRepository;
+            _userProfileRepository = userProfileRepository;
+            _userManager = userManager;
+        }
+
+        /// <summary>
+        /// Populates manager profile display data used by the shared dashboard layout.
+        /// </summary>
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user != null)
+            {
+                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+
+                if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+                {
+                    ViewData["UserProfilePicture"] = profile.ProfilePhotoUrl;
+                }
+
+                var displayName = string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
+                    .Where(value => !string.IsNullOrWhiteSpace(value)))
+                    .Trim();
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = await _userManager.GetUserNameAsync(user) ?? user.Email;
+                }
+
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    ViewData["DisplayName"] = displayName;
+                }
+            }
+
+            await next();
         }
 
         /// <summary>
@@ -74,6 +122,32 @@ namespace TeamYellow.Controllers
                 .OrderByDescending(x => x.PaidAt)
                 .ToList();
 
+            var monthlyRevenueBuckets = Enumerable
+                .Range(0, 12)
+                .Select(offset =>
+                {
+                    var monthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(offset - 11);
+                    return new
+                    {
+                        MonthStart = monthStart,
+                        Label = monthStart.ToString("MMM yyyy")
+                    };
+                })
+                .ToList();
+
+            var monthlyRevenueMap = dashboardData
+                .Where(x => string.Equals(x.SOP, "Paid", StringComparison.OrdinalIgnoreCase) && x.PaidAt.HasValue)
+                .GroupBy(x => new DateTime(x.PaidAt!.Value.Year, x.PaidAt.Value.Month, 1))
+                .ToDictionary(group => group.Key, group => group.Sum(item => item.Amount));
+
+            var monthlyRevenueLabels = monthlyRevenueBuckets
+                .Select(x => x.Label)
+                .ToList();
+
+            var monthlyRevenueSeries = monthlyRevenueBuckets
+                .Select(x => monthlyRevenueMap.TryGetValue(x.MonthStart, out var value) ? value : 0m)
+                .ToList();
+
             var stats = new DashboardStatsVM
             {
                 TotalTransactions = dashboardData.Count,
@@ -84,7 +158,9 @@ namespace TeamYellow.Controllers
             var pageVM = new ManagerDashboardPageVM
             {
                 Stats = stats,
-                Counsellors = dashboardData
+                Counsellors = dashboardData,
+                MonthlyRevenueLabels = monthlyRevenueLabels,
+                MonthlyRevenueSeries = monthlyRevenueSeries
             };
 
             return View(pageVM);

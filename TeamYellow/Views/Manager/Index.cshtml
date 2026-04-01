@@ -37,10 +37,27 @@
     </div>
 </div>
 
-<!-- Chart Placeholder -->
-<div class="card mb-4 p-4">
-    <h6>Charts Area</h6>
-    <p>Later you can add Chart.js here.</p>
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-xl-6">
+        <div class="card p-4 h-100">
+            <h6 class="mb-3">Payment Status Overview</h6>
+            <div id="managerStatusChart"
+                 data-paid="@Model.Stats.SuccessfulPayments"
+                 data-failed="@Model.Stats.FailedPayments"
+                 style="min-height: 320px;"></div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+        <div class="card p-4 h-100">
+            <h6 class="mb-3">Revenue by Month</h6>
+            <div id="managerRevenueChart"
+                 data-labels='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenueLabels))'
+                 data-series='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenueSeries))'
+                 style="min-height: 340px;"></div>
+        </div>
+    </div>
 </div>
 
 <!-- Transactions Table -->
@@ -136,3 +153,7 @@
 
         </tbody>
     </table>
+
+@section Scripts {
+    <script src="~/js/dashboard/manager-charts.js" asp-append-version="true"></script>
+}
