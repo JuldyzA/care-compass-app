@@ -151,6 +151,18 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
+        /// Displays the profile page in the dashboard.
+        /// </summary>
+        /// <returns>The profile view.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor,Registered_Visitor")]
+        public IActionResult Profile()
+        {
+            ViewData["ProfileUserName"] = _userManager.GetUserName(User) ?? User.Identity?.Name ?? "User";
+            return View();
+        }
+
+        /// <summary>
         /// Displays the form for creating a new client.
         /// </summary>
         /// <returns>A view containing a new <see cref="ClientVM"/> instance.</returns>

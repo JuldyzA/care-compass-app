@@ -20,6 +20,7 @@ namespace TeamYellow.Controllers
         private readonly CounsellorRepository _counsellorRepository;
         private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly DiscountRepository _discountRepository;
+        private readonly UserProfileRepository _userProfileRepository;
         private readonly UserManager<IdentityUser> _userManager;
 
         /// <summary>
@@ -35,12 +36,14 @@ namespace TeamYellow.Controllers
             CounsellorRepository counsellorRepository,
             ISubscriptionRepository subscriptionRepository,
             DiscountRepository discountRepository,
+            UserProfileRepository userProfileRepository,
             UserManager<IdentityUser> userManager)
         {
             _planService = planService;
             _counsellorRepository = counsellorRepository;
             _subscriptionRepository = subscriptionRepository;
             _discountRepository = discountRepository;
+            _userProfileRepository = userProfileRepository;
             _userManager = userManager;
         }
 
@@ -55,6 +58,8 @@ namespace TeamYellow.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+            await PopulateDashboardUserProfileAsync();
+
             var plans = await _planService.GetActivePlans();
 
             bool hasUsedFreeTrial = false;
@@ -104,6 +109,8 @@ namespace TeamYellow.Controllers
         [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
         public async Task<IActionResult> Checkout(int id, string? discountCode = null)
         {
+            await PopulateDashboardUserProfileAsync();
+
             var plan = await _planService.GetPlanById(id);
 
             if (plan == null || !plan.IsActive)
@@ -186,6 +193,52 @@ namespace TeamYellow.Controllers
             }
 
             return View(vm);
+        }
+
+        /// <summary>
+        /// Adds profile display values used by the dashboard layout when this controller is reached from dashboard navigation.
+        /// </summary>
+        private async Task PopulateDashboardUserProfileAsync()
+        {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return;
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return;
+            }
+
+            var userProfile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+            if (!string.IsNullOrWhiteSpace(userProfile?.ProfilePhotoUrl))
+            {
+                ViewData["UserProfilePicture"] = userProfile.ProfilePhotoUrl;
+            }
+
+            string? displayName = null;
+            var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+            if (!string.IsNullOrWhiteSpace(counsellor?.DisplayName))
+            {
+                displayName = counsellor.DisplayName.Trim();
+            }
+            else
+            {
+                string firstName = userProfile?.FirstName?.Trim() ?? string.Empty;
+                string lastName = userProfile?.LastName?.Trim() ?? string.Empty;
+                displayName = $"{firstName} {lastName}".Trim();
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = await _userManager.GetUserNameAsync(user) ?? user.Email;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                ViewData["DisplayName"] = displayName;
+            }
         }
 
         /// <summary>

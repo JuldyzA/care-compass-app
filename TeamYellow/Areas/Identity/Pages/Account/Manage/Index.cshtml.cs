@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TeamYellow.Repositories;
 
 namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 {
@@ -16,13 +17,16 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserProfileRepository _userProfileRepository;
 
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            UserProfileRepository userProfileRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userProfileRepository = userProfileRepository;
         }
 
         /// <summary>
@@ -30,6 +34,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string Username { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public string ProfilePhotoUrl { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -64,8 +72,18 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
 
-            Username = userName;
+            Username = userName ?? user.Email ?? "User";
+            DisplayName = string.Join(" ", new[] { profile?.FirstName, profile?.LastName }.Where(value => !string.IsNullOrWhiteSpace(value)))
+                .Trim();
+
+            if (string.IsNullOrWhiteSpace(DisplayName))
+            {
+                DisplayName = Username;
+            }
+
+            ProfilePhotoUrl = profile?.ProfilePhotoUrl ?? Url.Content("~/Images/placeholder-profile.jpg");
 
             Input = new InputModel
             {
