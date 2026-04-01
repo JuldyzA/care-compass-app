@@ -4,6 +4,7 @@
 
 @{
     var path = Context.Request.Path.Value ?? string.Empty;
+    var isSignedIn = SignInManager.IsSignedIn(User);
 
     var hideAuthNav =
         path.Equals("/Identity/Account/RegisterConfirmation", StringComparison.OrdinalIgnoreCase) ||
@@ -11,21 +12,28 @@
 }
 
 <ul class="navbar-nav align-items-center">
-    @if (SignInManager.IsSignedIn(User) && !hideAuthNav)
+    @if (isSignedIn && !hideAuthNav)
     {
         <li class="nav-item me-2">
             <span class="nav-link text-dark">
                 Hello @User.Identity?.Name
             </span>
         </li>
-
         <li class="nav-item">
             <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
                 <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
             </form>
         </li>
     }
-    else if (!SignInManager.IsSignedIn(User))
+    else if (isSignedIn && hideAuthNav)
+    {
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else if (!isSignedIn && !hideAuthNav)
     {
         <li class="nav-item">
             <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Register">

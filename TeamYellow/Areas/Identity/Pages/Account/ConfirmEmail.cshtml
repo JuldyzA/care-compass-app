@@ -4,9 +4,7 @@
 @{
     ViewData["Title"] = "Confirm email";
 
-    var isSuccess = !string.IsNullOrWhiteSpace(Model.StatusMessage) &&
-                    (Model.StatusMessage.Contains("thank you", StringComparison.OrdinalIgnoreCase) ||
-                     Model.StatusMessage.Contains("confirmed", StringComparison.OrdinalIgnoreCase));
+    var isSuccess = Model.IsSuccess;
 
     var alertClass = isSuccess ? "alert-success" : "alert-danger";
     var eyebrowText = isSuccess ? "Success" : "Something went wrong";
