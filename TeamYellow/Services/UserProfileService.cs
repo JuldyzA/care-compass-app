@@ -19,7 +19,7 @@ public class UserProfileService
     private readonly IAzureBlobStorageService _blobStorageService;
     private readonly ILogger<UserProfileService> _logger;
     private readonly string _profilePicturesContainer;
-    private const long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+    private const long MAX_FILE_SIZE_BYTES = FileUploadConfiguration.MAX_PROFILE_IMAGE_SIZE_BYTES;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserProfileService"/> class.
@@ -44,42 +44,85 @@ public class UserProfileService
     }
 
     /// <summary>
-    /// Retrieves the user profile view model for the authenticated user.
+    /// Retrieves the user profile view model for the authenticated user with optional counsellor display name.
     /// </summary>
     /// <param name="user">The current authenticated user.</param>
     /// <returns>A user profile view model if found; otherwise <c>null</c>.</returns>
     public async Task<UserProfileVM?> GetProfileAsync(ClaimsPrincipal user)
     {
-        UserProfile? profile = await GetUserProfileAsync(user, "retrieve profile");
+        string? userId = _userManager.GetUserId(user);
 
-        if (profile == null)
+        if (string.IsNullOrEmpty(userId))
         {
+            _logger.LogWarning("No user ID found in claims during retrieve profile.");
             return null;
         }
 
-        UserProfileVM vm = UserHelper.MapToVM(profile, user.Identity?.Name);
+        var (profile, counsellorDisplayName) = await _repository.GetByUserIdAsync(userId);
+
+        if (profile == null)
+        {
+            _logger.LogWarning("User profile not found for user ID: {UserId} during retrieve profile.", userId);
+            return null;
+        }
+
+        UserProfileVM vm = UserHelper.MapToVM(profile, user.Identity?.Name, counsellorDisplayName);
 
         return vm;
     }
 
     /// <summary>
     /// Updates the user profile with the provided view model data.
+    /// For paid and free counsellor roles, also updates the DisplayName in the Counsellor table.
+    /// Uses a transaction with rollback on failure.
     /// </summary>
     /// <param name="vm">The user profile view model containing updated values.</param>
     /// <param name="user">The current authenticated user.</param>
     /// <returns><c>true</c> if the update was successful; otherwise <c>false</c>.</returns>
     public async Task<bool> UpdateProfileAsync(UserProfileVM vm, ClaimsPrincipal user)
     {
-        UserProfile? profile = await GetUserProfileAsync(user, "update profile");
+        string? userId = _userManager.GetUserId(user);
 
-        if (profile == null)
+        if (string.IsNullOrEmpty(userId))
         {
+            _logger.LogWarning("No user ID found in claims during update profile.");
             return false;
         }
 
+        var (profile, _) = await _repository.GetByUserIdAsync(userId);
+
+        if (profile == null)
+        {
+            _logger.LogWarning("User profile not found for user ID: {UserId} during update profile.", userId);
+            return false;
+        }
+
+        // Determine the displayName value based on user role
+        // Only Paid and Free Counsellors can update DisplayName
+        string? displayNameToUpdate = null;
+        
+        bool isCounsellor = user.IsInRole("Paid_Counselor") || user.IsInRole("Free_Counselor");
+
+        if (isCounsellor)
+        {
+            // For counsellors: only update if DisplayName is explicitly provided and non-empty
+            string? trimmedDisplayName = vm.DisplayName?.Trim();
+            
+            if (!string.IsNullOrEmpty(trimmedDisplayName))
+            {
+                displayNameToUpdate = trimmedDisplayName;
+            }
+            else
+            {
+                _logger.LogInformation("DisplayName is empty for counsellor {UserId}. Counsellor DisplayName will not be updated.", userId);
+                // displayNameToUpdate remains null, so counsellor table won't be updated
+            }
+        }
+
+        // For registered visitors, admins, managers, or other roles: displayNameToUpdate remains null
         UserHelper.UpdateEntity(profile, vm);
 
-        return await _repository.UpdateAsync(profile);
+        return await _repository.UpdateAsync(profile, displayNameToUpdate);
     }
 
     /// <summary>
@@ -173,32 +216,5 @@ public class UserProfileService
             _logger.LogError(ex, "Error uploading profile image");
             return (false, ImageUploadMessages.UploadError, null);
         }
-    }
-
-    /// <summary>
-    /// Retrieves the user profile for the authenticated user with centralized error handling.
-    /// </summary>
-    /// <param name="user">The current authenticated user.</param>
-    /// <param name="operation">Description of the operation being performed (for logging).</param>
-    /// <returns>The user profile if found; otherwise <c>null</c>.</returns>
-    private async Task<UserProfile?> GetUserProfileAsync(ClaimsPrincipal user, string operation)
-    {
-        string? userId = _userManager.GetUserId(user);
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            _logger.LogWarning("No user ID found in claims during {Operation}.", operation);
-            return null;
-        }
-
-        UserProfile? profile = await _repository.GetByUserIdAsync(userId);
-
-        if (profile == null)
-        {
-            _logger.LogWarning("User profile not found for user ID: {UserId} during {Operation}.", userId, operation);
-            return null;
-        }
-
-        return profile;
     }
 }

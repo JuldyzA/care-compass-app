@@ -1,9 +1,11 @@
+@using TeamYellow.Configurations
 @using TeamYellow.ViewModels
 @model UserProfileVM
 
 @{
     ViewData["Title"] = "Edit Profile";
     bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
+    const long MAX_FILE_SIZE_BYTES = FileUploadConfiguration.MAX_PROFILE_IMAGE_SIZE_BYTES;
 }
 
 @section Styles {
@@ -218,7 +220,7 @@
 
     <script>
         window.userEditProfileConfig = {
-            maxFileSizeBytes: @(5 * 1024 * 1024),
+            maxFileSizeBytes: Number('@MAX_FILE_SIZE_BYTES'),
             uploadUrl: '@Url.Action("UploadProfileImage", "User")'
         };
     </script>

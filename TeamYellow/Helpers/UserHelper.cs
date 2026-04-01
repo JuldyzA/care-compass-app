@@ -10,18 +10,20 @@ namespace TeamYellow.Helpers;
 public class UserHelper
 {
     /// <summary>
-    /// Maps a user profile entity to its view model representation.
+    /// Maps a user profile entity to its view model representation with optional counsellor display name.
     /// </summary>
     /// <param name="profile">The user profile entity.</param>
     /// <param name="email">The user's email address.</param>
+    /// <param name="counsellorDisplayName">Optional display name from the Counsellor table for eligible users.</param>
     /// <returns>A populated user profile view model.</returns>
-    public static UserProfileVM MapToVM(UserProfile profile, string? email)
+    public static UserProfileVM MapToVM(UserProfile profile, string? email, string? counsellorDisplayName = null)
     {
         return new UserProfileVM
         {
             UserProfileId = profile.UserProfileId,
             FirstName = profile.FirstName,
             LastName = profile.LastName,
+            DisplayName = counsellorDisplayName,
             Phone = profile.Phone,
             City = profile.City,
             Province = profile.Province,
@@ -50,7 +52,9 @@ public class UserHelper
 
     /// <summary>
     /// Maps a view model to a user profile entity, updating the profile's properties.
+    /// Note: DisplayName is managed separately for counsellor and registered visitor roles via CounsellorRepository.
     /// </summary>
+    /// <param name="profile">The user profile entity to update.</param>
     /// <param name="vm">The view model containing updated values.</param>
     public static void UpdateEntity(UserProfile profile, UserProfileVM vm)
     {

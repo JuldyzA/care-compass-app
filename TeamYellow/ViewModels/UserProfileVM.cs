@@ -17,12 +17,14 @@ public class UserProfileVM
     public string FirstName { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50  characters.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters.")]
     [RegularExpression(@"^[A-Za-zÀ-ÖØ-öø-ÿ''\-\s]+$", ErrorMessage = "Last name can contain letters, spaces, hyphens and apostrophes only.")]
     [Display(Name = "Last Name")]
     public string LastName { get; set; } = string.Empty;
 
-    [StringLength(100, ErrorMessage = "Display name cannot exceed 100 characters.")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Display name must be between 2 and 100 characters.")]
+    [RegularExpression(@"^[A-Za-zÀ-ÖØ-öø-ÿ\.\s\-'']+$", 
+        ErrorMessage = "Display Name can contain letters, spaces, hyphens, periods and apostrophes only.")]
     [Display(Name = "Display Name")]
     public string? DisplayName { get; set; }
 
