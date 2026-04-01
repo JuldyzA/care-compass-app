@@ -4,22 +4,22 @@
     string message = ViewData["Message"] as string ?? "This feature is currently under development and will be available soon.";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body text-center py-5">
-                    <h1 class="card-title mb-3">
-                        <i class="fas @icon"></i> @title
-                    </h1>
-                    <p class="card-text text-muted mb-4">
-                        @message
-                    </p>
-                    <a href="@Url.Action("Index", "Counsellor")" 
-                       class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
-                </div>
+
+
+<div class="coming-soon-container">
+    <div class="coming-soon-wrapper">
+        <div class="coming-soon-card">
+            <div class="coming-soon-body">
+                <h1 class="coming-soon-title">
+                    <i class="fas @icon"></i> @title
+                </h1>
+                <p class="coming-soon-message">
+                    @message
+                </p>
+                <a href="@Url.Action("Index", "Counsellor")" 
+                   class="btn btn-coming-soon-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
             </div>
         </div>
     </div>

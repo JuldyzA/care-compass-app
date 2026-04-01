@@ -39,16 +39,21 @@
         gap: 0.35rem;
         padding: 0.35rem 0.75rem;
         border-radius: 4px;
-        border: 1px solid #0d6efd;
-        background-color: #0d6efd;
+        border: 1px solid #3E8A90;
+        background-color: #3E8A90;
         color: #fff;
         font-size: 0.875rem;
         cursor: pointer;
+        transition: all 0.2s ease;
     }
 
         .profile-photo-upload-controls .btn-upload:hover {
-            background-color: #0b5ed7;
-            border-color: #0b5ed7;
+            background-color: #2D6570;
+            border-color: #2D6570;
+        }
+
+        .profile-photo-upload-controls .btn-upload:active {
+            transform: translateY(1px);
         }
 
     .profile-photo-upload-controls small {
@@ -163,34 +168,58 @@
     margin-top: 0.75rem;
 }
 
-.btn-outline-secondary,
+.btn-outline-secondary {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    border-width: 1px;
+    cursor: pointer;
+    border-color: #6c757d;
+    color: #6c757d;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #495057;
+        color: #495057;
+    }
+
+    .btn-outline-secondary:active {
+        transform: translateY(1px);
+    }
+
+/* Override Bootstrap's btn-primary with custom teal color */
 .btn-primary {
     font-size: 0.875rem;
     padding: 0.35rem 0.75rem;
     border-radius: 4px;
     border-width: 1px;
     cursor: pointer;
-}
-
-.btn-outline-secondary {
-    border-color: #6c757d;
-    color: #6c757d;
-    background-color: #fff;
-}
-
-    .btn-outline-secondary:hover {
-        background-color: #f8f9fa;
-    }
-
-.btn-primary {
-    border-color: #0d6efd;
-    background-color: #0d6efd;
+    border-color: #3E8A90;
+    background-color: #3E8A90;
     color: #fff;
+    transition: all 0.2s ease;
 }
 
     .btn-primary:hover {
-        background-color: #0b5ed7;
-        border-color: #0b5ed7;
+        background-color: #2D6570;
+        border-color: #2D6570;
+    }
+
+    .btn-primary:focus,
+    .btn-primary:focus-visible {
+        background-color: #3E8A90;
+        border-color: #3E8A90;
+        outline: none;
+        box-shadow: 0 0 0 0.25rem rgba(62, 138, 144, 0.25);
+    }
+
+    .btn-primary:active {
+        background-color: #2D6570;
+        border-color: #2D6570;
+        transform: translateY(1px);
     }
 
 .profile-photo-error {
