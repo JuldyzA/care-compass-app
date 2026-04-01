@@ -160,7 +160,16 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <small>@transaction.Provider</small>
+                                        @if (transaction.Provider.Equals("PayPal", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="ms-1">
+                                                <i class="bi bi-paypal"></i> PayPal
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="ms-1">@transaction.Provider</span>
+                                        }
                                     </td>
                                     <td class="text-end">
                                         <button type="button" 

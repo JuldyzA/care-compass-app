@@ -87,7 +87,7 @@
 }
 
 .status-badge {
-        display: inline-flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.35rem;
     padding: 0.35em 0.75em;
@@ -97,6 +97,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.2s ease;
+    margin-bottom: 0;
 }
 
 .status-badge.status-active {
@@ -298,6 +299,15 @@
     background-color: #3E8A90;
     border-color: #3E8A90;
     color: white;
+}
+
+.transactions-table .btn-outline-primary:focus,
+.transactions-table .btn-outline-primary:focus-visible {
+    background-color: #3E8A90;
+    border-color: #3E8A90;
+    color: white;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(62, 138, 144, 0.25);
 }
 
 /* ========================================
