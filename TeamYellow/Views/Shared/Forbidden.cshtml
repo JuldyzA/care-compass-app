@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Forbidden";
+    Layout = "_ErrorLayout";
+}
+
+<section class="status-page status-page-403 w-100">
+    <div class="container">
+        <div class="status-card text-center">
+            <span class="status-badge">403</span>
+            <h1>Access forbidden</h1>
+            <p>You do not have permission to access this resource.</p>
+            <div class="status-actions">
+                <a class="btn status-btn-primary" asp-controller="Home" asp-action="Index">Go to Home</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -8,6 +8,10 @@
     var currentPlanId = ViewData["CurrentPlanId"] as int?;
 }
 
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/solution-plan.css" asp-append-version="true" />
+}
+
 @if (!string.IsNullOrEmpty(message))
 {
     <div class="container mt-3">
