@@ -83,7 +83,7 @@ namespace TeamYellow.Services
             }
 
             Counsellor? counsellor = await _counsellorRepository.GetByUserIdAsync(userId);
-            UserProfile? profile = await _userProfileRepository.GetByUserIdAsync(userId);
+            var (profile, _) = await _userProfileRepository.GetByUserIdAsync(userId);
 
             string displayName = counsellor?.DisplayName ?? string.Empty;
             string? profilePhotoUrl = profile?.ProfilePhotoUrl;
