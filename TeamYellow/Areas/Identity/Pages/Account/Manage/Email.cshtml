@@ -1,42 +1,97 @@
 ﻿@page
 @model EmailModel
 @{
-    ViewData["Title"] = "Manage Email";
+    ViewData["Title"] = "Change Email";
     ViewData["ActivePage"] = ManageNavPages.Email;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_AlertMessages" />
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="email-form" method="post">
-            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-            @if (Model.IsEmailConfirmed)
-            {
-                <div class="form-floating mb-3 input-group">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                        <div class="input-group-append">
-                            <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
-                        </div>
-                    <label asp-for="Email" class="form-label"></label>
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+    <div class="detail-header">
+        <a href="@Url.Action("Account", "User")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Account Settings
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <!-- Card Header -->
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-avatar">
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
                 </div>
-            }
-            else
-            {
-                <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                    <label asp-for="Email" class="form-label"></label>
-                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                <div class="detail-header-info">
+                    <h1>Change Email</h1>
+                    <p>Update your email address</p>
                 </div>
-            }
-            <div class="form-floating mb-3">
-                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label asp-for="Input.NewEmail" class="form-label"></label>
-                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
             </div>
-            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Change email</button>
-        </form>
+        </div>
+
+        <!-- Card Body -->
+        <div class="detail-card-body">
+            @await Html.PartialAsync("_AlertMessages")
+            <partial name="_StatusMessage" for="StatusMessage" />
+
+            <form id="email-form" method="post">
+                <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+
+                <!-- Current Email Section -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="bi bi-check-circle" aria-hidden="true"></i>
+                        Current Email Address
+                    </div>
+
+                    <div class="detail-fields-grid">
+                        <div class="detail-field">
+                            <span class="detail-field-label">Email Address</span>
+                            @if (Model.IsEmailConfirmed)
+                            {
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span class="detail-field-value">@Model.Email</span>
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background-color: #28a745; border-radius: 50%; color: white; font-weight: bold; font-size: 0.85rem;">✓</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <span class="detail-field-value">@Model.Email</span>
+                                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="detail-action-button detail-action-secondary" style="width: fit-content;">
+                                        <i class="bi bi-envelope-check" aria-hidden="true"></i>
+                                        <span>Send Verification Email</span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Email Section -->
+                <div class="detail-section border-bottom-0">
+                    <div class="detail-section-title">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                        New Email Address
+                    </div>
+
+                    <div class="detail-field">
+                        <label asp-for="Input.NewEmail" class="detail-field-label"></label>
+                        <input asp-for="Input.NewEmail" class="edit-input" autocomplete="email" aria-required="true" placeholder="Enter your new email address" />
+                        <span asp-validation-for="Input.NewEmail" class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="detail-card-footer">
+            <button id="change-email-button" type="submit" form="email-form" asp-page-handler="ChangeEmail" class="detail-action-button detail-action-primary">
+                <i class="bi bi-envelope" aria-hidden="true"></i>
+                <span>Change Email</span>
+            </button>
+        </div>
     </div>
 </div>
 
