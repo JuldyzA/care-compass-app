@@ -24,15 +24,19 @@ namespace TeamYellow.Models
         public int ClientId { get; set; }
 
         [Column("firstName")]
+        [MaxLength(50)]
         public string FirstName { get; set; } = string.Empty;
 
         [Column("lastName")]
+        [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
 
         [Column("email")]
+        [MaxLength(255)]
         public string Email { get; set; } = string.Empty;
 
         [Column("phone")]
+        [MaxLength(20)]
         public string Phone { get; set; } = string.Empty;
 
         [Column("status")]
