@@ -1,6 +1,10 @@
 ﻿@model TeamYellow.ViewModels.DiscountVM
 
-<h4>Edit Discount</h4>
+@{
+    ViewData["Title"] = "Edit Discount";
+}
+
+<h1>@ViewData["Title"]</h1>
 
 <form asp-action="EditDiscount" method="post">
     @Html.AntiForgeryToken()

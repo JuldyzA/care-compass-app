@@ -1,10 +1,11 @@
 ﻿@model TeamYellow.ViewModels.DiscountVM
 
 @{
+    ViewData["Title"] = "Create Discount";
     var now = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
 }
 
-<h4>Create Discount</h4>
+<h1>@ViewData["Title"]</h1>
 
 <form asp-action="CreateDiscount" method="post">
     @Html.AntiForgeryToken()

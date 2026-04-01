@@ -1,6 +1,10 @@
 ﻿@model TeamYellow.ViewModels.PlanVM
 
-<h4>Edit Plan</h4>
+@{
+    ViewData["Title"] = "Edit Plan";
+}
+
+<h1>@ViewData["Title"]</h1>
 
 <form asp-action="PlanEdit" method="post">
     @Html.AntiForgeryToken()

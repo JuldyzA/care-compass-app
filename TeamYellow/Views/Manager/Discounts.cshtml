@@ -1,6 +1,10 @@
 ﻿@model TeamYellow.ViewModels.DiscountVM
 
-<h4>Discounts</h4>
+@{
+    ViewData["Title"] = "Discounts";
+}
+
+<h1>@ViewData["Title"]</h1>
 
 @if (TempData["Success"] != null)
 {
