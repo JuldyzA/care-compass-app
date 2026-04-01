@@ -5,6 +5,7 @@
     var message = ViewData["Message"] as string;
     var messageType = ViewData["MessageType"] as string ?? "warning";
     var hasUsedFreeTrial = ViewData["HasUsedFreeTrial"] is bool used && used;
+    var hasPaidPlanHistory = ViewData["HasPaidPlanHistory"] is bool paidHistory && paidHistory;
     var currentPlanId = ViewData["CurrentPlanId"] as int?;
 }
 
@@ -85,6 +86,10 @@
                             else if (plan.Price == 0 && hasUsedFreeTrial)
                             {
                                 <button class="btn w-100 btn-outline-secondary" disabled>Free Trial Used</button>
+                            }
+                            else if (plan.Price == 0 && hasPaidPlanHistory)
+                            {
+                                <button class="btn w-100 btn-outline-secondary" disabled>Free Plan Unavailable</button>
                             }
                             else if (User.IsInRole("Paid_Counselor") && currentPlanId == plan.PlanId)
                             {

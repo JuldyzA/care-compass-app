@@ -49,6 +49,7 @@ namespace TeamYellow.Services
         /// <returns>
         /// A result indicating whether the subscription was created, changed from an existing plan,
         /// was already active, was blocked because the counsellor has already used the free trial,
+        /// was blocked because the counsellor has paid plan history,
         /// or was blocked because an active paid plan cannot be downgraded to the free plan.
         /// </returns>
         public async Task<SubscriptionResult> SubscribeFree(int counsellorId, string payerName, int planId)
@@ -87,6 +88,13 @@ namespace TeamYellow.Services
 
                         return SubscriptionResult.PaidToFreeDowngradeNotAllowed;
                     }
+                }
+
+                var hasPaidPlanHistory = await _subscriptionRepository.HasPaidPlanHistoryAsync(counsellorId);
+                if (hasPaidPlanHistory)
+                {
+                    _logger.LogWarning("Free subscription blocked because counsellor {CounsellorId} has paid plan history.", counsellorId);
+                    return SubscriptionResult.PaidHistoryBlocksFreePlan;
                 }
 
                 var hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(counsellorId);

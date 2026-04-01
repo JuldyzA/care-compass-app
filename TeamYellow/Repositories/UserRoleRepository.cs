@@ -105,5 +105,68 @@ namespace TeamYellow.Repositories
             var roles = await _userManager.GetRolesAsync(user);
             return roles.Select(r => new UserRoleVM { Email = email, RoleName = r });
         }
+
+        /// <summary>
+        /// Downgrades a counsellor user to Registered_Visitor by removing counsellor roles
+        /// and assigning the Registered_Visitor role.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns><c>true</c> if the downgrade completed successfully; otherwise <c>false</c>.</returns>
+        public async Task<bool> DowngradeCounsellorToRegisteredVisitorAsync(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    _logger.LogWarning("Role downgrade failed. No user found for email {Email}.", email);
+                    return false;
+                }
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                if (roles.Contains("Free_Counselor"))
+                {
+                    var result = await _userManager.RemoveFromRoleAsync(user, "Free_Counselor");
+                    if (!result.Succeeded)
+                    {
+                        _logger.LogWarning("Failed removing role Free_Counselor for user {Email}. Errors: {Errors}",
+                            email, string.Join("; ", result.Errors.Select(e => e.Description)));
+                        return false;
+                    }
+                }
+
+                if (roles.Contains("Paid_Counselor"))
+                {
+                    var result = await _userManager.RemoveFromRoleAsync(user, "Paid_Counselor");
+                    if (!result.Succeeded)
+                    {
+                        _logger.LogWarning("Failed removing role Paid_Counselor for user {Email}. Errors: {Errors}",
+                            email, string.Join("; ", result.Errors.Select(e => e.Description)));
+                        return false;
+                    }
+                }
+
+                if (!roles.Contains("Registered_Visitor"))
+                {
+                    var result = await _userManager.AddToRoleAsync(user, "Registered_Visitor");
+                    if (!result.Succeeded)
+                    {
+                        _logger.LogWarning("Failed adding role Registered_Visitor for user {Email}. Errors: {Errors}",
+                            email, string.Join("; ", result.Errors.Select(e => e.Description)));
+                        return false;
+                    }
+                }
+
+                _logger.LogInformation("Successfully downgraded user {Email} to Registered_Visitor.", email);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while downgrading user {Email} to Registered_Visitor.", email);
+                return false;
+            }
+        }
     }
 }

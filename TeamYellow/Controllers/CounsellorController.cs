@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using TeamYellow.Services;
@@ -14,26 +15,90 @@ namespace TeamYellow.Controllers
     {
         private readonly CounsellorService _counsellorService;
         private readonly ClientService _clientService;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<CounsellorController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CounsellorController"/> class.
         /// </summary>
         /// <param name="counsellorService">Provides counsellor dashboard and profile-related operations.</param>
         /// <param name="clientService">Provides client management operations for counsellors.</param>
-        public CounsellorController(CounsellorService counsellorService, ClientService clientService)
+        public CounsellorController(
+            CounsellorService counsellorService, 
+            ClientService clientService,
+            SignInManager<IdentityUser> signInManager,
+            UserManager<IdentityUser> userManager,
+            ILogger<CounsellorController> logger
+            )
         {
             _counsellorService = counsellorService;
             _clientService = clientService;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
         }
 
         /// <summary>
-        /// Sets the default page title for counsellor actions before the action executes.
+        /// Runs before every counsellor action to evaluate subscription access state.
+        /// If the subscription is expired or inactive, the user is redirected to the locked dashboard.
         /// </summary>
-        /// <param name="context">The current action-executing context.</param>
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             ViewData["Title"] = "Counsellor";
-            base.OnActionExecuting(context);
+
+            var accessState = await _counsellorService.GetCounsellorPageAccessStateAsync(User);
+
+            if (!string.IsNullOrEmpty(accessState.ProfilePhotoUrl))
+                ViewData["UserProfilePicture"] = accessState.ProfilePhotoUrl;
+
+            if (!string.IsNullOrEmpty(accessState.DisplayName))
+                ViewData["DisplayName"] = $"Dr. {accessState.DisplayName}";
+
+            ViewData["IsCounsellorAccessLocked"] = accessState.IsLocked;
+            ViewData["DisablePageScroll"] = accessState.IsLocked;
+
+            if (!string.IsNullOrWhiteSpace(accessState.ErrorMessage))
+            {
+                TempData["ErrorMessage"] = accessState.ErrorMessage;
+            }
+
+            if (accessState.ShouldRefreshSignIn)
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user != null)
+                {
+                    _logger.LogInformation("Refreshing sign-in for user {Email} after counsellor access state update.", user.Email);
+                    await _signInManager.RefreshSignInAsync(user);
+                }
+                else
+                {
+                    _logger.LogWarning("Could not resolve current user for sign-in refresh.");
+                    TempData["ErrorMessage"] = "We could not refresh your subscription access automatically. Please sign out and sign in again.";
+                }
+
+                context.Result = RedirectToAction(nameof(Index));
+                return;
+            }
+
+            string? actionName = context.ActionDescriptor.RouteValues["action"];
+
+            if (accessState.IsLocked)
+            {
+                if (TempData["ErrorMessage"] == null)
+                {
+                    TempData["ErrorMessage"] = "Your subscription is inactive or expired. Please activate a plan to continue.";
+                }
+
+                if (!string.Equals(actionName, nameof(Locked), StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Result = RedirectToAction(nameof(Locked));
+                    return;
+                }
+            }
+
+            await next();
         }
 
         /// <summary>
@@ -44,17 +109,34 @@ namespace TeamYellow.Controllers
         public async Task<IActionResult> Index()
         {
             CounsellorDashboardVM dashboardVM = await _counsellorService.GetCounsellorDashboardAsync(User);
-
-            //TODO: Store these data to session for other controllers to access
-            if (!string.IsNullOrEmpty(dashboardVM.ProfilePhotoUrl))
-                ViewData["UserProfilePicture"] = dashboardVM.ProfilePhotoUrl;
-            if (!string.IsNullOrEmpty(dashboardVM.DisplayName))
-                ViewData["DisplayName"] = $"Dr. {dashboardVM.DisplayName}";
-
-            //TODO: Handle case when counsellor subscription (e.g. show message or redirect to subscription page)
-            //TODO: Handle case when the user status is not valid (Blur the screen)
-
             return View(dashboardVM);
+        }
+
+        /// <summary>
+        /// Displays a minimal locked dashboard state when subscription access is restricted.
+        /// This avoids sending the full dashboard data payload to locked users.
+        /// </summary>
+        /// <returns>The counsellor dashboard view populated with a minimal locked-state model.</returns>
+        [HttpGet]
+        public IActionResult Locked()
+        {
+            ViewData["IsCounsellorAccessLocked"] = true;
+            ViewData["DisablePageScroll"] = true;
+
+            var vm = new CounsellorDashboardVM
+            {
+                IsDashboardLocked = true,
+                IsSubscriptionActive = false,
+                RemainingSubscriptionText = "expired",
+                MonthlyClientCounts = new int[12],
+                ActiveClientCount = 0,
+                InactiveClientCount = 0,
+                ClientGrowthFromLastMonth = 0,
+                CycleStart = DateTime.MinValue,
+                CycleEnd = DateTime.MinValue
+            };
+
+            return View(nameof(Index), vm);
         }
 
         /// <summary>
@@ -141,7 +223,6 @@ namespace TeamYellow.Controllers
             string? sortColumn = null,
             string? sortDir = null
         ) {
-
             if (isDashboard) pageSize = 5;
             ClientTableVM clientTableVm = await _clientService.GetClientsByPageAndFilterAsync 
             (
@@ -259,5 +340,7 @@ namespace TeamYellow.Controllers
             TempData["SuccessMessage"] = "Client has been deleted successfully.";
             return RedirectToAction(nameof(Clients));
         }
+
+
     }
 }

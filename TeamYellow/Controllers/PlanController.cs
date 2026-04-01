@@ -48,7 +48,8 @@ namespace TeamYellow.Controllers
         /// Displays a list of all active subscription plans.
         /// For authenticated users, injects the current active plan ID into
         /// <see cref="Controller.ViewData"/> and indicates whether the user
-        /// has already used the free trial so the view can adjust available actions.
+        /// has already used the free trial or has paid plan history so the view
+        /// can adjust available actions.
         /// </summary>
         /// <returns>The plan listing view with a list of <see cref="PlanVM"/> objects.</returns>
         [AllowAnonymous]
@@ -57,6 +58,7 @@ namespace TeamYellow.Controllers
             var plans = await _planService.GetActivePlans();
 
             bool hasUsedFreeTrial = false;
+            bool hasPaidPlanHistory = false;
 
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -70,11 +72,13 @@ namespace TeamYellow.Controllers
                         ViewData["CurrentPlanId"] = subscription?.PlanId;
 
                         hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(counsellor.CounsellorId);
+                        hasPaidPlanHistory = await _subscriptionRepository.HasPaidPlanHistoryAsync(counsellor.CounsellorId);
                     }
                 }
             }
 
             ViewData["HasUsedFreeTrial"] = hasUsedFreeTrial;
+            ViewData["HasPaidPlanHistory"] = hasPaidPlanHistory;
 
             if (TempData.ContainsKey("Message"))
                 ViewData["Message"] = TempData["Message"];
