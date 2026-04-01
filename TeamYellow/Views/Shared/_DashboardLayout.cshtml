@@ -5,7 +5,7 @@
 @{
     var userName = UserManager.GetUserName(User) ?? "User";
     var displayName = ViewData["DisplayName"]?.ToString();
-    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/Images/placeholder-profile.jpg");
+    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/images/placeholder-profile.jpg");
 
     var rawName = !string.IsNullOrWhiteSpace(displayName)
     ? displayName.Trim()

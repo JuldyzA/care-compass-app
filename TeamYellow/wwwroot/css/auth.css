@@ -14,7 +14,7 @@
     min-height: 300px;
     background:
         linear-gradient(180deg, rgba(30, 43, 40, 0.32), rgba(30, 43, 40, 0.6)),
-        url('../Images/heroImg.png') center/cover no-repeat;
+        url('../images/heroImg.png') center/cover no-repeat;
     display: flex;
     align-items: flex-end;
     padding: 2rem 1.5rem;
@@ -23,7 +23,7 @@
 .auth-login-media {
     background:
         linear-gradient(180deg, rgba(24, 27, 26, 0.378), rgba(24, 27, 26, 0.871)),
-        url('../Images/video-poster.png') center/cover no-repeat;
+        url('../images/video-poster.png') center/cover no-repeat;
 }
 
 .auth-register-copy {
