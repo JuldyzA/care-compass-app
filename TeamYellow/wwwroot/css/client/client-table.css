@@ -71,45 +71,6 @@
     line-height: 1.5;
 }
 
-/* Responsive empty state */
-@media (max-width: 768px) {
-    .empty-state-container {
-        min-height: 250px;
-        padding: 2rem;
-    }
-
-    .empty-state-icon {
-        font-size: 3rem;
-    }
-
-    .empty-state-title {
-        font-size: 1.25rem;
-    }
-
-    .empty-state-message {
-        font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .empty-state-container {
-        min-height: 200px;
-        padding: 1.5rem;
-    }
-
-    .empty-state-icon {
-        font-size: 2.5rem;
-    }
-
-    .empty-state-title {
-        font-size: 1.1rem;
-    }
-
-    .empty-state-message {
-        font-size: 0.9rem;
-    }
-}
-
 /* ========================================
        Avatar styles
        ======================================== */
@@ -144,10 +105,24 @@
 }
 
 /* ========================================
-       Sessions Table Styles
+       Table Styles
        ======================================== */
 
-/* Table header improvements */
+.table-responsive {
+    border-radius: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.clients-table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.clients-table thead {
+    background-color: #f8f9fa;
+}
+
 .clients-table thead th {
     font-weight: 600;
     font-size: 0.875rem;
@@ -156,14 +131,29 @@
     color: #64748b;
     border-bottom: 2px solid #e2e8f0;
     padding: 1rem 0.75rem;
+    white-space: nowrap;
 }
 
 .clients-table tbody td {
     padding: 0.875rem 0.75rem;
     vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Sortable column hover effect */
+.clients-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s ease;
+}
+
+.clients-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* ========================================
+       Sortable Column Styling
+       ======================================== */
+
 .sortable:hover {
     background-color: #f1f5f9 !important;
     cursor: pointer;
@@ -173,6 +163,34 @@
     font-size: 0.75rem;
     margin-left: 0.25rem;
     transition: all 0.2s ease;
+}
+
+/* ========================================
+       Card Header Filters
+       ======================================== */
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-header h5 {
+    color: #212529;
+    margin: 0;
+}
+
+.card-header > div:last-child {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 /* Search input styling */
@@ -185,26 +203,19 @@
     background-color: white;
 }
 
-/* Row hover effect */
-.clients-table tbody tr {
-    transition: background-color 0.15s ease;
-}
-
-    .clients-table tbody tr:hover {
-        background-color: #f8fafc;
-    }
-
 /* Badge adjustments */
 .clients-table .badge {
     font-weight: 500;
     padding: 0.35em 0.75em;
     font-size: 0.8125rem;
+    white-space: nowrap;
 }
 
 /* Action buttons */
 .clients-table .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+    white-space: nowrap;
 }
 
 /* ========================================
@@ -276,6 +287,7 @@
 #clientFilterBtn {
     color: #3E8A90;
     border-color: #3E8A90;
+    white-space: nowrap;
 }
 
 #clientFilterBtn:hover {
@@ -284,7 +296,10 @@
     color: white;
 }
 
-/* Pagination styling */
+/* ========================================
+   Pagination Styling
+   ======================================== */
+
 .pagination-sm .page-link {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
@@ -295,11 +310,11 @@
     transition: all 0.2s ease;
 }
 
-    .pagination-sm .page-link:hover {
-        background-color: #f1f5f9;
-        border-color: #3E8A90;
-        color: #3E8A90;
-    }
+.pagination-sm .page-link:hover {
+    background-color: #f1f5f9;
+    border-color: #3E8A90;
+    color: #3E8A90;
+}
 
 .pagination-sm .page-item.active .page-link {
     background-color: #3E8A90;
@@ -313,18 +328,41 @@
     background-color: transparent;
 }
 
-/* Responsive Table Adjustments */
-@media (max-width: 992px) {
-    .card-header .d-flex {
-        flex-wrap: wrap;
-        gap: 0.75rem;
+/* Card footer pagination */
+.card-body + div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    background-color: white;
+    font-size: 0.875rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* ========================================
+   Responsive Design - Tablet (1024px and below)
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .card-header {
+        padding: 1rem;
     }
 
-    .card-header .input-group {
-        width: 100% !important;
-        max-width: 100%;
+    .clients-table thead th {
+        font-size: 0.8rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .clients-table tbody td {
+        padding: 0.75rem 0.5rem;
     }
 }
+
+/* ========================================
+   Responsive Design - Medium Tablets (768px and below)
+   ======================================== */
 
 @media (max-width: 768px) {
     .clients-header-wrapper {
@@ -343,13 +381,33 @@
         justify-content: center;
     }
 
-    .card-header .d-flex {
+    .card-header {
         flex-direction: column;
+        align-items: stretch;
         gap: 0.75rem;
+        padding: 1rem;
     }
 
-    .card-header .input-group {
+    .card-header h5 {
+        width: 100%;
+    }
+
+    .card-header > div:last-child {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .card-header > div:last-child > * {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .input-group {
         width: 100% !important;
+    }
+
+    .clients-table {
+        font-size: 0.85rem;
     }
 
     .clients-table thead th {
@@ -358,7 +416,7 @@
     }
 
     .clients-table tbody td {
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         padding: 0.75rem 0.5rem;
     }
 
@@ -372,12 +430,42 @@
     }
 
     .clients-table .btn-sm {
-        padding: 0.125rem 0.375rem;
+        padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
+    }
+
+    .card-body + div {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .card-body + div .text-muted {
+        width: 100%;
+    }
+
+    .card-body + div nav {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-sm {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 }
 
+/* ========================================
+   Responsive Design - Small Phones (576px and below)
+   ======================================== */
+
 @media (max-width: 576px) {
+    .clients-header-wrapper {
+        padding: 1rem 0;
+        margin-bottom: 1rem !important;
+    }
+
     .page-title {
         font-size: 1.25rem;
     }
@@ -386,13 +474,36 @@
         font-size: 0.9rem;
     }
 
-    .clients-header-wrapper {
-        padding: 1rem 0;
-        margin-bottom: 1rem !important;
+    .card-header {
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 {
+        font-size: 1rem;
+    }
+
+    .card-header > div:last-child {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .card-header > div:last-child > * {
+        width: 100%;
+        flex: none;
+    }
+
+    .input-group {
+        width: 100% !important;
+    }
+
+    .input-group.input-group-sm {
+        margin-bottom: 0.5rem;
     }
 
     .clients-table {
-        font-size: 0.8125rem;
+        font-size: 0.8rem;
     }
 
     .clients-table thead th {
@@ -401,13 +512,144 @@
     }
 
     .clients-table tbody td {
-        font-size: 0.8125rem;
+        font-size: 0.8rem;
         padding: 0.5rem 0.375rem;
     }
+
+    .avatar-sm {
+        width: 28px;
+        height: 28px;
+    }
+
+    .avatar-initial {
+        font-size: 0.65rem;
+    }
+
+    .clients-table .btn-sm {
+        padding: 0.2rem 0.35rem;
+        font-size: 0.7rem;
+    }
+
+    .btn-sm i {
+        margin-right: 0.25rem;
+    }
+
+    .card-body {
+        padding: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive {
+        margin: 0 -0.75rem;
+    }
+
+    .clients-table {
+        margin: 0;
+    }
+
+    .card-body + div {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .card-body + div .text-muted {
+        font-size: 0.8rem;
+        order: 2;
+    }
+
+    .card-body + div nav {
+        order: 1;
+    }
+
+    .pagination-sm .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        margin: 0 1px;
+    }
+}
+
+/* ========================================
+   Responsive Design - Extra Small Phones (400px and below)
+   ======================================== */
+
+@media (max-width: 400px) {
+    .page-title {
+        font-size: 1.1rem;
+    }
+
+    .page-title i {
+        font-size: 1.5rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .clients-table {
+        font-size: 0.75rem;
+    }
+
+    .clients-table thead th {
+        font-size: 0.65rem;
+        padding: 0.375rem 0.25rem;
+    }
+
+    .clients-table tbody td {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.25rem;
+    }
+
+    .card-header {
+        padding: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.2rem 0.3rem;
+    }
+
+    .avatar-sm {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* ========================================
+   Card Container
+   ======================================== */
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
 #clientTableContainer .card-header {
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
     overflow: hidden;
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    .card-header {
+        display: none;
+    }
+
+    .card-body + div {
+        display: none;
+    }
+
+    .clients-table {
+        font-size: 1rem;
+    }
+
+    .clients-table thead th {
+        background-color: #f8f9fa;
+    }
 }
