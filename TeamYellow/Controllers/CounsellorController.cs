@@ -363,5 +363,24 @@ namespace TeamYellow.Controllers
         {
             return View();
         }
+
+        /// <summary>
+        /// Displays the billing page with all transactions associated with the authenticated counsellor.
+        /// </summary>
+        /// <returns>The billing view populated with transaction history and summary data.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public async Task<IActionResult> Billing()
+        {
+            CounsellorBillingVM? vm = await _counsellorService.GetCounsellorBillingDataAsync(User);
+
+            if (vm == null)
+            {
+                _logger.LogWarning("Billing data could not be retrieved for user {Email}", User.Identity?.Name);
+                return NotFound();
+            }
+
+            return View(vm);
+        }
     }
 }

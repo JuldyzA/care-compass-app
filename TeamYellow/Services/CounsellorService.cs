@@ -9,7 +9,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Services
 {
     /// <summary>
-    /// Service that implements counsellor-related business logic for dashboard and profile retrieval.
+    /// Service that implements counsellor-related business logic for dashboard and billing data retrieval.
     /// </summary>
     public class CounsellorService
     {
@@ -153,6 +153,63 @@ namespace TeamYellow.Services
             }
 
             return counsellor;
+        }
+
+        /// <summary>
+        /// Retrieves billing information and transaction history for the authenticated counsellor.
+        /// Internally resolves the counsellor from the current user context and maps subscription data to view models.
+        /// </summary>
+        /// <param name="user">The current authenticated user.</param>
+        /// <returns>A counsellor billing view model with transaction history, or null if counsellor not found.</returns>
+        public async Task<CounsellorBillingVM?> GetCounsellorBillingDataAsync(ClaimsPrincipal user)
+        {
+            Counsellor? counsellor = await GetCounsellorByUser(user);
+
+            if (counsellor == null)
+            {
+                _logger.LogWarning("Cannot retrieve billing data because counsellor profile could not be found for the current user.");
+                return null;
+            }
+
+            List<Subscription> subscriptions = await _counsellorRepository.GetCounsellorSubscriptionsAsync(counsellor.CounsellorId);
+
+            CounsellorBillingVM vm = CounsellorDashboardHelper.CreateEmptyBillingVM();
+            PopulateBillingTransactions(vm, subscriptions);
+
+            return vm;
+        }
+
+        /// <summary>
+        /// Private helper method that populates a billing view model with transaction data from subscriptions.
+        /// Calculates active subscription status, individual transactions, and summary totals.
+        /// </summary>
+        /// <param name="billingVM">The billing view model to populate.</param>
+        /// <param name="subscriptions">The collection of subscriptions to extract transactions from.</param>
+        private void PopulateBillingTransactions(CounsellorBillingVM billingVM, List<Subscription> subscriptions)
+        {
+            if (billingVM == null || subscriptions == null)
+            {
+                return;
+            }
+
+            // Check if there's an active subscription
+            Subscription? activeSubscription = subscriptions.FirstOrDefault(s => s.Status == SubscriptionStatus.Active && s.CycleEnd > DateTime.UtcNow);
+            billingVM.IsSubscriptionActive = activeSubscription != null;
+            billingVM.CurrentCycleEnd = activeSubscription?.CycleEnd;
+
+            // Process all subscriptions with payment transactions
+            foreach (Subscription subscription in subscriptions.Where(s => s.PaymentTransaction != null))
+            {
+                PaymentTransaction paymentTransaction = subscription.PaymentTransaction!;
+                BillingTransactionVM transaction = CounsellorDashboardHelper.MapToTransactionVM(paymentTransaction, subscription);
+                billingVM.Transactions.Add(transaction);
+            }
+
+            // Calculate totals
+            billingVM.TotalTransactions = billingVM.Transactions.Count;
+            billingVM.TotalSpent = billingVM.Transactions
+                .Where(t => t.Status == "Paid")
+                .Sum(t => t.Amount);
         }
     }
 }
