@@ -85,6 +85,8 @@ namespace TeamYellow.Services
                 {
                     counsellor.IsActive = false;
                     counsellor.UserId = null;
+                    counsellor.ArchivedNormalizedEmail = user.NormalizedEmail;
+                    counsellor.ArchivedEmailDisplay = user.Email;
                 }
 
                 var userLogs = await _context.UserLogs
@@ -93,6 +95,11 @@ namespace TeamYellow.Services
 
                 foreach (var log in userLogs)
                 {
+                    if (string.IsNullOrWhiteSpace(log.UserEmailSnapshot))
+                    {
+                        log.UserEmailSnapshot = user.Email;
+                    }
+
                     log.UserId = null;
                 }
 

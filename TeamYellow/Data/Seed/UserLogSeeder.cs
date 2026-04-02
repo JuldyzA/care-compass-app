@@ -46,6 +46,7 @@ public class UserLogSeeder : IDataSeeder
                 logs.Add(new UserLog
                 {
                     UserId = user.Id,
+                    UserEmailSnapshot = user.Email,
                     LogInTime = logInTime,
                     LogOutTime = logOutTime,
                     Abandoned = false

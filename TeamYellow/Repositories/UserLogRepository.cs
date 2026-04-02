@@ -38,7 +38,9 @@ namespace TeamYellow.Repositories
                                        .Select(ul => new UserLogVM
                                        {
                                            LogId = ul.LogId,
-                                           Email = (ul.User != null) ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : "(user missing)",
+                                           Email = ul.User != null ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : 
+                                                (ul.UserEmailSnapshot != null && ul.UserEmailSnapshot != ""
+                                                ? ul.UserEmailSnapshot + " (deleted)" : "(deleted account)"),
                                            LogInTime = ul.LogInTime,
                                            LogOutTime = ul.LogOutTime,
                                            Abandoned = ul.Abandoned
@@ -128,12 +130,14 @@ namespace TeamYellow.Repositories
         /// Starts a new session log for the specified user.
         /// </summary>
         /// <param name="userId">The identity user identifier.</param>
+        /// <param name="userEmailSnapshot">The email snapshot to preserve for historical display.</param>
         /// <returns><c>true</c> if the log was created successfully; otherwise <c>false</c>.</returns>
-        public async Task<bool> StartLogAsync(string userId)
+        public async Task<bool> StartLogAsync(string userId, string? userEmailSnapshot)
         {
             UserLog userLog = new UserLog
             {
                 UserId = userId,
+                UserEmailSnapshot = userEmailSnapshot,
                 LogInTime = DateTime.UtcNow,
                 LogOutTime = null,
                 Abandoned = false

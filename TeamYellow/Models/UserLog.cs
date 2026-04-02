@@ -27,6 +27,10 @@ namespace TeamYellow.Models
         [Column("fkUserId")]
         public string? UserId { get; set; }
 
+        [Column("userEmailSnapshot")]
+        [MaxLength(256)]
+        public string? UserEmailSnapshot { get; set; }
+
         public virtual IdentityUser? User { get; set; }
     }
 }

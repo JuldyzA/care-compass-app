@@ -162,6 +162,9 @@ namespace TeamYellow.Data
                     .HasIndex(c => c.UserId)
                     .IsUnique();
 
+                entity
+                    .HasIndex(c => c.ArchivedNormalizedEmail);
+
                 entity.Property(c => c.CreatedAt)
                       .HasDefaultValueSql("CURRENT_TIMESTAMP")
                       .ValueGeneratedOnAdd();

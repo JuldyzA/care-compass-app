@@ -122,7 +122,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     if (!string.IsNullOrWhiteSpace(userId))
                     {
                         await _userLogRepository.CloseDanglingLogsIfAnyAsync(userId);
-                        await _userLogRepository.StartLogAsync(userId);
+                        await _userLogRepository.StartLogAsync(userId, user?.Email ?? Input.Email);
                     }
                     else
                     {
