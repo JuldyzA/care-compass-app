@@ -34,6 +34,14 @@ namespace TeamYellow.Models
         [MaxLength(450)]
         public string? UserId { get; set; }
 
+        [Column("archivedNormalizedEmail")]
+        [MaxLength(256)]
+        public string? ArchivedNormalizedEmail { get; set; }
+
+        [Column("archivedEmailDisplay")]
+        [MaxLength(256)]
+        public string? ArchivedEmailDisplay { get; set; }
+
         public virtual IdentityUser? User { get; set; }
 
         public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();

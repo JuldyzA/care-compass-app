@@ -182,13 +182,15 @@ namespace TeamYellow.Controllers
                 .Select(s =>
                 {
                     var paymentTransaction = s.PaymentTransaction!;
-
+                    
                     return new ManagerDashboardVM
                     {
                         CounsellorId = counsellor.CounsellorId,
                         PractitionerLicenceId = counsellor.PractitionerLicenceId,
                         CounsellorName = counsellor.DisplayName,
-                        Email = counsellor.User?.Email ?? "No email",
+                        Email = !string.IsNullOrWhiteSpace(counsellor.User?.Email) ? 
+                                counsellor.User.Email : !string.IsNullOrWhiteSpace(counsellor.ArchivedEmailDisplay) ?
+                                $"{counsellor.ArchivedEmailDisplay} (deleted)" : "(deleted account)",
                         Amount = paymentTransaction.Amount,
                         PaymentTransactionId = paymentTransaction.PaymentTransactionId,
                         Currency = paymentTransaction.Currency,

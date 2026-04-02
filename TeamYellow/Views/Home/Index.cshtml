@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
 }
 
+<div class="container mt-3">
+    @await Html.PartialAsync("_AlertMessages")
+</div>
+
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
