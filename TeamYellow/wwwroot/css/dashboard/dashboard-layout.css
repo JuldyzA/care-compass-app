@@ -95,7 +95,7 @@ body.locked-page-scroll {
 
 /* Sidebar Header */
 .sidebar-header {
-    padding: 1.25rem 1rem;
+    padding: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;

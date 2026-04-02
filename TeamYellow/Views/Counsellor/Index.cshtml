@@ -1005,7 +1005,7 @@
         };
 
         const gaugeColor = '@gaugeColor';
-        const percentageRemaining = @Html.Raw(Json.Serialize(percentageRemaining));
+        const percentageRemaining = Number("@percentageRemaining");
 
         // Plan usage gauge
         const planUsageGaugeOptions = {

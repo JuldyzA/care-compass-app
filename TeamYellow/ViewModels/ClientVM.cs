@@ -36,7 +36,7 @@ namespace TeamYellow.ViewModels
         public string Phone { get; set; } = null!;
 
         [DisplayName("Client Status")]
-        public bool Status { get; set; }
+        public bool Status { get; set; } = true;
 
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }

@@ -5,7 +5,7 @@ using TeamYellow.ViewModels;
 namespace TeamYellow.Helpers
 {
     /// <summary>
-    /// Provides helper methods for mapping counsellor dashboard data between entities, DTOs, and view models.
+    /// Provides helper methods for mapping counsellor dashboard and billing data between entities, DTOs, and view models.
     /// </summary>
     public class CounsellorDashboardHelper
     {
@@ -101,6 +101,48 @@ namespace TeamYellow.Helpers
                 ActiveClientCount = dto.ActiveClientCount,
                 InactiveClientCount = dto.InactiveClientCount,
                 RemainingSubscriptionText = remainingText
+            };
+        }
+
+        /// <summary>
+        /// Creates an empty billing view model with default values.
+        /// </summary>
+        /// <returns>An initialized CounsellorBillingVM with empty collections and default values.</returns>
+        public static CounsellorBillingVM CreateEmptyBillingVM()
+        {
+            return new CounsellorBillingVM
+            {
+                DisplayName = string.Empty,
+                ProfilePhotoUrl = null,
+                Transactions = new List<BillingTransactionVM>(),
+                TotalSpent = 0m,
+                TotalTransactions = 0,
+                IsSubscriptionActive = false,
+                CurrentCycleEnd = null
+            };
+        }
+
+        /// <summary>
+        /// Maps a payment transaction and related subscription data into a billing transaction view model.
+        /// </summary>
+        /// <param name="paymentTransaction">The payment transaction entity to map.</param>
+        /// <param name="subscription">The subscription containing plan and cycle information.</param>
+        /// <returns>A populated BillingTransactionVM ready for display.</returns>
+        public static BillingTransactionVM MapToTransactionVM(PaymentTransaction paymentTransaction, Subscription subscription)
+        {
+            return new BillingTransactionVM
+            {
+                PaymentTransactionId = paymentTransaction.PaymentTransactionId,
+                PlanName = subscription.Plan?.PlanName ?? "Unknown Plan",
+                BillingType = subscription.Plan?.BillingType ?? "N/A",
+                Amount = paymentTransaction.Amount,
+                Currency = paymentTransaction.Currency,
+                PaidAt = paymentTransaction.PaidAt,
+                Status = paymentTransaction.Status == PaymentTransactionStatus.Failed ? "Failed" : "Paid",
+                Provider = paymentTransaction.Provider,
+                ProviderOrderId = paymentTransaction.ProviderOrderId,
+                CycleStart = subscription.CycleStart,
+                CycleEnd = subscription.CycleEnd
             };
         }
 

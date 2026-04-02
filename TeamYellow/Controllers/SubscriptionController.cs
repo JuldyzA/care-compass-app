@@ -451,13 +451,17 @@ namespace TeamYellow.Controllers
             }
             while (await _counsellorRepository.LicenceIdExistsAsync(licenceId));
 
-            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+            var (profile, displayName) = await _userProfileRepository.GetByUserIdAsync(userId);
 
-            var displayName = string.Join(" ", new[]
+            // If no counsellor displayName exists, build from profile or fall back to username/email
+            if (string.IsNullOrWhiteSpace(displayName) && profile != null)
             {
-                profile?.FirstName,
-                profile?.LastName
-            }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                displayName = string.Join(" ", new[]
+                {
+                    profile.FirstName,
+                    profile.LastName
+                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            }
 
             if (string.IsNullOrWhiteSpace(displayName))
             {
