@@ -357,6 +357,46 @@ namespace TeamYellow.Controllers
             return RedirectToAction(nameof(Clients));
         }
 
+        /// <summary>
+        /// Placeholder action for future session notes feature (not yet implemented).
+        /// Currently displays a coming soon page with a redirect link to the dashboard.
+        /// </summary>
+        /// <returns>A view indicating the feature is under development.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public IActionResult Appointments()
+        {
+            return View();
+        }
 
+        /// <summary>
+        /// Displays the notifications page for counsellors.
+        /// </summary>
+        /// <returns>A view indicating the feature is under development.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public IActionResult Notifications()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Displays the billing page with all transactions associated with the authenticated counsellor.
+        /// </summary>
+        /// <returns>The billing view populated with transaction history and summary data.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor")]
+        public async Task<IActionResult> Billing()
+        {
+            CounsellorBillingVM? vm = await _counsellorService.GetCounsellorBillingDataAsync(User);
+
+            if (vm == null)
+            {
+                _logger.LogWarning("Billing data could not be retrieved for user {Email}", User.Identity?.Name);
+                return NotFound();
+            }
+
+            return View(vm);
+        }
     }
 }

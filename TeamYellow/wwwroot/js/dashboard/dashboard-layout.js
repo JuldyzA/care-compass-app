@@ -137,6 +137,29 @@ function setActiveNavLink() {
             activeLink = link;
             return;
         }
+
+        // Match Account/Manage pages to Account sidebar link
+        if (href.includes('/user/account') &&
+            currentPath.includes('/account/manage')) {
+            activeLink = link;
+            return;
+        }
+
+        // Match Profile subpages (EditProfile) to Profile sidebar link
+        if (href.includes('/user/profile') &&
+            currentPath.includes('/user/editprofile')) {
+            activeLink = link;
+            return;
+        }
+
+        // Match Counsellor subpages (CreateClient, ClientDetail, EditClient, Email/Password change)
+        if (href.includes('/counsellor/clients') &&
+            (currentPath.includes('/counsellor/createclient') ||
+             currentPath.includes('/counsellor/clientdetail') ||
+             currentPath.includes('/counsellor/editclient'))) {
+            activeLink = link;
+            return;
+        }
     });
 
     if (activeLink) {

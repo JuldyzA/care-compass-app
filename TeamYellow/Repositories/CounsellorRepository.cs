@@ -134,5 +134,23 @@ namespace TeamYellow.Repositories
 			        .ThenInclude(s => s.PaymentTransaction)
 			    .ToListAsync();
 	    }
+
+        /// <summary>
+        /// Retrieves all subscriptions for a specific counsellor, including related plan and payment transaction data.
+        /// </summary>
+        /// <param name="counsellorId">The counsellor identifier.</param>
+        /// <returns>A list of subscriptions with related data for the counsellor.</returns>
+        public async Task<List<Subscription>> GetCounsellorSubscriptionsAsync(int counsellorId)
+        {
+            List<Subscription> subscriptions = await _context.Subscriptions
+                .Where(s => s.CounsellorId == counsellorId)
+                .Include(s => s.Plan)
+                .Include(s => s.PaymentTransaction)
+                .OrderByDescending(s => s.UpdatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return subscriptions;
+        }
     }
 }

@@ -1,0 +1,71 @@
+@using TeamYellow.ViewModels
+
+@model UserAccountVM
+
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+
+    <div class="detail-card">
+        <!-- Card Header -->
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-avatar">
+                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                </div>
+                <div class="detail-header-info">
+                    <h1>Account Settings</h1>
+                    <p>Manage your login credentials</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="detail-card-body">
+
+            @await Html.PartialAsync("_AlertMessages")
+
+            <!-- Login Credentials Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-key" aria-hidden="true"></i>
+                    Login Credentials
+                </div>
+
+                <div class="detail-fields-grid">
+                    <div class="detail-field">
+                        <span class="detail-field-label">Email Address</span>
+                        <span class="detail-field-value">
+                            @Model.Email
+                        </span>
+                    </div>
+
+                    <div class="detail-field">
+                        <span class="detail-field-label">Password</span>
+                        <span class="detail-field-value">
+                            @Model.MaskedPassword
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="detail-card-footer">
+            <a asp-area="Identity" asp-page="/Account/Manage/Email" class="detail-action-button detail-action-primary">
+                <i class="bi bi-envelope" aria-hidden="true"></i>
+                <span>Change Email</span>
+            </a>
+            <a asp-area="Identity" asp-page="/Account/Manage/ChangePassword" class="detail-action-button detail-action-secondary">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span>Change Password</span>
+            </a>
+        </div>
+    </div>
+</div>

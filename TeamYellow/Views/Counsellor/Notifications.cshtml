@@ -1,0 +1,12 @@
+@using TeamYellow.Controllers
+@{
+    ViewData["Title"] = "Notifications";
+    ViewData["Icon"] = "fa-bell";
+    ViewData["Message"] = "The notifications feature is currently under development and will be available soon.";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard/coming-soon.css" asp-append-version="true" />
+}
+
+@await Html.PartialAsync("_ComingSoonCard")

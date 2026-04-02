@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using TeamYellow.Configurations;
 
 namespace TeamYellow.Data.Seed;
 
@@ -7,11 +8,10 @@ public class IdentitySeeder : IDataSeeder
     private readonly UserManager<IdentityUser> _userManager;
     private readonly string _password;
 
-    public IdentitySeeder(UserManager<IdentityUser> userManager, IConfiguration configuration)
+    public IdentitySeeder(UserManager<IdentityUser> userManager, SeedConfiguration seedConfig)
     {
         _userManager = userManager;
-        _password = configuration["Seed:DefaultPassword"]
-            ?? throw new InvalidOperationException("Seed password not configured");
+        _password = seedConfig.DefaultPassword;
     }
 
     public async Task SeedAsync()
