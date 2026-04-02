@@ -180,7 +180,7 @@ namespace TeamYellow.Services
                 return false;
             }
 
-            // Use GetClientByIdAsync for ownership verification with proper includes for display
+            // Use GetClientByIdAsync to verify that the client exists and belongs to the current counsellor (no display logic here)
             Client? existingClient = await _repository.GetClientByIdAsync(vm.ClientId, userId);
             if (existingClient == null)
             {
