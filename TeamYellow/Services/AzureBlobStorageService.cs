@@ -107,18 +107,33 @@ public class AzureBlobStorageService : IAzureBlobStorageService
                 return false;
             }
 
-            string fileName = Path.GetFileName(uri.AbsolutePath);
-            BlobClient blobClient = _containerClient.GetBlobClient(fileName);
+            string containerPath = _containerClient.Uri.AbsolutePath.TrimEnd('/');
+            string blobPath = uri.AbsolutePath;
 
+            if (!blobPath.StartsWith(containerPath + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("Skipping blob delete because the file is not stored under the configured Azure container path. URL: {BlobUrl}", blobUri);
+                return false;
+            }
+
+            string relativeBlobPath = Uri.UnescapeDataString(blobPath.Substring(containerPath.Length).TrimStart('/'));
+
+            if (string.IsNullOrWhiteSpace(relativeBlobPath))
+            {
+                _logger.LogWarning("Skipping blob delete because the resolved blob path is empty. URL: {BlobUrl}", blobUri);
+                return false;
+            }
+
+            BlobClient blobClient = _containerClient.GetBlobClient(relativeBlobPath);
             var response = await blobClient.DeleteIfExistsAsync();
 
             if (response.Value)
             {
-                _logger.LogInformation("File '{FileName}' deleted successfully from blob storage.", fileName);
+                _logger.LogInformation("Blob '{BlobPath}' deleted successfully from blob storage.", relativeBlobPath);
             }
             else
             {
-                _logger.LogInformation("Blob delete skipped because file '{FileName}' does not exist in blob storage.", fileName);
+                _logger.LogInformation("Blob delete skipped because blob '{BlobPath}' does not exist in blob storage.", relativeBlobPath);
             }
 
             return response.Value;

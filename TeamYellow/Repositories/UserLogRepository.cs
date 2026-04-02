@@ -39,7 +39,7 @@ namespace TeamYellow.Repositories
                                        {
                                            LogId = ul.LogId,
                                            Email = ul.User != null ? (ul.User.Email ?? ul.User.UserName ?? "(no email)") : 
-                                                (ul.UserEmailSnapshot != null && ul.UserEmailSnapshot != ""
+                                                (!string.IsNullOrWhiteSpace(ul.UserEmailSnapshot)
                                                 ? ul.UserEmailSnapshot + " (deleted)" : "(deleted account)"),
                                            LogInTime = ul.LogInTime,
                                            LogOutTime = ul.LogOutTime,

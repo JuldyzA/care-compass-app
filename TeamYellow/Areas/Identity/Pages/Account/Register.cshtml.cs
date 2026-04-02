@@ -179,8 +179,10 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
             if (!string.IsNullOrWhiteSpace(normalizedEmail) && await _counsellorRepository.DeletedCounsellorExistsByNormalizedEmailAsync(normalizedEmail))
             {
+                _logger.LogWarning("Registration attempt blocked for email {Email} because it is associated with a deleted practitioner account.", Input.Email);
+
                 ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
-                ModelState.AddModelError(string.Empty, "We are unable to register you with this email because it was associated with a previous practitioner account that was deleted.");
+                ModelState.AddModelError(string.Empty, "We are unable to process your registration with this email address. Please contact support if the problem persists.");
             }
 
             if (ModelState.IsValid)
