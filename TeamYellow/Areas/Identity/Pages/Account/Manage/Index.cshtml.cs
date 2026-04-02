@@ -85,7 +85,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 DisplayName = Username;
             }
 
-            ProfilePhotoUrl = profile?.ProfilePhotoUrl ?? Url.Content("~/Images/placeholder-profile.jpg");
+            ProfilePhotoUrl = profile?.ProfilePhotoUrl ?? Url.Content("~/images/placeholder-profile.jpg");
 
             Input = new InputModel
             {
