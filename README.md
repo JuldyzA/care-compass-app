@@ -8,7 +8,7 @@ A web-based **counselling management system** built as a group project for BCIT'
 
 ## Features
 
-- **User Management** | Registration, login, role-based access (Admin, Counsellor, Client) via ASP.NET Identity
+- **User Management** | Registration, login, role-based access (`Administrator`, `Manager`, `Paid_Counselor`, `Free_Counselor`, `Registered_Visitor`) via ASP.NET Identity
 - **Counsellor & Client Management** | Full CRUD with profile pictures stored in Azure Blob Storage
 - **Subscription Plans** | Plan creation, discounts, and feature flags
 - **PayPal Payments** | Integrated PayPal checkout for subscription purchases
@@ -83,7 +83,7 @@ dotnet run
 
 On first run in the `Development` environment, the app will:
 
-1. Apply all pending EF Core migrations (creates `AppData.db` if it doesn't exist)
+1. Apply all pending EF Core migrations (creating the SQLite database file/path configured by `ConnectionStrings:DefaultConnection` if it doesn't exist)
 2. Seed roles, users, counsellors, clients, subscriptions, and transactions automatically
 
 The app will be available at `https://localhost:<port>` (check terminal output for the exact URL).
@@ -118,8 +118,9 @@ systems-analysis-design-group-project/
     ├── Program.cs                  # App entry point, DI registration
     ├── appsettings.json            # Non-secret configuration
     ├── appsettings.Development.json
-    ├── secrets.example.json        # Lists all required secret keys (use dotnet user-secrets set)
-    ├── MyDatabase.db               # SQLite database file (generated)
+    ├── secrets.json                # Local secrets (gitignored)
+    ├── secrets.example.json        # Template for secrets
+    ├── <your-db>.db                # SQLite database file (generated from `ConnectionStrings:DefaultConnection`)
     ├── Areas/                      # ASP.NET Identity scaffold (Login, Register, etc.)
     ├── Configurations/             # Strongly-typed config classes (Azure, Seed, etc.)
     ├── Controllers/                # MVC controllers
