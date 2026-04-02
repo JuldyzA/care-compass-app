@@ -129,7 +129,7 @@ systems-analysis-design-group-project/
     ├── appsettings.Development.json
     ├── secrets.json                # Local secrets (gitignored)
     ├── secrets.example.json        # Template for secrets
-    ├── MyDatabase.db               # SQLite database file (generated)
+    ├── <your-db>.db                # SQLite database file (generated from `ConnectionStrings:DefaultConnection`)
     ├── Areas/                      # ASP.NET Identity scaffold (Login, Register, etc.)
     ├── Configurations/             # Strongly-typed config classes (Azure, Seed, etc.)
     ├── Controllers/                # MVC controllers
