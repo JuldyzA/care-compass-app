@@ -20,6 +20,7 @@ namespace TeamYellow.Controllers
         private readonly CounsellorRepository _counsellorRepository;
         private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly DiscountRepository _discountRepository;
+        private readonly UserProfileRepository _userProfileRepository;
         private readonly UserManager<IdentityUser> _userManager;
 
         /// <summary>
@@ -29,18 +30,21 @@ namespace TeamYellow.Controllers
         /// <param name="counsellorRepository">Repository for counsellor data access.</param>
         /// <param name="subscriptionRepository">Repository for subscription data access.</param>
         /// <param name="discountRepository">Repository for discount data access.</param>
+        /// <param name="userProfileRepository">Repository for user profile data access.</param>
         /// <param name="userManager">ASP.NET Identity user manager.</param>
         public PlanController(
             IPlanService planService,
             CounsellorRepository counsellorRepository,
             ISubscriptionRepository subscriptionRepository,
             DiscountRepository discountRepository,
+            UserProfileRepository userProfileRepository,
             UserManager<IdentityUser> userManager)
         {
             _planService = planService;
             _counsellorRepository = counsellorRepository;
             _subscriptionRepository = subscriptionRepository;
             _discountRepository = discountRepository;
+            _userProfileRepository = userProfileRepository;
             _userManager = userManager;
         }
 
@@ -55,26 +59,20 @@ namespace TeamYellow.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+            var userContext = await PopulateDashboardUserProfileAsync();
+
             var plans = await _planService.GetActivePlans();
 
             bool hasUsedFreeTrial = false;
             bool hasPaidPlanHistory = false;
 
-            if (User.Identity?.IsAuthenticated == true)
+            if (userContext?.Counsellor != null)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user != null)
-                {
-                    var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
-                    if (counsellor != null)
-                    {
-                        var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
-                        ViewData["CurrentPlanId"] = subscription?.PlanId;
+                var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(userContext.Counsellor.CounsellorId);
+                ViewData["CurrentPlanId"] = subscription?.PlanId;
 
-                        hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(counsellor.CounsellorId);
-                        hasPaidPlanHistory = await _subscriptionRepository.HasPaidPlanHistoryAsync(counsellor.CounsellorId);
-                    }
-                }
+                hasUsedFreeTrial = await _subscriptionRepository.HasUsedFreeTrialAsync(userContext.Counsellor.CounsellorId);
+                hasPaidPlanHistory = await _subscriptionRepository.HasPaidPlanHistoryAsync(userContext.Counsellor.CounsellorId);
             }
 
             ViewData["HasUsedFreeTrial"] = hasUsedFreeTrial;
@@ -104,6 +102,8 @@ namespace TeamYellow.Controllers
         [Authorize(Roles = "Registered_Visitor,Paid_Counselor,Free_Counselor")]
         public async Task<IActionResult> Checkout(int id, string? discountCode = null)
         {
+            var userContext = await PopulateDashboardUserProfileAsync();
+
             var plan = await _planService.GetPlanById(id);
 
             if (plan == null || !plan.IsActive)
@@ -125,19 +125,14 @@ namespace TeamYellow.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var user = await _userManager.GetUserAsync(User);
-                if (user != null)
+                if (userContext?.Counsellor != null)
                 {
-                    var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
-                    if (counsellor != null)
+                    var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(userContext.Counsellor.CounsellorId);
+                    if (subscription?.PlanId == id)
                     {
-                        var subscription = await _subscriptionRepository.GetActiveSubscriptionByCounsellorId(counsellor.CounsellorId);
-                        if (subscription?.PlanId == id)
-                        {
-                            TempData["Message"] = "You are already subscribed to this plan.";
-                            TempData["MessageType"] = "info";
-                            return RedirectToAction(nameof(Index));
-                        }
+                        TempData["Message"] = "You are already subscribed to this plan.";
+                        TempData["MessageType"] = "info";
+                        return RedirectToAction(nameof(Index));
                     }
                 }
             }
@@ -187,6 +182,60 @@ namespace TeamYellow.Controllers
 
             return View(vm);
         }
+
+        /// <summary>
+        /// Adds profile display values used by the dashboard layout when this controller is reached from dashboard navigation.
+        /// </summary>
+        private async Task<PlanUserContext?> PopulateDashboardUserProfileAsync()
+        {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var (profile, counsellorDisplayName) = await _userProfileRepository.GetByUserIdAsync(user.Id);
+            if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+            {
+                ViewData["UserProfilePicture"] = profile.ProfilePhotoUrl;
+            }
+
+            string? displayName = null;
+            var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
+            if (!string.IsNullOrWhiteSpace(counsellorDisplayName))
+            {
+                displayName = counsellorDisplayName.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(counsellor?.DisplayName))
+            {
+                displayName = counsellor.DisplayName.Trim();
+            }
+            else
+            {
+                string firstName = profile?.FirstName?.Trim() ?? string.Empty;
+                string lastName = profile?.LastName?.Trim() ?? string.Empty;
+                displayName = $"{firstName} {lastName}".Trim();
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = await _userManager.GetUserNameAsync(user) ?? user.Email;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                ViewData["DisplayName"] = displayName;
+            }
+
+            return new PlanUserContext(user, counsellor);
+        }
+
+        private sealed record PlanUserContext(IdentityUser User, Counsellor? Counsellor);
 
         /// <summary>
         /// Redirects back to the checkout page with the submitted discount code so it can be validated and applied.

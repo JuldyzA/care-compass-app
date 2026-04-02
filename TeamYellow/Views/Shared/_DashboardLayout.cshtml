@@ -1,11 +1,39 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using TeamYellow.Repositories
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject UserProfileRepository UserProfileRepository
 
 @{
     var userName = UserManager.GetUserName(User) ?? "User";
     var displayName = ViewData["DisplayName"]?.ToString();
-    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/images/placeholder-profile.jpg");
+    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString();
+
+    if (SignInManager.IsSignedIn(User) && (string.IsNullOrWhiteSpace(displayName) || string.IsNullOrWhiteSpace(profilePicture)))
+    {
+        var userId = UserManager.GetUserId(User);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var (profile, counsellorDisplayName) = await UserProfileRepository.GetByUserIdAsync(userId);
+
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                displayName = !string.IsNullOrWhiteSpace(counsellorDisplayName)
+                    ? counsellorDisplayName.Trim()
+                    : string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
+                        .Where(value => !string.IsNullOrWhiteSpace(value)))
+                        .Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(profilePicture) && !string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+            {
+                profilePicture = profile.ProfilePhotoUrl;
+            }
+        }
+    }
+
+    profilePicture ??= Url.Content("~/images/placeholder-profile.jpg");
 
     var rawName = !string.IsNullOrWhiteSpace(displayName)
     ? displayName.Trim()

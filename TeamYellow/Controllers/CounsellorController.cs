@@ -91,7 +91,12 @@ namespace TeamYellow.Controllers
                     TempData["ErrorMessage"] = "Your subscription is inactive or expired. Please activate a plan to continue.";
                 }
 
-                if (!string.Equals(actionName, nameof(Locked), StringComparison.OrdinalIgnoreCase))
+                bool allowProfileForRegisteredVisitor =
+                    User.IsInRole("Registered_Visitor") &&
+                    string.Equals(actionName, nameof(Profile), StringComparison.OrdinalIgnoreCase);
+
+                if (!allowProfileForRegisteredVisitor &&
+                    !string.Equals(actionName, nameof(Locked), StringComparison.OrdinalIgnoreCase))
                 {
                     context.Result = RedirectToAction(nameof(Locked));
                     return;
@@ -148,6 +153,17 @@ namespace TeamYellow.Controllers
         public IActionResult Clients()
         {
             return View();
+        }
+
+        /// <summary>
+        /// Redirects the user to the counsellor dashboard.
+        /// </summary>
+        /// <returns>The dashboard page.</returns>
+        [HttpGet]
+        [Authorize(Roles = "Paid_Counselor,Free_Counselor,Registered_Visitor")]
+        public IActionResult Profile()
+        {
+            return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
