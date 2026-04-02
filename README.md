@@ -42,47 +42,38 @@ cd systems-analysis-design-group-project/TeamYellow
 
 ### 2. Configure secrets
 
-Copy the example secrets file and fill in your values:
+This project uses [ASP.NET Core User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to keep credentials off disk and out of the repository.
+
+Run the following commands from the `TeamYellow/` directory, replacing each placeholder with your actual value:
 
 ```bash
-cp secrets.example.json secrets.json
+# Database (SQLite — no changes needed for local dev)
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Data Source=MyDatabase.db"
+
+# Seed password (used for all seeded dev accounts — must meet ASP.NET Identity rules)
+dotnet user-secrets set "Seed:DefaultPassword" "<YOUR_SEED_PASSWORD>"
+
+# PayPal (sandbox credentials from developer.paypal.com)
+dotnet user-secrets set "ApiKeys:PayPal:ClientId" "<PAYPAL_CLIENT_ID>"
+dotnet user-secrets set "ApiKeys:PayPal:ClientSecret" "<PAYPAL_CLIENT_SECRET>"
+
+# Google reCAPTCHA
+dotnet user-secrets set "Recaptcha:SiteKey" "<RECAPTCHA_SITE_KEY>"
+dotnet user-secrets set "Recaptcha:SecretKey" "<RECAPTCHA_SECRET_KEY>"
+
+# Brevo (transactional email)
+dotnet user-secrets set "Brevo:ApiKey" "<BREVO_API_KEY>"
+dotnet user-secrets set "Brevo:Name" "<SENDER_NAME>"
+dotnet user-secrets set "Brevo:Email" "<SENDER_EMAIL>"
+
+# Azure Blob Storage (profile picture uploads)
+dotnet user-secrets set "AzureStorage:ConnectionString" "<STORAGE_CONNECTION_STRING>"
+dotnet user-secrets set "AzureStorage:ProfilePicturesContainer" "<CONTAINER_NAME>"
+dotnet user-secrets set "AzureStorage:AccountName" "<ACCOUNT_NAME>"
+dotnet user-secrets set "AzureStorage:AccountKey" "<ACCOUNT_KEY>"
 ```
 
-Edit `secrets.json`:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=AppData.db"
-  },
-  "ApiKeys": {
-    "PayPal": {
-      "ClientId": "<PAYPAL_CLIENT_ID>",
-      "ClientSecret": "<PAYPAL_CLIENT_SECRET>"
-    }
-  },
-  "Recaptcha": {
-    "SiteKey": "<RECAPTCHA_SITE_KEY>",
-    "SecretKey": "<RECAPTCHA_SECRET_KEY>"
-  },
-  "Brevo": {
-    "ApiKey": "<BREVO_API_KEY>",
-    "Name": "<SENDER_NAME>",
-    "Email": "<SENDER_EMAIL>"
-  },
-  "AzureStorage": {
-    "ConnectionString": "<STORAGE_CONNECTION_STRING>",
-    "ProfilePicturesContainer": "<CONTAINER_NAME>",
-    "AccountName": "<ACCOUNT_NAME>",
-    "AccountKey": "<ACCOUNT_KEY>"
-  },
-  "Seed": {
-    "DefaultPassword": "<PASSWORD_FOR_SEEDED_ACCOUNTS>"
-  }
-}
-```
-
-> `secrets.json` is listed in `.gitignore` and will never be committed. Do not share it.
+Secrets are stored in your OS user profile and never committed to the repository. See `secrets.example.json` for the full list of required keys.
 
 ### 3. Run the application
 
@@ -99,7 +90,7 @@ The app will be available at `https://localhost:<port>` (check terminal output f
 
 ### 4. Log in with seeded accounts
 
-Seeded accounts use the password you set in `Seed:DefaultPassword`. Check the seeder files under [TeamYellow/Data/Seed/](TeamYellow/Data/Seed/) for the seeded usernames/emails.
+Seeded accounts use the password you set via `dotnet user-secrets set "Seed:DefaultPassword"`. Check [TeamYellow/Data/seed.txt](TeamYellow/Data/seed.txt) for the full list of seeded emails and roles.
 
 ---
 
@@ -127,8 +118,7 @@ systems-analysis-design-group-project/
     ├── Program.cs                  # App entry point, DI registration
     ├── appsettings.json            # Non-secret configuration
     ├── appsettings.Development.json
-    ├── secrets.json                # Local secrets (gitignored)
-    ├── secrets.example.json        # Template for secrets
+    ├── secrets.example.json        # Lists all required secret keys (use dotnet user-secrets set)
     ├── MyDatabase.db               # SQLite database file (generated)
     ├── Areas/                      # ASP.NET Identity scaffold (Login, Register, etc.)
     ├── Configurations/             # Strongly-typed config classes (Azure, Seed, etc.)
