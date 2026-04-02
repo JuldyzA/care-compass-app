@@ -2,31 +2,50 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
+@{
+    var path = Context.Request.Path.Value ?? string.Empty;
+    var isSignedIn = SignInManager.IsSignedIn(User);
+
+    var hideAuthNav =
+        path.Equals("/Identity/Account/RegisterConfirmation", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/Identity/Account/ConfirmEmail", StringComparison.OrdinalIgnoreCase);
 }
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Register">
-            <img src="~/Images/nav-register.svg" alt="" class="nav-icon" aria-hidden="true">
-            <span>Register</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Login">
-            <i class="bi bi-box-arrow-in-right nav-icon-font" aria-hidden="true"></i>
-            <span>Login</span>
-        </a>
-    </li>
-}
+
+<ul class="navbar-nav align-items-center">
+    @if (isSignedIn && !hideAuthNav)
+    {
+        <li class="nav-item me-2">
+            <span class="nav-link text-dark">
+                Hello @User.Identity?.Name
+            </span>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else if (isSignedIn && hideAuthNav)
+    {
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else if (!isSignedIn && !hideAuthNav)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Register">
+                <img src="@Url.Content("~/images/nav-register.svg")" alt="" class="nav-icon" aria-hidden="true">
+                <span>Register</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Login">
+                <i class="bi bi-box-arrow-in-right nav-icon-font" aria-hidden="true"></i>
+                <span>Login</span>
+            </a>
+        </li>
+    }
 </ul>

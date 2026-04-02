@@ -23,5 +23,7 @@ namespace TeamYellow.Repositories
         Task<bool> HasUsedFreeTrialAsync(int counsellorId);
 
         Task<bool> HasPaidPlanHistoryAsync(int counsellorId);
+
+        Task<Dictionary<int, Subscription>> GetValidActiveSubscriptionsByCounsellorIdsAsync(IEnumerable<int> counsellorIds, DateTime utcNow);
     }
 }
