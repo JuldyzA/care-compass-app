@@ -8,7 +8,7 @@ A web-based **counselling management system** built as a group project for BCIT'
 
 ## Features
 
-- **User Management** | Registration, login, role-based access (Admin, Counsellor, Client) via ASP.NET Identity
+- **User Management** | Registration, login, role-based access (`Administrator`, `Manager`, `Paid_Counselor`, `Free_Counselor`, `Registered_Visitor`) via ASP.NET Identity
 - **Counsellor & Client Management** | Full CRUD with profile pictures stored in Azure Blob Storage
 - **Subscription Plans** | Plan creation, discounts, and feature flags
 - **PayPal Payments** | Integrated PayPal checkout for subscription purchases
