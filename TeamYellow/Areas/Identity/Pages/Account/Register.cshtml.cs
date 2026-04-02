@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using System.Text.Encodings.Web;
 using TeamYellow.Data;
 using TeamYellow.Models;
+using TeamYellow.Repositories;
 using TeamYellow.Services;
 
 namespace TeamYellow.Areas.Identity.Pages.Account
@@ -23,6 +23,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<IdentityUser> _userStore;
+        private readonly CounsellorRepository _counsellorRepository;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
@@ -34,6 +35,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IUserStore<IdentityUser> userStore,
+            CounsellorRepository counsellorRepository,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailService emailService,
@@ -44,6 +46,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account
             _userManager = userManager;
             _roleManager = roleManager;
             _userStore = userStore;
+            _counsellorRepository = counsellorRepository;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
@@ -170,6 +173,14 @@ namespace TeamYellow.Areas.Identity.Pages.Account
 
                     ModelState.AddModelError(string.Empty, "The reCAPTCHA is invalid.");
                 }
+            }
+
+            string normalizedEmail = _userManager.NormalizeEmail(Input.Email?.Trim());
+
+            if (!string.IsNullOrWhiteSpace(normalizedEmail) && await _counsellorRepository.DeletedCounsellorExistsByNormalizedEmailAsync(normalizedEmail))
+            {
+                ViewData["SiteKey"] = _configuration["Recaptcha:SiteKey"];
+                ModelState.AddModelError(string.Empty, "We are unable to register you with this email because it was associated with a previous practitioner account that was deleted.");
             }
 
             if (ModelState.IsValid)

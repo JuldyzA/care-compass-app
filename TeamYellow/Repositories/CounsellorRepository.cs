@@ -152,5 +152,18 @@ namespace TeamYellow.Repositories
 
             return subscriptions;
         }
+
+        /// <summary>
+        /// Returns true if a deleted counsellor account exists for the specified normalized email.
+        /// </summary>
+        /// <param name="normalizedEmail">The normalized email to check.</param>
+        /// <returns><c>true</c> if a deleted counsellor exists; otherwise <c>false</c>.</returns>
+        public async Task<bool> DeletedCounsellorExistsByNormalizedEmailAsync(string normalizedEmail)
+        {
+            return await _context.Counsellors.AnyAsync(c =>
+                c.UserId == null &&
+                !c.IsActive &&
+                c.ArchivedNormalizedEmail == normalizedEmail);
+        }
     }
 }
