@@ -156,15 +156,14 @@ namespace TeamYellow.Controllers
         }
 
         /// <summary>
-        /// Displays the profile page in the dashboard.
+        /// Redirects the user to the counsellor dashboard.
         /// </summary>
-        /// <returns>The profile view.</returns>
+        /// <returns>The dashboard page.</returns>
         [HttpGet]
         [Authorize(Roles = "Paid_Counselor,Free_Counselor,Registered_Visitor")]
         public IActionResult Profile()
         {
-            ViewData["ProfileUserName"] = _userManager.GetUserName(User) ?? User.Identity?.Name ?? "User";
-            return View();
+            return RedirectToAction(nameof(Index));
         }
 
         /// <summary>

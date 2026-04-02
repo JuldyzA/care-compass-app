@@ -122,11 +122,13 @@ namespace TeamYellow.Controllers
                 .OrderByDescending(x => x.PaidAt)
                 .ToList();
 
+            var currentMonthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
             var monthlyRevenueBuckets = Enumerable
                 .Range(0, 12)
                 .Select(offset =>
                 {
-                    var monthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(offset - 11);
+                    var monthStart = currentMonthStart.AddMonths(offset - 11);
                     return new
                     {
                         MonthStart = monthStart,
