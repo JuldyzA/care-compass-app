@@ -109,7 +109,7 @@ namespace TeamYellow.Helpers
         /// <param name="vm">The view model containing updated client data.</param>
         /// <param name="existingClient">The existing client entity to extract immutable properties from.</param>
         /// <returns>A Client model instance ready to be persisted for update.</returns>
-        public static Client MapToEntity(ClientVM vm, Client existingClient)
+        public static Client MapVmToEntityForUpdate(ClientVM vm, Client existingClient)
         {
             return new Client
             {

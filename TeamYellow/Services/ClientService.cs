@@ -200,7 +200,7 @@ namespace TeamYellow.Services
             }
 
             // Map the view model to a client entity for update, preserving immutable properties
-            Client clientToUpdate = ClientHelper.MapToEntity(vm, existingClient);
+            Client clientToUpdate = ClientHelper.MapVmToEntityForUpdate(vm, existingClient);
 
             bool updated = await _repository.UpdateClientAsync(clientToUpdate);
 
