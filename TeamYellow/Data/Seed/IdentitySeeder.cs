@@ -20,10 +20,10 @@ public class IdentitySeeder : IDataSeeder
         {
             new { Email = "admin@test.ca",      Role = "Administrator" },
             new { Email = "manager@test.ca",    Role = "Manager" },
-            new { Email = "consellor1@test.ca", Role = "Paid_Counselor" },
-            new { Email = "consellor2@test.ca", Role = "Paid_Counselor" },
-            new { Email = "consellor3@test.ca", Role = "Paid_Counselor" },
-            new { Email = "consellor4@test.ca", Role = "Free_Counselor" },
+            new { Email = "counsellor1@test.ca", Role = "Paid_Counselor" },
+            new { Email = "counsellor2@test.ca", Role = "Paid_Counselor" },
+            new { Email = "counsellor3@test.ca", Role = "Paid_Counselor" },
+            new { Email = "counsellor4@test.ca", Role = "Free_Counselor" },
             new { Email = "visitor@test.ca",    Role = "Registered_Visitor" }
         };
 

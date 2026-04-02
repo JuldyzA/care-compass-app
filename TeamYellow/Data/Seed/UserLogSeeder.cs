@@ -21,10 +21,10 @@ public class UserLogSeeder : IDataSeeder
         {
             "admin@test.ca",
             "manager@test.ca",
-            "consellor1@test.ca",
-            "consellor2@test.ca",
-            "consellor3@test.ca",
-            "consellor4@test.ca",
+            "counsellor1@test.ca",
+            "counsellor2@test.ca",
+            "counsellor3@test.ca",
+            "counsellor4@test.ca",
             "visitor@test.ca"
         };
 

@@ -47,7 +47,7 @@ public class UserProfileSeeder : IDataSeeder
             },
             new
             {
-                Email = "consellor1@test.ca",
+                Email = "counsellor1@test.ca",
                 FirstName = "Ethan",
                 LastName = "Collins",
                 Phone = "514-555-0789",
@@ -60,7 +60,7 @@ public class UserProfileSeeder : IDataSeeder
             },
             new
             {
-                Email = "consellor2@test.ca",
+                Email = "counsellor2@test.ca",
                 FirstName = "Olivia",
                 LastName = "Turner",
                 Phone = "403-555-0912",
@@ -73,7 +73,7 @@ public class UserProfileSeeder : IDataSeeder
             },
             new
             {
-                Email = "consellor3@test.ca",
+                Email = "counsellor3@test.ca",
                 FirstName = "Liam",
                 LastName = "Walker",
                 Phone = "613-555-0345",
@@ -86,7 +86,7 @@ public class UserProfileSeeder : IDataSeeder
             },
             new
             {
-                Email = "consellor4@test.ca",
+                Email = "counsellor4@test.ca",
                 FirstName = "Emma",
                 LastName = "Morrison",
                 Phone = "204-555-0678",
