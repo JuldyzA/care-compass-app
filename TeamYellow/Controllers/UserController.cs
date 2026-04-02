@@ -15,14 +15,16 @@ namespace TeamYellow.Controllers;
 public class UserController : Controller
 {
     private readonly UserProfileService _userProfileService;
+    private readonly UserAccountDeletionService _userAccountDeletionService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
     /// </summary>
     /// <param name="userProfileService">Provides user profile business logic.</param>
-    public UserController(UserProfileService userProfileService)
+    public UserController(UserProfileService userProfileService, UserAccountDeletionService userAccountDeletionService)
     {
         _userProfileService = userProfileService;
+        _userAccountDeletionService = userAccountDeletionService;
     }
 
     /// <summary>
@@ -128,6 +130,77 @@ public class UserController : Controller
     }
 
     /// <summary>
+    /// Displays the delete account confirmation page.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        if (!CanCurrentUserSelfDelete())
+        {
+            return Forbid();
+        }
+
+        UserAccountVM? accountVM = await _userProfileService.GetAccountAsync(User);
+
+        if (accountVM == null)
+        {
+            TempData["ErrorMessage"] = "Unable to load your account information. Please try again later.";
+            return RedirectToAction(nameof(Account));
+        }
+
+        DeleteAccountVM vm = new DeleteAccountVM
+        {
+            Email = accountVM.Email
+        };
+
+        return View(vm);
+    }
+
+    /// <summary>
+    /// Handles the confirmed delete account request.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAccount(DeleteAccountVM vm)
+    {
+        if (!CanCurrentUserSelfDelete())
+        {
+            return Forbid();
+        }
+
+        UserAccountVM? accountVM = await _userProfileService.GetAccountAsync(User);
+
+        if (accountVM == null)
+        {
+            TempData["ErrorMessage"] = "Unable to load your account information. Please try again later.";
+            return RedirectToAction(nameof(Account));
+        }
+
+        vm.Email = accountVM.Email;
+
+        if (!string.Equals(vm.ConfirmationText?.Trim(), "DELETE", StringComparison.Ordinal))
+        {
+            ModelState.AddModelError(nameof(vm.ConfirmationText), "Type DELETE exactly to confirm.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
+        var result = await _userAccountDeletionService.DeleteCurrentUserAsync(User);
+
+        if (!result.Success)
+        {
+            ModelState.AddModelError(string.Empty, result.Message);
+            return View(vm);
+        }
+
+        TempData["SuccessMessage"] = result.Message;
+        return RedirectToAction("Index", "Home");
+    }
+
+    /// <summary>
     /// Uploads a cropped profile image to Azure Blob Storage.
     /// </summary>
     /// <param name="dto">The profile image upload data transfer object.</param>
@@ -175,5 +248,20 @@ public class UserController : Controller
             imageUrl,
             message = ImageUploadMessages.UploadSuccess
         });
+    }
+
+    /// <summary>
+    /// Determines whether the current signed-in user is allowed to self-delete.
+    /// </summary>
+    private bool CanCurrentUserSelfDelete()
+    {
+        bool hasBlockedRole = User.IsInRole("Administrator") || User.IsInRole("Manager");
+
+        if (hasBlockedRole)
+        {
+            return false;
+        }
+
+        return User.IsInRole("Registered_Visitor") || User.IsInRole("Free_Counselor") || User.IsInRole("Paid_Counselor");
     }
 }

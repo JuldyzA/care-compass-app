@@ -1,0 +1,98 @@
+﻿@using TeamYellow.ViewModels
+@model DeleteAccountVM
+
+@{
+    ViewData["Title"] = "Delete Account";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+    <div class="detail-header">
+        <a href="@Url.Action("Account", "User")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Account Settings
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-avatar">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                </div>
+                <div class="detail-header-info">
+                    <h1>Delete Account</h1>
+                    <p>Permanently remove your login and profile information</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card-body">
+            @await Html.PartialAsync("_AlertMessages")
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">
+                    <i class="bi bi-trash3" aria-hidden="true"></i>
+                    Confirm Deletion
+                </div>
+
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-octagon me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone in the current MVP version.
+                </div>
+
+                <div class="alert alert-warning" role="alert">
+                    <strong>What will happen:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Your login account will be deleted.</li>
+                        <li>Your profile information will be removed.</li>
+                        <li>Your practitioner account will be deactivated.</li>
+                        <li>If you register again later, your previous practitioner account will not be restored in this MVP version.</li>
+                    </ul>
+                </div>
+
+                <form asp-action="DeleteAccount" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <div class="detail-fields-grid">
+                        <div class="detail-field" style="grid-column: 1 / -1;">
+                            <label class="detail-field-label">Email Address</label>
+                            <input class="edit-input" value="@Model.Email" disabled />
+                        </div>
+
+                        <div class="detail-field" style="grid-column: 1 / -1;">
+                            <label asp-for="ConfirmationText" class="detail-field-label">
+                                Type DELETE to confirm
+                            </label>
+                            <input asp-for="ConfirmationText"
+                                   class="edit-input"
+                                   autocomplete="off"
+                                   placeholder="DELETE" />
+                            <span asp-validation-for="ConfirmationText" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-card-footer px-0 pb-0 border-0 bg-transparent mt-4">
+                        <a asp-controller="User" asp-action="Account" class="detail-action-button detail-action-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            <span>Cancel</span>
+                        </a>
+
+                        <button type="submit" class="detail-action-button detail-action-danger">
+                            <i class="bi bi-trash"></i>
+                            <span>Delete My Account</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

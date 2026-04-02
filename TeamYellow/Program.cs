@@ -63,6 +63,7 @@ builder.Services.AddHttpClient<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<UserAccountDeletionService>();
 builder.Services.AddHostedService<SubscriptionExpiryWorker>();
 
 // Register repositories
