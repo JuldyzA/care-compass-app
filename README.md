@@ -92,7 +92,7 @@ dotnet run
 
 On first run in the `Development` environment, the app will:
 
-1. Apply all pending EF Core migrations (creates `AppData.db` if it doesn't exist)
+1. Apply all pending EF Core migrations (creating the SQLite database file/path configured by `ConnectionStrings:DefaultConnection` if it doesn't exist)
 2. Seed roles, users, counsellors, clients, subscriptions, and transactions automatically
 
 The app will be available at `https://localhost:<port>` (check terminal output for the exact URL).
