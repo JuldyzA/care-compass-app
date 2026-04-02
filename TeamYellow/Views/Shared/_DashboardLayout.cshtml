@@ -67,10 +67,13 @@
             <!-- Sidebar -->
             <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
                 <div class="sidebar-header">
-                    <div class="logo-container">
-                        <i class="bi bi-compass text-primary fs-2" aria-hidden="true"></i>
-                        <h4 class="logo-text mb-0">CareCompass</h4>
-                    </div>
+                    <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                        <img src='@Url.Content("~/Images/compass-logo-no-bg.png")' alt="CareCompass Logo" height="60" class="me-2">
+                        <span class="fw-bold brand-name header-logo-name">
+                            <span>Care</span>
+                            <span>Compass</span>
+                        </span>
+                    </a>
                 </div>
 
                 @if (SignInManager.IsSignedIn(User))

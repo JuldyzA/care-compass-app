@@ -2,33 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using TeamYellow.Models;
+using TeamYellow.Services;
 
 namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 {
     public class EmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<EmailModel> _logger;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+            IEmailService emailService,
+            ILogger<EmailModel> logger)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -94,6 +93,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
+            SetParentLayout();
             await LoadAsync(user);
             return Page();
         }
@@ -108,13 +108,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
+                SetParentLayout();
                 await LoadAsync(user);
                 return Page();
             }
 
             var email = await _userManager.GetEmailAsync(user);
-            if (Input.NewEmail != email)
+            // Use case-insensitive comparison to check if the email has actually changed
+            if (!string.Equals(Input.NewEmail, email, StringComparison.OrdinalIgnoreCase))
             {
+                // Check if the new email already exists in the database (for a different user)
+                var existingUser = await _userManager.FindByEmailAsync(Input.NewEmail);
+                if (existingUser != null && !string.Equals(existingUser.Id, user.Id, StringComparison.Ordinal))
+                {
+                    _logger.LogWarning("Email change attempt failed: email {NewEmail} is already in use by another user.", Input.NewEmail);
+                    TempData["ErrorMessage"] = "This email address is already in use. Please use a different email.";
+                    SetParentLayout();
+                    await LoadAsync(user);
+                    return Page();
+                }
+
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -123,10 +136,27 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                     pageHandler: null,
                     values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
                     protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(
-                    Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                try
+                {
+                    ComposeEmailModel payload = new ComposeEmailModel
+                    {
+                        Email = Input.NewEmail,
+                        Subject = "Confirm your email change - CareCompass",
+                        Body = EmailTemplateService.GenerateEmailChangeConfirmationEmail(callbackUrl)
+                    };
+
+                    using var response = await _emailService.SendEmailAsync(payload);
+                    _logger.LogInformation("Email change confirmation sent to {Email}", Input.NewEmail);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send email change confirmation to {Email}", Input.NewEmail);
+                    TempData["ErrorMessage"] = "We couldn't send the confirmation email. Please try again later.";
+                    SetParentLayout();
+                    await LoadAsync(user);
+                    return Page();
+                }
 
                 StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
@@ -146,6 +176,7 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
+                SetParentLayout();
                 await LoadAsync(user);
                 return Page();
             }
@@ -159,13 +190,42 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+            try
+            {
+                ComposeEmailModel payload = new ComposeEmailModel
+                {
+                    Email = email,
+                    Subject = "Confirm your email",
+                    Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                };
+
+                using var response = await _emailService.SendEmailAsync(payload);
+                _logger.LogInformation("Email verification sent to {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email verification to {Email}", email);
+                TempData["ErrorMessage"] = "We couldn't send the verification email. Please try again later.";
+                SetParentLayout();
+                await LoadAsync(user);
+                return Page();
+            }
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();
+        }
+
+        /// <summary>
+        /// Sets the parent layout based on user authentication status.
+        /// For authenticated dashboard users, uses the dashboard layout; otherwise uses the default identity layout.
+        /// </summary>
+        private void SetParentLayout()
+        {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                ViewData["ParentLayout"] = "/Views/Shared/_DashboardLayout.cshtml";
+            }
         }
     }
 }

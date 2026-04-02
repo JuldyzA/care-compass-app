@@ -279,8 +279,8 @@ namespace TeamYellow.Areas.Identity.Pages.Account
                     ComposeEmailModel payload = new ComposeEmailModel
                     {
                         Email = Input.Email,
-                        Subject = "Confirm your email",
-                        Body = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>."
+                        Subject = "Confirm your email - CareCompass",
+                        Body = EmailTemplateService.GenerateRegistrationConfirmationEmail(callbackUrl)
                     };
 
                     using var response = await _emailService.SendEmailAsync(payload);
