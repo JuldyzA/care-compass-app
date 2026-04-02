@@ -58,16 +58,18 @@ namespace TeamYellow.Controllers
 
             if (user != null)
             {
-                var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+                var (profile, counsellorDisplayName) = await _userProfileRepository.GetByUserIdAsync(user.Id);
 
                 if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
                 {
                     ViewData["UserProfilePicture"] = profile.ProfilePhotoUrl;
                 }
 
-                var displayName = string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
-                    .Where(value => !string.IsNullOrWhiteSpace(value)))
-                    .Trim();
+                var displayName = !string.IsNullOrWhiteSpace(counsellorDisplayName)
+                    ? counsellorDisplayName.Trim()
+                    : string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
+                        .Where(value => !string.IsNullOrWhiteSpace(value)))
+                        .Trim();
 
                 if (string.IsNullOrWhiteSpace(displayName))
                 {

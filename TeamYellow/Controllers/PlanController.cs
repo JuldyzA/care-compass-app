@@ -199,22 +199,26 @@ namespace TeamYellow.Controllers
                 return null;
             }
 
-            var userProfile = await _userProfileRepository.GetByUserIdAsync(user.Id);
-            if (!string.IsNullOrWhiteSpace(userProfile?.ProfilePhotoUrl))
+            var (profile, counsellorDisplayName) = await _userProfileRepository.GetByUserIdAsync(user.Id);
+            if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
             {
-                ViewData["UserProfilePicture"] = userProfile.ProfilePhotoUrl;
+                ViewData["UserProfilePicture"] = profile.ProfilePhotoUrl;
             }
 
             string? displayName = null;
             var counsellor = await _counsellorRepository.GetByUserIdAsync(user.Id);
-            if (!string.IsNullOrWhiteSpace(counsellor?.DisplayName))
+            if (!string.IsNullOrWhiteSpace(counsellorDisplayName))
+            {
+                displayName = counsellorDisplayName.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(counsellor?.DisplayName))
             {
                 displayName = counsellor.DisplayName.Trim();
             }
             else
             {
-                string firstName = userProfile?.FirstName?.Trim() ?? string.Empty;
-                string lastName = userProfile?.LastName?.Trim() ?? string.Empty;
+                string firstName = profile?.FirstName?.Trim() ?? string.Empty;
+                string lastName = profile?.LastName?.Trim() ?? string.Empty;
                 displayName = $"{firstName} {lastName}".Trim();
 
                 if (string.IsNullOrWhiteSpace(displayName))

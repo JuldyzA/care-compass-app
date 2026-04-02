@@ -72,11 +72,13 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            var profile = await _userProfileRepository.GetByUserIdAsync(user.Id);
+            var (profile, counsellorDisplayName) = await _userProfileRepository.GetByUserIdAsync(user.Id);
 
             Username = userName ?? user.Email ?? "User";
-            DisplayName = string.Join(" ", new[] { profile?.FirstName, profile?.LastName }.Where(value => !string.IsNullOrWhiteSpace(value)))
-                .Trim();
+            DisplayName = !string.IsNullOrWhiteSpace(counsellorDisplayName)
+                ? counsellorDisplayName.Trim()
+                : string.Join(" ", new[] { profile?.FirstName, profile?.LastName }.Where(value => !string.IsNullOrWhiteSpace(value)))
+                    .Trim();
 
             if (string.IsNullOrWhiteSpace(DisplayName))
             {
