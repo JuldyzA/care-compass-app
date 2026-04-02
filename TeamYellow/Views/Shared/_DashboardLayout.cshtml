@@ -5,7 +5,7 @@
 @{
     var userName = UserManager.GetUserName(User) ?? "User";
     var displayName = ViewData["DisplayName"]?.ToString();
-    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/Images/placeholder-profile.jpg");
+    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString() ?? Url.Content("~/images/placeholder-profile.jpg");
 
     var rawName = !string.IsNullOrWhiteSpace(displayName)
     ? displayName.Trim()
@@ -68,7 +68,7 @@
             <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
                 <div class="sidebar-header">
                     <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                        <img src='@Url.Content("~/Images/compass-logo-no-bg.png")' alt="CareCompass Logo" height="60" class="me-2">
+                        <img src='@Url.Content("~/images/compass-logo-no-bg.png")' alt="CareCompass Logo" height="60" class="me-2">
                         <span class="fw-bold brand-name header-logo-name">
                             <span>Care</span>
                             <span>Compass</span>

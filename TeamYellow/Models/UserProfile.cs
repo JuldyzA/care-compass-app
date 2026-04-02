@@ -16,9 +16,11 @@ namespace TeamYellow.Models
         public int UserProfileId { get; set; }
 
         [Column("firstName")]
+        [MaxLength(50)]
         public string FirstName { get; set; } = string.Empty;
 
         [Column("lastName")]
+        [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
 
         [Column("phone")]

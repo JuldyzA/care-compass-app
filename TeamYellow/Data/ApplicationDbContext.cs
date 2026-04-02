@@ -194,7 +194,7 @@ namespace TeamYellow.Data
                 {
                     PlanId = 1,
                     PlanName = "Free",
-                    PlanDescription = "Free basic access",
+                    PlanDescription = "Basic access for new counsellors exploring the platform",
                     Price = 0.00m,
                     BillingType = "Free",
                     IsActive = true,
@@ -204,7 +204,7 @@ namespace TeamYellow.Data
                 {
                     PlanId = 2,
                     PlanName = "Monthly",
-                    PlanDescription = "Monthly subscription",
+                    PlanDescription = "Full platform access with flexible month-to-month billing",
                     Price = 49.99m,
                     BillingType = "Monthly",
                     IsActive = true,
@@ -214,7 +214,7 @@ namespace TeamYellow.Data
                 {
                     PlanId = 3,
                     PlanName = "Yearly",
-                    PlanDescription = "Yearly subscription",
+                    PlanDescription = "Full platform access with annual billing and better long-term value",
                     Price = 499.99m,
                     BillingType = "Yearly",
                     IsActive = true,
