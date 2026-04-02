@@ -180,6 +180,7 @@ namespace TeamYellow.Services
                 return false;
             }
 
+            // Use GetClientByIdAsync to verify that the client exists and belongs to the current counsellor (no display logic here)
             Client? existingClient = await _repository.GetClientByIdAsync(vm.ClientId, userId);
             if (existingClient == null)
             {
@@ -198,13 +199,10 @@ namespace TeamYellow.Services
                 }
             }
 
-            existingClient.FirstName = vm.FirstName;
-            existingClient.LastName = vm.LastName;
-            existingClient.Email = vm.Email;
-            existingClient.Phone = vm.Phone;
-            existingClient.Status = vm.Status ? ClientStatus.Active : ClientStatus.Inactive;
+            // Map the view model to a client entity for update, preserving immutable properties
+            Client clientToUpdate = ClientHelper.MapVmToEntityForUpdate(vm, existingClient);
 
-            bool updated = await _repository.UpdateClientAsync(existingClient);
+            bool updated = await _repository.UpdateClientAsync(clientToUpdate);
 
             if (updated)
             {

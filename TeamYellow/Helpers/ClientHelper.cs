@@ -83,7 +83,7 @@ namespace TeamYellow.Helpers
         }
 
         /// <summary>
-        /// Maps a ClientVM to a Client model entity.
+        /// Maps a ClientVM to a Client model entity for create operations.
         /// </summary>
         /// <param name="vm">The view model containing client data.</param>
         /// <param name="counsellorId">The ID of the counsellor creating the client.</param>
@@ -99,6 +99,28 @@ namespace TeamYellow.Helpers
                 Status = vm.Status ? ClientStatus.Active : ClientStatus.Inactive,
                 CreatedAt = DateTime.UtcNow,
                 CounsellorId = counsellorId
+            };
+        }
+
+        /// <summary>
+        /// Maps a ClientVM to a Client model entity for update operations.
+        /// Preserves the original client ID, counsellor ID, and creation timestamp.
+        /// </summary>
+        /// <param name="vm">The view model containing updated client data.</param>
+        /// <param name="existingClient">The existing client entity to extract immutable properties from.</param>
+        /// <returns>A Client model instance ready to be persisted for update.</returns>
+        public static Client MapVmToEntityForUpdate(ClientVM vm, Client existingClient)
+        {
+            return new Client
+            {
+                ClientId = existingClient.ClientId,
+                CounsellorId = existingClient.CounsellorId,
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                Email = vm.Email,
+                Phone = vm.Phone,
+                Status = vm.Status ? ClientStatus.Active : ClientStatus.Inactive,
+                CreatedAt = existingClient.CreatedAt
             };
         }
 
