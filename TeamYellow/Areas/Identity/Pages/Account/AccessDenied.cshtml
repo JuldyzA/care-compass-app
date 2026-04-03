@@ -2,9 +2,22 @@
 @model AccessDeniedModel
 @{
     ViewData["Title"] = "Access denied";
+    Layout = "_ErrorLayout";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<section class="status-page status-page-generic w-100">
+    <div class="container">
+        <div class="status-card text-center">
+            <span class="status-badge">ACCESS DENIED</span>
+            <h1>You do not have permission to view this page</h1>
+            <p>
+                Your account is signed in, but it does not have the required access to this resource.
+                Please return home or sign in with an authorized account.
+            </p>
+
+            <div class="status-actions">
+                <a class="btn status-btn-primary" asp-controller="Home" asp-action="Index">Go to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
