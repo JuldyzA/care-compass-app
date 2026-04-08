@@ -2,10 +2,10 @@
 AspNetUsers:
 	admin@test.ca			Administrator			<password>
 	manager@test.ca			Manager					<password>
-	consellor1@test.ca		Paid_Counselor 			<password>
-	consellor2@test.ca		Paid_Counselor			<password>
-	consellor3@test.ca		Paid_Counselor			<password>
-	consellor4@test.ca		Free_Counselor			<password>
+	counsellor1@test.ca		Paid_Counselor 			<password>
+	counsellor2@test.ca		Paid_Counselor			<password>
+	counsellor3@test.ca		Paid_Counselor			<password>
+	counsellor4@test.ca		Free_Counselor			<password>
 	visitor@test.ca		    Registered_Visitor		<password>
 
 var profiles = new[]
@@ -38,7 +38,7 @@ var profiles = new[]
         },
         new
         {
-            Email = "consellor1@test.ca",
+            Email = "counsellor1@test.ca",
             FirstName = "Ethan",
             LastName = "Collins",
             Phone = "514-555-0789",
@@ -51,7 +51,7 @@ var profiles = new[]
         },
         new
         {
-            Email = "consellor2@test.ca",
+            Email = "counsellor2@test.ca",
             FirstName = "Olivia",
             LastName = "Turner",
             Phone = "403-555-0912",
@@ -64,7 +64,7 @@ var profiles = new[]
         },
         new
         {
-            Email = "consellor3@test.ca",
+            Email = "counsellor3@test.ca",
             FirstName = "Liam",
             LastName = "Walker",
             Phone = "613-555-0345",
@@ -77,7 +77,7 @@ var profiles = new[]
         },
         new
         {
-            Email = "consellor4@test.ca",
+            Email = "counsellor4@test.ca",
             FirstName = "Emma",
             LastName = "Morrison",
             Phone = "204-555-0678",

@@ -28,16 +28,16 @@ public class SubscriptionSeeder : IDataSeeder
         // Get counsellors by email safely
         var counsellor1 = await _db.Counsellors
             .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor1@test.ca");
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor1@test.ca");
         var counsellor2 = await _db.Counsellors
             .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor2@test.ca");
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor2@test.ca");
         var counsellor3 = await _db.Counsellors
             .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor3@test.ca");
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor3@test.ca");
         var counsellor4 = await _db.Counsellors
             .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "consellor4@test.ca");
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor4@test.ca");
 
         // Exit if any counsellor is not found
         if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)

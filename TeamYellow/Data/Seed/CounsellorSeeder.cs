@@ -19,10 +19,10 @@ public class CounsellorSeeder : IDataSeeder
     {
         var profiles = new[]
         {
-            new { Email = "consellor1@test.ca", FirstName = "Ethan", LastName = "Collins" },
-            new { Email = "consellor2@test.ca", FirstName = "Olivia", LastName = "Turner" },
-            new { Email = "consellor3@test.ca", FirstName = "Liam", LastName = "Walker" },
-            new { Email = "consellor4@test.ca", FirstName = "Emma", LastName = "Morrison" }
+            new { Email = "counsellor1@test.ca", FirstName = "Ethan", LastName = "Collins" },
+            new { Email = "counsellor2@test.ca", FirstName = "Olivia", LastName = "Turner" },
+            new { Email = "counsellor3@test.ca", FirstName = "Liam", LastName = "Walker" },
+            new { Email = "counsellor4@test.ca", FirstName = "Emma", LastName = "Morrison" }
         };
 
         foreach (var entry in profiles)
