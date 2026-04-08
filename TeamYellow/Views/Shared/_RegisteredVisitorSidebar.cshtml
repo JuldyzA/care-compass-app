@@ -1,0 +1,39 @@
+﻿<nav class="sidebar-nav" aria-label="Registered Visitor navigation">
+    <ul class="nav flex-column" role="list">
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="Counsellor" asp-action="Index" data-page="dashboard">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-divider" role="separator"></div>
+
+    <ul class="nav flex-column" role="list">
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="Plan" asp-action="Index">
+                <i class="bi bi-arrow-up-circle" aria-hidden="true"></i>
+                <span>View Plans</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-divider" role="separator"></div>
+
+    <ul class="nav flex-column" role="list">
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="User" asp-action="Profile">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                <span>Profile</span>
+            </a>
+        </li>
+
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="User" asp-action="Account">
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <span>Account</span>
+            </a>
+        </li>
+    </ul>
+</nav>

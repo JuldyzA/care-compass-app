@@ -1,18 +1,99 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TeamYellow.Configurations;
 using TeamYellow.Data;
+using TeamYellow.Data.Seed;
+using TeamYellow.Repositories;
+using TeamYellow.Services;
+using TeamYellow.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure infrastructure services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services
+    .AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+
+// Register centralized configuration services
+builder.Services.AddScoped<AzureStorageConfiguration>();
+builder.Services.AddScoped<SeedConfiguration>();
+
+// Configure Azure Blob Storage
+var azureConfig = new AzureStorageConfiguration(builder.Configuration);
+var profilePicturesContainerName = azureConfig.ProfilePicturesContainer;
+
+builder.Services.AddSingleton(
+    new BlobContainerClient(
+        new Uri($"https://{azureConfig.AccountName}.blob.core.windows.net/{profilePicturesContainerName}"),
+        new Azure.Storage.StorageSharedKeyCredential(
+            azureConfig.AccountName,
+            azureConfig.AccountKey)));
+
+builder.Services.AddScoped<IAzureBlobStorageService, AzureBlobStorageService>();
+
+// Register application services
+builder.Services.AddScoped<CounsellorService>();
+builder.Services.AddScoped<ClientService>();
+builder.Services.AddTransient<IEmailService, BrevoEmailService>();
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ReCAPTCHA.ReCaptchaValidator>(client =>
+{
+    client.BaseAddress = new Uri("https://www.google.com");
+});
+builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<UserAccountDeletionService>();
+builder.Services.AddHostedService<SubscriptionExpiryWorker>();
+
+// Register repositories
+builder.Services.AddScoped<CounsellorRepository>();
+builder.Services.AddScoped<ClientRepository>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<UserRoleRepository>();
+builder.Services.AddScoped<UserLogRepository>();
+builder.Services.AddScoped<DiscountRepository>();
+builder.Services.AddScoped<UserProfileRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+
+// Register seeders
+builder.Services.AddTransient<RoleSeeder>();
+builder.Services.AddTransient<IdentitySeeder>();
+builder.Services.AddTransient<UserProfileSeeder>();
+builder.Services.AddTransient<UserLogSeeder>();
+builder.Services.AddTransient<CounsellorSeeder>();
+builder.Services.AddTransient<ClientSeeder>();
+builder.Services.AddTransient<SubscriptionSeeder>();
+builder.Services.AddTransient<PaymentTransactionSeeder>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+});
 
 var app = builder.Build();
 
@@ -28,12 +109,35 @@ else
     app.UseHsts();
 }
 
+// Seed development data
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+
+    var db = services.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
+    await services.GetRequiredService<RoleSeeder>().SeedAsync();
+    await services.GetRequiredService<IdentitySeeder>().SeedAsync();
+
+    await services.GetRequiredService<UserProfileSeeder>().SeedAsync();
+    await services.GetRequiredService<CounsellorSeeder>().SeedAsync();
+    await services.GetRequiredService<UserLogSeeder>().SeedAsync();
+    await services.GetRequiredService<ClientSeeder>().SeedAsync();
+    await services.GetRequiredService<SubscriptionSeeder>().SeedAsync();
+    await services.GetRequiredService<PaymentTransactionSeeder>().SeedAsync();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStatusCodePagesWithReExecute("/Home/StatusCodeError", "?statusCode={0}");
 
 app.MapControllerRoute(
     name: "default",

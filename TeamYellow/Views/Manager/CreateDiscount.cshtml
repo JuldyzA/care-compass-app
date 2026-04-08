@@ -1,0 +1,95 @@
+﻿@model TeamYellow.ViewModels.DiscountVM
+
+@{
+    ViewData["Title"] = "Create Discount";
+    var now = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="CreateDiscount" method="post">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="DiscountCode" class="form-label"></label>
+        <small class="form-text text-muted">
+            Note: Discount code must be 3–40 uppercase letters or numbers.
+        </small>
+        <input asp-for="DiscountCode" class="form-control" />
+        <span asp-validation-for="DiscountCode" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DiscountType" class="form-label"></label>
+        <select asp-for="DiscountType"
+                asp-items="Html.GetEnumSelectList<DiscountType>()"
+                class="form-select">
+                <option value="">--  Select discount type --</option>
+        </select>
+        <span asp-validation-for="DiscountType" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Value" class="form-label"></label>
+        <small class="form-text text-muted">
+            Note: Amount discounts can include decimals and must be greater than 0. Percentage discounts must be whole numbers from 1 to 100.
+        </small>
+        <input asp-for="Value" class="form-control" type="text" inputmode="decimal" />
+        <span asp-validation-for="Value" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StartDateTime" class="form-label"></label>
+        <input asp-for="StartDateTime"
+               type="datetime-local"
+               class="form-control"
+               min="@now"
+               asp-format="{0:yyyy-MM-ddTHH:mm}" />
+        <span asp-validation-for="StartDateTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EndDateTime" class="form-label"></label>
+        <input asp-for="EndDateTime"
+               type="datetime-local"
+               class="form-control"
+               min="@now"
+               asp-format="{0:yyyy-MM-ddTHH:mm}" />
+        <span asp-validation-for="EndDateTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Apply to Plans</label>
+        <span asp-validation-for="PlanIds" class="text-danger d-block mb-2"></span>
+
+        @if (Model.AvailablePlans != null)
+        {
+            foreach (var plan in Model.AvailablePlans)
+            {
+                <div class="form-check mb-2">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="PlanIds"
+                           value="@plan.Value"
+                           id="plan_@plan.Value"
+                    @(plan.Selected ? "checked" : "") />
+
+                    <label class="form-check-label" for="plan_@plan.Value">
+                        @plan.Text
+                    </label>
+                </div>
+            }
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Discount</button>
+    <a asp-action="Discounts" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

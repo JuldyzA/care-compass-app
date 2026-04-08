@@ -1,0 +1,50 @@
+﻿@model TeamYellow.ViewModels.PlanVM
+
+@{
+    ViewData["Title"] = "Plans & Pricing";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Billing Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var plan in Model.Plans)
+        {
+            <tr>
+                <td>@plan.PlanName</td>
+                <td>@plan.PlanDescription</td>
+                <td>@plan.Price.ToString("0.00")</td>
+                <td>@plan.BillingType</td>
+                <td>@if (plan.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-primary"
+                        asp-controller="Manager"
+                        asp-action="PlanEdit"
+                        asp-route-id="@plan.PlanId">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

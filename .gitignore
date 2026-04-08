@@ -18,6 +18,7 @@ TestResults
 # User-specific files
 *.suo
 *.user
+*.sln
 *.sln.docstates
 
 # Build results
@@ -116,3 +117,18 @@ src/.vs/config/applicationhost.config
 
 # JetBrains Rider's auto generated files
 .idea/
+
+# VS Code editor settings
+.vscode/
+
+# Personal notes  
+.notes.md
+
+# Secrets
+secrets.json
+
+#Database files
+*.db-shm
+*.db-wal
+*.db
+/TeamYellow/app.db

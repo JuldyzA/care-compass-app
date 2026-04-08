@@ -1,0 +1,114 @@
+﻿@model TeamYellow.Helpers.PaginatedList<TeamYellow.ViewModels.UserVM>
+
+@{
+    ViewData["Title"] = "User Management";
+    string? currentSortOrder = ViewBag.CurrentSortOrder as string;
+    string emailArrow = currentSortOrder == "email_desc" ? "▼" : 
+                        currentSortOrder == "email_asc" ? "▲" : 
+                        "";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (!string.IsNullOrEmpty(ViewBag.Message))
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+<p>
+    <a asp-action="UserRoleCreate" class="btn btn-primary">Assign Role</a>
+</p>
+
+<form asp-action="UserRoleIndex" method="get" class="row g-3 mb-3">
+    <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSortOrder" />
+
+    <div class="col-md-4">
+        <label for="emailFilter" class="form-label">Filter by Email</label>
+        <input id="emailFilter"
+               name="emailFilter"
+               value="@ViewBag.CurrentEmailFilter"
+               class="form-control"
+               placeholder="Enter email" />
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-action="UserRoleIndex" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<table class="table table-striped table-bordered table-hover"
+       style="width:500px;">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="UserRoleIndex"
+                   asp-route-sortOrder="@ViewBag.EmailSortParam"
+                   asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+                   asp-route-pageNumber="@Model.PageIndex"
+                   class="text-decoration-none">
+                    Email @emailArrow
+                </a>
+            </th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>
+                        <a asp-action="UserRoleDetail" asp-route-userName="@user.Email"
+                           class="btn btn-sm btn-primary">
+                            View Roles
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="2" class="text-center">No users found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+            <a class="page-link"
+               asp-action="UserRoleIndex"
+               asp-route-sortOrder="@ViewBag.CurrentSortOrder"
+               asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+               asp-route-pageNumber="@(Math.Max(1, Model.PageIndex - 1))">
+                Previous
+            </a>
+        </li>
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Page @Model.PageIndex of @Model.TotalPages
+            </span>
+        </li>
+
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link"
+               asp-action="UserRoleIndex"
+               asp-route-sortOrder="@ViewBag.CurrentSortOrder"
+               asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+               asp-route-pageNumber="@(Math.Min(Model.TotalPages, Model.PageIndex + 1))">
+                Next
+            </a>
+        </li>
+    </ul>
+</nav>

@@ -1,0 +1,26 @@
+@{
+    string icon = ViewData["Icon"] as string ?? "fa-construction";
+    string title = ViewData["Title"] as string ?? "Coming Soon";
+    string message = ViewData["Message"] as string ?? "This feature is currently under development and will be available soon.";
+}
+
+
+
+<div class="coming-soon-container">
+    <div class="coming-soon-wrapper">
+        <div class="coming-soon-card">
+            <div class="coming-soon-body">
+                <h1 class="coming-soon-title">
+                    <i class="fas @icon"></i> @title
+                </h1>
+                <p class="coming-soon-message">
+                    @message
+                </p>
+                <a href="@Url.Action("Index", "Counsellor")" 
+                   class="btn btn-coming-soon-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

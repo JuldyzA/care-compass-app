@@ -1,0 +1,31 @@
+﻿@using TeamYellow.ViewModels
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-table.css" asp-append-version="true" />
+}
+
+@await Html.PartialAsync("_AlertMessages")
+
+<div id="date-filter-alert" aria-live="polite" aria-atomic="true"></div>
+
+<div class="clients-header-wrapper d-flex justify-content-between align-items-start mb-4">
+    <div class="clients-header">
+        <h1 class="page-title">
+            <i class="bi bi-people me-2"></i>Clients
+        </h1>
+        <p class="page-subtitle">View and manage your client database</p>
+    </div>
+    <a asp-action="CreateClient" asp-controller="Counsellor" class="btn btn-primary align-self-center">
+        <i class="bi bi-plus-circle me-1"></i>Add New Client
+    </a>
+</div>
+
+<div class="card">
+    <div id="clientTableContainer" data-is-dashboard="false">
+        @await Html.PartialAsync("_ClientTable", new ClientTableVM())
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/client/client-table.js" asp-append-version="true"></script>
+}

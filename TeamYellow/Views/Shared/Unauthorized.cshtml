@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Diagnostics
+@{
+    ViewData["Title"] = "Unauthorized";
+    Layout = "_ErrorLayout";
+
+    var reExecuteFeature = Context.Features.Get<IStatusCodeReExecuteFeature>();
+    var returnUrl = reExecuteFeature is null
+        ? "/"
+        : $"{reExecuteFeature.OriginalPathBase}{reExecuteFeature.OriginalPath}{reExecuteFeature.OriginalQueryString}";
+}
+
+<section class="status-page status-page-401 w-100">
+    <div class="container">
+        <div class="status-card text-center">
+            <span class="status-badge">401</span>
+            <h1>Authentication required</h1>
+            <p>You need to sign in before accessing this resource.</p>
+            <div class="status-actions">
+                <a class="btn status-btn-primary" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl">Go to Login</a>
+            </div>
+        </div>
+    </div>
+</section>

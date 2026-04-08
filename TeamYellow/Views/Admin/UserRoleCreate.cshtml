@@ -1,0 +1,55 @@
+﻿@model TeamYellow.ViewModels.UserRoleVM
+
+@{
+    ViewData["Title"] = "Assign Role to User";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="UserRoleCreate" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- User Dropdown -->
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="control-label">Select User</label>
+                <select asp-for="Email" asp-items="ViewBag.UserSelectList"
+                        class="form-select">
+                    <option value="">-- Select User --</option>
+                </select>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <!-- Role Dropdown -->
+            <div class="form-group mb-3">
+                <label asp-for="RoleName" class="control-label">
+                    Select Role
+                </label>
+                <select asp-for="RoleName" asp-items="ViewBag.RoleSelectList"
+                        class="form-select">
+                    <option value="">-- Select Role --</option>
+                </select>
+                <span asp-validation-for="RoleName" class="text-danger"></span>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">
+                    Assign Role
+                </button>
+                <a asp-action="UserRoleIndex" class="btn btn-secondary">
+                    Back to User List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

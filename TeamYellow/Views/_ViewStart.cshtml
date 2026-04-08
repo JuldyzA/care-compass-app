@@ -1,3 +1,11 @@
 ﻿@{
-    Layout = "_Layout";
+    bool isDashboardUser =
+        (User?.Identity?.IsAuthenticated ?? false) &&
+        (User.IsInRole("Administrator") ||
+         User.IsInRole("Manager") ||
+         User.IsInRole("Paid_Counselor") ||
+         User.IsInRole("Free_Counselor") ||
+         User.IsInRole("Registered_Visitor"));
+
+    Layout = isDashboardUser ? "_DashboardLayout" : "_Layout";
 }

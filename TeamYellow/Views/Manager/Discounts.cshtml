@@ -1,0 +1,90 @@
+﻿@model TeamYellow.ViewModels.DiscountVM
+
+@{
+    ViewData["Title"] = "Discounts";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="mb-3 d-flex gap-2">
+    <a href="@Url.Action("CreateDiscount", "Manager")" class="btn btn-success">Create Code</a>
+</div>
+
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Discount Code</th>
+            <th>Discount Type</th>
+            <th>Value</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Applied To</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (Model.Discounts != null)
+        {
+            foreach (var d in Model.Discounts)
+            {
+                <tr>
+                    <td>@d.DiscountCode</td>
+                    <td>@d.DiscountType</td>
+                    <td>@d.Value</td>
+                    <td>@DateTime.SpecifyKind(d.StartDateTime, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@DateTime.SpecifyKind(d.EndDateTime, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @if (d.StartDateTime <= DateTime.UtcNow && d.EndDateTime >= DateTime.UtcNow)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        @if (d.PlanDiscounts != null && d.PlanDiscounts.Any())
+                        {
+                            @foreach (var pd in d.PlanDiscounts)
+                            {
+                                <span class="badge bg-info text-dark me-1">
+                                    @pd.Plan.PlanName
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span>No plans</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="EditDiscount"
+                               asp-route-id="@d.DiscountId"
+                               class="btn btn-sm btn-warning">
+                            Edit
+                        </a>
+                        <a asp-action="DeleteDiscount"
+                            asp-route-id="@d.DiscountId"
+                            class="btn btn-sm btn-danger">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+

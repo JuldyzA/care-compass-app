@@ -1,0 +1,101 @@
+@using TeamYellow.ViewModels
+@model ClientVM
+
+@{
+    ViewData["Title"] = "Create New Client";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/client/client-detail.css" asp-append-version="true" />
+}
+
+<div class="detail-container">
+    <div class="detail-header">
+        <a href="@Url.Action("Clients", "Counsellor")" class="detail-back-button">
+            <i class="bi bi-arrow-left"></i> Back to Clients
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <!-- Profile Header -->
+        <div class="detail-card-header">
+            <div class="detail-header-content">
+                <div class="detail-header-info">
+                    <h1>New Client</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Form Body -->
+        <form method="post" asp-action="CreateClient" asp-controller="Counsellor">
+            @Html.AntiForgeryToken()
+
+            <div class="detail-card-body">
+
+                @await Html.PartialAsync("_AlertMessages")
+
+                <!-- Contact Information Section -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="bi bi-envelope"></i> Contact Information
+                    </div>
+                    <div class="detail-fields-grid">
+                        <div class="detail-field">
+                            <label for="FirstName" class="detail-field-label">First Name</label>
+                            <input type="text" asp-for="FirstName" class="form-control edit-input" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="detail-field">
+                            <label for="LastName" class="detail-field-label">Last Name</label>
+                            <input type="text" asp-for="LastName" class="form-control edit-input" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                        <div class="detail-field">
+                            <label for="Email" class="detail-field-label">Email Address</label>
+                            <input type="email" asp-for="Email" class="form-control edit-input" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="detail-field">
+                            <label for="Phone" class="detail-field-label">Phone Number</label>
+                            <input type="tel" asp-for="Phone" class="form-control edit-input" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="bi bi-info-circle"></i> Client Status
+                    </div>
+                    <div class="detail-fields-grid">
+                        <div class="detail-field">
+                            <label for="Status" class="detail-field-label">Initial Status</label>
+                            <div class="form-check form-switch edit-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="Status" id="Status" checked />
+                                <label class="form-check-label" for="Status">
+                                    <span class="status-label">@(Model.Status ? "Active" : "Inactive")</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="detail-card-footer">
+                <button type="submit" class="detail-action-button detail-action-primary">
+                    <i class="bi bi-plus-circle"></i> Create Client
+                </button>
+                <a href="@Url.Action("Clients", "Counsellor")" class="detail-action-button detail-action-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/client/client-form.js" asp-append-version="true"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

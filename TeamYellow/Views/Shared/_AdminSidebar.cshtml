@@ -1,0 +1,42 @@
+﻿<nav class="sidebar-nav" aria-label="Administrator navigation">
+    <ul class="nav flex-column" role="list">
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="Admin" asp-action="UserRoleIndex" data-page="dashboard">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                <span>User Management</span>
+            </a>
+        </li>
+
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="Admin" asp-action="RoleIndex">
+                <i class="bi bi-people" aria-hidden="true"></i>
+                <span>Role Management</span>
+            </a>
+        </li>
+
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="Admin" asp-action="UserLogAll">
+                <i class="bi bi-journal-text" aria-hidden="true"></i>
+                <span>User Logs</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-divider" role="separator"></div>
+
+    <ul class="nav flex-column" role="list">
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="User" asp-action="Profile">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                <span>Profile</span>
+            </a>
+        </li>
+
+        <li class="nav-item" role="listitem">
+            <a class="nav-link" asp-controller="User" asp-action="Account">
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <span>Account</span>
+            </a>
+        </li>
+    </ul>
+</nav>

@@ -1,0 +1,44 @@
+﻿@model TeamYellow.ViewModels.ManagerDashboardVM
+
+@{
+    ViewData["Title"] = "Transaction Details";
+}
+
+<h1>@ViewData["Title"]</h1>
+<table class="table table-bordered table-striped">
+    <tbody>
+        <tr>
+            <th>Transaction ID</th>
+            <td>@Model.PaymentTransactionId</td>
+        </tr>
+        <tr>
+            <th>Amount</th>
+            <td>@Model.Amount</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>@Model.SOP</td>
+        </tr>
+        <tr>
+            <th>Paid Date</th>
+            <td>@Model.PaidAt</td>
+        </tr>
+        <tr>
+            <th>Practitioner Licence ID</th>
+            <td>@Model.PractitionerLicenceId</td>
+        </tr>
+        <tr>
+            <th>Counsellor</th>
+            <td>@Model.CounsellorName</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>@Model.Email</td>
+        </tr>
+        <tr>
+            <th>Counsellor Registered On</th>
+            <td>@Model.RegistrationDate</td>
+        </tr>
+    </tbody>
+</table>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

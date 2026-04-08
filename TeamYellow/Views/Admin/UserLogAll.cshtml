@@ -1,0 +1,181 @@
+﻿@model TeamYellow.Helpers.PaginatedList<TeamYellow.ViewModels.UserLogVM>
+
+@{
+    ViewData["Title"] = "User Logs";
+    string? currentSortOrder = ViewBag.CurrentSortOrder as string;
+    string? currentAbandonedFilter = ViewBag.CurrentAbandonedFilter as string;
+    string emailArrow = currentSortOrder == "email_desc" ? "▼" : 
+                        currentSortOrder == "email_asc" ? "▲" : 
+                        "";
+    string loginArrow = currentSortOrder == "login_desc" ? "▼" : 
+                        currentSortOrder == "login_asc" ? "▲" : 
+                        "";
+    string today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="UserLogAll" method="get" class="row g-3 mb-3">
+    <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSortOrder" />
+
+    <div class="col-md-3">
+        <label for="emailFilter" class="form-label">Filter by Email</label>
+        <input id="emailFilter"
+               name="emailFilter"
+               value="@ViewBag.CurrentEmailFilter"
+               class="form-control"
+               placeholder="Enter email" />
+    </div>
+
+    <div class="col-md-2">
+        <label for="abandonedFilter" class="form-label">Abandoned</label>
+        <select id="abandonedFilter" name="abandonedFilter" class="form-select">
+            <option value="">All</option>
+            @if (currentAbandonedFilter == "yes")
+            {
+                <option value="yes" selected="selected">Yes</option>
+            }
+            else
+            {
+                <option value="yes">Yes</option>
+            }
+
+            @if (currentAbandonedFilter == "no")
+            {
+                <option value="no" selected="selected">No</option>
+            }
+            else
+            {
+                <option value="no">No</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <label for="startDate" class="form-label">From (Login Time)</label>
+        <input type="date"
+               id="startDate"
+               name="startDate"
+               value="@ViewBag.CurrentStartDate"
+               max="@today"
+               class="form-control" />
+    </div>
+
+    <div class="col-md-2">
+        <label for="endDate" class="form-label">To (Login Time)</label>
+        <input type="date"
+               id="endDate"
+               name="endDate"
+               value="@ViewBag.CurrentEndDate"
+               max="@today"
+               class="form-control" />
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a asp-action="UserLogAll" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="UserLogAll"
+                   asp-route-sortOrder="@ViewBag.EmailSortParam"
+                   asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+                   asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
+                   asp-route-startDate="@ViewBag.CurrentStartDate"
+                   asp-route-endDate="@ViewBag.CurrentEndDate"
+                   asp-route-pageNumber="@Model.PageIndex"
+                   class="text-decoration-none">
+                    Email @emailArrow
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserLogAll"
+                   asp-route-sortOrder="@ViewBag.LoginSortParam"
+                   asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+                   asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
+                   asp-route-startDate="@ViewBag.CurrentStartDate"
+                   asp-route-endDate="@ViewBag.CurrentEndDate"
+                   asp-route-pageNumber="@Model.PageIndex"
+                   class="text-decoration-none">
+                    Log In Time @loginArrow
+                </a>
+            </th>
+            <th>Log Out Time</th>
+            <th>Abandoned</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var log in Model)
+            {
+                <tr>
+                    <td>@log.Email</td>
+                    <td>@log.LogInTime.ToLocalTime()</td>
+                    <td>@(log.LogOutTime?.ToLocalTime().ToString() ?? "-")</td>
+                    <td>
+                        @if (log.Abandoned)
+                        {
+                            <span class="badge bg-danger">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">No</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">No user logs found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+            <a class="page-link"
+               asp-action="UserLogAll"
+               asp-route-pageNumber="@(Math.Max(1, Model.PageIndex - 1))"
+               asp-route-sortOrder="@ViewBag.CurrentSortOrder"
+               asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+               asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
+               asp-route-startDate="@ViewBag.CurrentStartDate"
+               asp-route-endDate="@ViewBag.CurrentEndDate">
+                Previous
+            </a>
+        </li>
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Page @Model.PageIndex of @Model.TotalPages
+            </span>
+        </li>
+
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link"
+               asp-action="UserLogAll"
+               asp-route-pageNumber="@(Math.Min(Model.TotalPages, Model.PageIndex + 1))"
+               asp-route-sortOrder="@ViewBag.CurrentSortOrder"
+               asp-route-emailFilter="@ViewBag.CurrentEmailFilter"
+               asp-route-abandonedFilter="@ViewBag.CurrentAbandonedFilter"
+               asp-route-startDate="@ViewBag.CurrentStartDate"
+               asp-route-endDate="@ViewBag.CurrentEndDate">
+                Next
+            </a>
+        </li>
+    </ul>
+</nav>
