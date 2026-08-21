@@ -11,9 +11,24 @@ using TeamYellow.Workers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure infrastructure services
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+var useSqlServer =
+    builder.Configuration.GetValue<bool>("UseSqlServer");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+{
+    if (useSqlServer)
+    {
+        options.UseSqlServer(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services

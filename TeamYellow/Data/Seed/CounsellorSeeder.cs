@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 
@@ -22,7 +22,8 @@ public class CounsellorSeeder : IDataSeeder
             new { Email = "counsellor1@test.ca", FirstName = "Ethan", LastName = "Collins" },
             new { Email = "counsellor2@test.ca", FirstName = "Olivia", LastName = "Turner" },
             new { Email = "counsellor3@test.ca", FirstName = "Liam", LastName = "Walker" },
-            new { Email = "counsellor4@test.ca", FirstName = "Emma", LastName = "Morrison" }
+            new { Email = "counsellor4@test.ca", FirstName = "Emma", LastName = "Morrison" },
+            new { Email = "counsellordemo@test.ca", FirstName = "Demo", LastName = "Counsellor" }
         };
 
         foreach (var entry in profiles)

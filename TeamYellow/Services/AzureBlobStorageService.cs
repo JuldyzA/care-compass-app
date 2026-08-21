@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 
 namespace TeamYellow.Services;
 
@@ -14,6 +15,14 @@ public interface IAzureBlobStorageService
     /// <param name="fileName">The name of the file in blob storage.</param>
     /// <returns>The URI of the uploaded blob.</returns>
     Task<string> UploadFileAsync(Stream fileStream, string fileName);
+
+    /// <summary>
+    /// Gets a read-only SAS URI for a blob that expires after the specified time.
+    /// </summary>
+    /// <param name="blobUri">The URI of the blob.</param>
+    /// <param name="expiry">The time span for which the URI should be valid.</param>
+    /// <returns>A temporary URI that can be used to access the blob.</returns>
+    Task<string> GetReadUrlAsync(string blobUri, TimeSpan expiry);
 
     /// <summary>
     /// Deletes a file from Azure Blob Storage.
@@ -36,6 +45,7 @@ public class AzureBlobStorageService : IAzureBlobStorageService
     /// </summary>
     /// <param name="blobContainerClient">The blob container client configured for the profile pictures container.</param>
     /// <param name="logger">Logs service operations.</param>
+    /// 
     public AzureBlobStorageService(BlobContainerClient blobContainerClient, ILogger<AzureBlobStorageService> logger)
     {
         _containerClient = blobContainerClient;
@@ -67,6 +77,68 @@ public class AzureBlobStorageService : IAzureBlobStorageService
             throw;
         }
     }
+
+    /// <summary>
+    /// Generates a short-lived, read-only SAS URI for a blob in the profile pictures container.
+    /// </summary>
+    /// <param name="blobUri">The absolute URI of the blob.</param>
+    /// <param name="expiry">The duration for which the SAS URI should be valid.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, which returns the SAS URI as a string.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown if <paramref name="blobUri"/> is null, empty, or not an absolute URI.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the blob URI does not belong to the configured Azure storage container
+    /// or if the <c>BlobClient</c> is not configured with credentials capable of generating a SAS URI.
+    /// </exception>
+    public Task<string> GetReadUrlAsync(string blobUri, TimeSpan expiry)
+{
+    if (string.IsNullOrWhiteSpace(blobUri))
+    {
+        throw new ArgumentException("Blob URI cannot be empty.", nameof(blobUri));
+    }
+
+    if (!Uri.TryCreate(blobUri, UriKind.Absolute, out Uri? uri))
+    {
+        throw new ArgumentException("Invalid blob URI.", nameof(blobUri));
+    }
+
+    string containerPath = _containerClient.Uri.AbsolutePath.TrimEnd('/');
+    string blobPath = uri.AbsolutePath;
+_logger.LogInformation(
+    "Configured container URI: {ContainerUri}",
+    _containerClient.Uri);
+
+_logger.LogInformation(
+    "Blob URI being read: {BlobUri}",
+    blobUri);
+    if (!blobPath.StartsWith(containerPath + "/", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "The blob URI does not belong to the configured Azure container.");
+    }
+
+    string relativeBlobPath =
+        Uri.UnescapeDataString(
+            blobPath.Substring(containerPath.Length).TrimStart('/'));
+
+    BlobClient blobClient =
+        _containerClient.GetBlobClient(relativeBlobPath);
+
+    if (!blobClient.CanGenerateSasUri)
+    {
+        throw new InvalidOperationException(
+            "The BlobClient is not configured with credentials that can generate a SAS URI.");
+    }
+
+    Uri sasUri = blobClient.GenerateSasUri(
+        Azure.Storage.Sas.BlobSasPermissions.Read,
+        DateTimeOffset.UtcNow.Add(expiry));
+
+    return Task.FromResult(sasUri.ToString());
+}
 
     /// <summary>
     /// Attempts to delete a file from the configured profile pictures blob storage container using its URI.

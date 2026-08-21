@@ -19,6 +19,7 @@ namespace TeamYellow.Services
         private readonly UserProfileRepository _userProfileRepository;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<CounsellorService> _logger;
+        private readonly IAzureBlobStorageService _azureBlobStorageService;
 
         public CounsellorService(
             CounsellorRepository counsellorRepository,
@@ -26,7 +27,8 @@ namespace TeamYellow.Services
             UserRoleRepository userRoleRepository,
             UserProfileRepository userProfileRepository,
             UserManager<IdentityUser> userManager,
-            ILogger<CounsellorService> logger
+            ILogger<CounsellorService> logger,
+            IAzureBlobStorageService azureBlobStorageService
         ) {
             _counsellorRepository = counsellorRepository;
             _subscriptionRepository = subscriptionRepository;
@@ -34,6 +36,7 @@ namespace TeamYellow.Services
             _userProfileRepository = userProfileRepository;
             _userManager = userManager;
             _logger = logger;
+            _azureBlobStorageService = azureBlobStorageService;
         }
 
         /// <summary>
@@ -97,7 +100,26 @@ namespace TeamYellow.Services
 
             string displayName = counsellor?.DisplayName ?? string.Empty;
             string? profilePhotoUrl = profile?.ProfilePhotoUrl;
+            if (!string.IsNullOrWhiteSpace(profilePhotoUrl) &&
+                profilePhotoUrl.Contains("blob.core.windows.net", StringComparison.OrdinalIgnoreCase))
+            {
+    try
+    {
+        profilePhotoUrl = await _azureBlobStorageService.GetReadUrlAsync(
+            profilePhotoUrl,
+            TimeSpan.FromHours(1)
+        );
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(
+            ex,
+            "Failed to generate read URL for profile photo of user {UserId}.",
+            userId);
 
+        profilePhotoUrl = null;
+    }
+}
             bool isVisitorOnly = user.IsInRole("Registered_Visitor") &&
                 !user.IsInRole("Free_Counselor") && !user.IsInRole("Paid_Counselor");
 

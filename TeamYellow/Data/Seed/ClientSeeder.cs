@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 
 namespace TeamYellow.Data.Seed;
@@ -34,7 +34,10 @@ public class ClientSeeder : IDataSeeder
         var counsellor4 = await _db.Counsellors.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor4@test.ca");
 
-        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)
+        var counsellorDemo = await _db.Counsellors.Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellordemo@test.ca");
+
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null || counsellorDemo == null)
         {
             Console.WriteLine("One or more counsellors not found for client seeding.");
             return;
@@ -77,6 +80,7 @@ public class ClientSeeder : IDataSeeder
         await AddClientsAsync(20, counsellor2);
         await AddClientsAsync(10, counsellor3);
         await AddClientsAsync(5, counsellor4);
+        await AddClientsAsync(15, counsellorDemo);
 
         await _db.SaveChangesAsync();
     }

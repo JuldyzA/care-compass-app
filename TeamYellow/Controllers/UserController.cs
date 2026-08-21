@@ -16,15 +16,20 @@ public class UserController : Controller
 {
     private readonly UserProfileService _userProfileService;
     private readonly UserAccountDeletionService _userAccountDeletionService;
+    private readonly IAzureBlobStorageService _blobStorageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
     /// </summary>
     /// <param name="userProfileService">Provides user profile business logic.</param>
-    public UserController(UserProfileService userProfileService, UserAccountDeletionService userAccountDeletionService)
+    public UserController(
+        UserProfileService userProfileService,
+        UserAccountDeletionService userAccountDeletionService,
+        IAzureBlobStorageService blobStorageService)
     {
         _userProfileService = userProfileService;
         _userAccountDeletionService = userAccountDeletionService;
+        _blobStorageService = blobStorageService;
     }
 
     /// <summary>
@@ -242,10 +247,15 @@ public class UserController : Controller
 
         TempData["SuccessMessage"] = ImageUploadMessages.UploadSuccess;
 
+        string displayUrl = await _blobStorageService.GetReadUrlAsync(
+            imageUrl!,
+            TimeSpan.FromHours(1));
+
         return Ok(new
         {
             success = true,
             imageUrl,
+            displayUrl,
             message = ImageUploadMessages.UploadSuccess
         });
     }

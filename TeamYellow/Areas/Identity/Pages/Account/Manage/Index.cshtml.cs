@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TeamYellow.Repositories;
+using TeamYellow.Services;
+using System.Linq;
 
 namespace TeamYellow.Areas.Identity.Pages.Account.Manage
 {
@@ -18,15 +20,18 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserProfileRepository _userProfileRepository;
+        private readonly IAzureBlobStorageService _azureBlobStorageService;
 
         public IndexModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            UserProfileRepository userProfileRepository)
+            UserProfileRepository userProfileRepository,
+            IAzureBlobStorageService azureBlobStorageService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userProfileRepository = userProfileRepository;
+            _azureBlobStorageService = azureBlobStorageService;
         }
 
         /// <summary>
@@ -85,7 +90,26 @@ namespace TeamYellow.Areas.Identity.Pages.Account.Manage
                 DisplayName = Username;
             }
 
-            ProfilePhotoUrl = profile?.ProfilePhotoUrl ?? Url.Content("~/images/placeholder-profile.jpg");
+        if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+        {
+            if (profile.ProfilePhotoUrl.Contains(
+                "blob.core.windows.net",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                ProfilePhotoUrl = await _azureBlobStorageService.GetReadUrlAsync(
+                    profile.ProfilePhotoUrl,
+                    TimeSpan.FromHours(1));
+            }
+            else
+            {
+                ProfilePhotoUrl = profile.ProfilePhotoUrl;
+            }
+        }
+        else
+        {
+            ProfilePhotoUrl =
+                Url.Content("~/images/placeholder-profile.jpg");
+        }  
 
             Input = new InputModel
             {

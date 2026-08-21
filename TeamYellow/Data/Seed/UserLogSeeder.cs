@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 
@@ -25,6 +25,7 @@ public class UserLogSeeder : IDataSeeder
             "counsellor2@test.ca",
             "counsellor3@test.ca",
             "counsellor4@test.ca",
+            "counsellordemo@test.ca",
             "visitor@test.ca"
         };
 

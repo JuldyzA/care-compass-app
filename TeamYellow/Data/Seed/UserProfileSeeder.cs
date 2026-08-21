@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 
@@ -96,6 +96,19 @@ public class UserProfileSeeder : IDataSeeder
                 Street = "987 Portage Ave",
                 UnitNumber = 606,
                 ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/women/6.jpg"
+            },
+            new
+            {
+                Email = "counsellordemo@test.ca",
+                FirstName = "Demo",
+                LastName = "Counsellor",
+                Phone = "604-555-9999",
+                City = "Vancouver",
+                Province = "BC",
+                PostalCode = "V6B 1A1",
+                Street = "789 West Pender St",
+                UnitNumber = 888,
+                ProfilePhotoUrl = "https://randomuser.me/api/portraits/med/men/8.jpg"
             },
             new
             {

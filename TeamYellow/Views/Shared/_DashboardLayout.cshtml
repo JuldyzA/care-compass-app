@@ -1,208 +1,527 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using TeamYellow.Repositories
+@using TeamYellow.Services
+
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject UserProfileRepository UserProfileRepository
+@inject IAzureBlobStorageService AzureBlobStorageService
 
 @{
     var userName = UserManager.GetUserName(User) ?? "User";
-    var displayName = ViewData["DisplayName"]?.ToString();
-    var profilePicture = ViewData["UserProfilePicture"]?.ToString() ?? ViewData["DefaultUserProfilePicture"]?.ToString();
 
-    if (SignInManager.IsSignedIn(User) && (string.IsNullOrWhiteSpace(displayName) || string.IsNullOrWhiteSpace(profilePicture)))
+    var displayName = ViewData["DisplayName"]?.ToString();
+
+    var profilePicture =
+        ViewData["UserProfilePicture"]?.ToString()
+        ?? ViewData["DefaultUserProfilePicture"]?.ToString();
+
+    /*
+     * Load profile information if the controller did not already provide
+     * the display name or profile picture.
+     */
+    if (SignInManager.IsSignedIn(User) &&
+        (string.IsNullOrWhiteSpace(displayName) ||
+         string.IsNullOrWhiteSpace(profilePicture)))
     {
         var userId = UserManager.GetUserId(User);
 
         if (!string.IsNullOrWhiteSpace(userId))
         {
-            var (profile, counsellorDisplayName) = await UserProfileRepository.GetByUserIdAsync(userId);
+            var (profile, counsellorDisplayName) =
+                await UserProfileRepository.GetByUserIdAsync(userId);
 
+            /*
+             * Determine display name.
+             */
             if (string.IsNullOrWhiteSpace(displayName))
             {
-                displayName = !string.IsNullOrWhiteSpace(counsellorDisplayName)
-                    ? counsellorDisplayName.Trim()
-                    : string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
-                        .Where(value => !string.IsNullOrWhiteSpace(value)))
-                        .Trim();
+                displayName =
+                    !string.IsNullOrWhiteSpace(counsellorDisplayName)
+                        ? counsellorDisplayName.Trim()
+                        : string.Join(
+                            " ",
+                            new[]
+                            {
+                                profile?.FirstName,
+                                profile?.LastName
+                            }
+                            .Where(value =>
+                                !string.IsNullOrWhiteSpace(value))
+                        ).Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(profilePicture) && !string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+            /*
+             * Get the profile photo URL from the database.
+             */
+            if (string.IsNullOrWhiteSpace(profilePicture) &&
+                !string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
             {
                 profilePicture = profile.ProfilePhotoUrl;
             }
         }
     }
 
-    profilePicture ??= Url.Content("~/images/placeholder-profile.jpg");
+    /*
+     * Azure Blob Storage containers are private.
+     *
+     * The database stores the permanent blob URL:
+     *
+     * https://carecompassportfolio.blob.core.windows.net/profile-pictures/...
+     *
+     * The browser cannot display a private blob using that URL directly.
+     *
+     * Generate a temporary read-only SAS URL before using it in <img>.
+     */
+    if (!string.IsNullOrWhiteSpace(profilePicture) &&
+        profilePicture.Contains(
+            "blob.core.windows.net",
+            StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            profilePicture =
+                await AzureBlobStorageService.GetReadUrlAsync(
+                    profilePicture,
+                    TimeSpan.FromHours(1));
+        }
+        catch
+        {
+            /*
+             * If SAS generation fails, fall back to the placeholder.
+             */
+            profilePicture = null;
+        }
+    }
 
-    var rawName = !string.IsNullOrWhiteSpace(displayName)
-    ? displayName.Trim()
-    : userName;
+    /*
+     * Final fallback.
+     */
+    profilePicture ??=
+        Url.Content("~/images/placeholder-profile.jpg");
 
-    bool isAdmin = User.IsInRole("Administrator");
-    bool isManager = User.IsInRole("Manager");
-    bool isCounsellor = User.IsInRole("Paid_Counselor") || User.IsInRole("Free_Counselor");
-    bool isRegisteredVisitor = User.IsInRole("Registered_Visitor");
+    /*
+     * Determine displayed name.
+     */
+    var rawName =
+        !string.IsNullOrWhiteSpace(displayName)
+            ? displayName.Trim()
+            : userName;
 
+    /*
+     * Determine roles.
+     */
+    bool isAdmin =
+        User.IsInRole("Administrator");
+
+    bool isManager =
+        User.IsInRole("Manager");
+
+    bool isCounsellor =
+        User.IsInRole("Paid_Counselor") ||
+        User.IsInRole("Free_Counselor");
+
+    bool isRegisteredVisitor =
+        User.IsInRole("Registered_Visitor");
+
+    /*
+     * Role label.
+     */
     string roleLabel =
-        isAdmin ? "Administrator" :
-        isManager ? "Manager" :
-        isCounsellor ? "Counsellor" :
-        isRegisteredVisitor ? "Registered Visitor" :
-        "User";
+        isAdmin
+            ? "Administrator"
+            : isManager
+                ? "Manager"
+                : isCounsellor
+                    ? "Counsellor"
+                    : isRegisteredVisitor
+                        ? "Registered Visitor"
+                        : "User";
 
-
+    /*
+     * Prevent "Dr. Dr. Name".
+     */
     bool alreadyHasDr =
-        rawName.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase) ||
-        rawName.StartsWith("Dr ", StringComparison.OrdinalIgnoreCase);
+        rawName.StartsWith(
+            "Dr.",
+            StringComparison.OrdinalIgnoreCase)
+        ||
+        rawName.StartsWith(
+            "Dr ",
+            StringComparison.OrdinalIgnoreCase);
 
     string welcomeName =
         isCounsellor
-            ? (alreadyHasDr ? rawName : $"Dr. {rawName}")
+            ? (
+                alreadyHasDr
+                    ? rawName
+                    : $"Dr. {rawName}"
+              )
             : rawName;
 
+    /*
+     * Header message.
+     */
     string headerMessage =
-        isAdmin ? "Manage users, roles, and logs" :
-        isManager ? "Manage plans, discounts, and payment activity" :
-        isCounsellor ? "Here is the latest update of your clinic" :
-        "Welcome to CareCompass";
+        isAdmin
+            ? "Manage users, roles, and logs"
+            : isManager
+                ? "Manage plans, discounts, and payment activity"
+                : isCounsellor
+                    ? "Here is the latest update of your clinic"
+                    : "Welcome to CareCompass";
 }
 
 <!DOCTYPE html>
+
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>@ViewData["Title"] - CareCompass Dashboard</title>
 
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+<head>
 
-        <!-- Bootstrap Icons -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <meta charset="utf-8" />
 
-        <!-- Custom Dashboard CSS -->
-        <link rel="stylesheet" href="~/css/dashboard/dashboard-layout.css" asp-append-version="true" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1" />
 
-        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-        @await RenderSectionAsync("PageStyles", required: false)
-        @await RenderSectionAsync("Styles", required: false)
-    </head>
-    <body class="@(ViewData["DisablePageScroll"] as bool? == true ? "locked-page-scroll" : "")">
+    <title>
+        @ViewData["Title"] - CareCompass Dashboard
+    </title>
 
-        <div class="dashboard-wrapper">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+          asp-append-version="true" />
 
-            <!-- Sidebar -->
-            <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-                <div class="sidebar-header">
-                    <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                        <img src='@Url.Content("~/images/compass-logo-no-bg.png")' alt="CareCompass Logo" height="60" class="me-2">
-                        <span class="fw-bold brand-name header-logo-name">
-                            <span>Care</span>
-                            <span>Compass</span>
-                        </span>
-                    </a>
-                </div>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <div class="sidebar-user-section">
-                        <div class="dropdown w-100">
-                            <button class="user-info-dropdown w-100" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-                                <div class="user-info">
-                                    <div class="user-avatar" aria-hidden="true">
-                                        <img class="sidebar-user-profile-picture" src="@profilePicture" alt="User Profile Picture" />
-                                    </div>
-                                    <div class="user-details">
-                                        <div class="user-name">@rawName</div>
-                                        <div class="user-role">@roleLabel</div>
-                                    </div>
-                                    <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
-                                </div>
-                            </button>
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet"
+          href="~/css/dashboard/dashboard-layout.css"
+          asp-append-version="true" />
 
-                            <ul class="dropdown-menu w-100" aria-labelledby="userMenuDropdown">
-                                @await Html.PartialAsync("_DashboardUserMenuItems")
-                            </ul>
-                        </div>
-                    </div>
-                }
+    <!-- Site CSS -->
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
 
-                @if (isCounsellor)
-                {
-                    @await Html.PartialAsync("_CounsellorSidebar")
-                }
-                else if (isRegisteredVisitor)
-                {
-                    @await Html.PartialAsync("_RegisteredVisitorSidebar")
-                }
-                else if (isAdmin)
-                {
-                    @await Html.PartialAsync("_AdminSidebar")
-                }
-                else if (isManager)
-                {
-                    @await Html.PartialAsync("_ManagerSidebar")
-                }
-            </aside>
+    @await RenderSectionAsync(
+        "PageStyles",
+        required: false)
 
-            <!-- Toggle Button (Outside Sidebar) -->
-            <button class="sidebar-toggle-inline" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
-                <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            </button>
+    @await RenderSectionAsync(
+        "Styles",
+        required: false)
 
-            <!-- Main Content Area -->
-            <div class="main-content">
+</head>
 
-                <div class="site-header">
-                    <div class="header-content">
-                        <div class="header-left">
-                            <h2 class="header-welcome">Welcome back, @welcomeName!</h2>
-                            <p class="header-message">@headerMessage</p>
-                        </div>
+<body class="@(ViewData["DisablePageScroll"] as bool? == true
+    ? "locked-page-scroll"
+    : "")">
 
-                        <div class="header-right">
-                            @if (SignInManager.IsSignedIn(User))
-                            {
-                                <div class="dropdown">
-                                    <button class="header-user-dropdown" type="button" id="headerUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-                                        <div class="header-user-info">
-                                            <div class="header-user-avatar" aria-hidden="true">
-                                                <img class="header-user-profile-picture" src="@profilePicture" alt="User Profile Picture" />
-                                            </div>
-                                            <div class="header-user-details">
-                                                <div class="header-user-name">@rawName</div>
-                                                <div class="header-user-role">@roleLabel</div>
-                                            </div>
-                                            <i class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
-                                        </div>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="headerUserDropdown">
-                                    @await Html.PartialAsync("_DashboardUserMenuItems")
-                                    </ul>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
+    <div class="dashboard-wrapper">
 
-                <!-- Page Content -->
-                <main class="content-area" role="main" aria-label="Main content">
-                    @RenderBody()
-                </main>
+        <!-- ========================================= -->
+        <!-- SIDEBAR                                  -->
+        <!-- ========================================= -->
+
+        <aside class="sidebar"
+               id="sidebar"
+               role="navigation"
+               aria-label="Main navigation">
+
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+
+                <a class="navbar-brand d-flex align-items-center"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    <img src="@Url.Content("~/images/compass-logo-no-bg.png")"
+                         alt="CareCompass Logo"
+                         height="60"
+                         class="me-2">
+
+                    <span class="fw-bold brand-name header-logo-name">
+
+                        <span>Care</span>
+
+                        <span>Compass</span>
+
+                    </span>
+
+                </a>
 
             </div>
+
+
+            <!-- ========================================= -->
+            <!-- SIDEBAR USER                             -->
+            <!-- ========================================= -->
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="sidebar-user-section">
+
+                    <div class="dropdown w-100">
+
+                        <button class="user-info-dropdown w-100"
+                                type="button"
+                                id="userMenuDropdown"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="User menu">
+
+                            <div class="user-info">
+
+                                <!-- Avatar -->
+                                <div class="user-avatar"
+                                     aria-hidden="true">
+
+                                    <img class="sidebar-user-profile-picture"
+                                         src="@profilePicture"
+                                         alt="User Profile Picture" />
+
+                                </div>
+
+
+                                <!-- User information -->
+                                <div class="user-details">
+
+                                    <div class="user-name">
+                                        @rawName
+                                    </div>
+
+                                    <div class="user-role">
+                                        @roleLabel
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Chevron -->
+                                <i class="bi bi-chevron-down ms-auto"
+                                   aria-hidden="true">
+                                </i>
+
+                            </div>
+
+                        </button>
+
+
+                        <!-- Dropdown -->
+                        <ul class="dropdown-menu w-100"
+                            aria-labelledby="userMenuDropdown">
+
+                            @await Html.PartialAsync(
+                                "_DashboardUserMenuItems")
+
+                        </ul>
+
+                    </div>
+
+                </div>
+            }
+
+
+            <!-- ========================================= -->
+            <!-- SIDEBAR NAVIGATION                       -->
+            <!-- ========================================= -->
+
+            @if (isCounsellor)
+            {
+                @await Html.PartialAsync(
+                    "_CounsellorSidebar")
+            }
+            else if (isRegisteredVisitor)
+            {
+                @await Html.PartialAsync(
+                    "_RegisteredVisitorSidebar")
+            }
+            else if (isAdmin)
+            {
+                @await Html.PartialAsync(
+                    "_AdminSidebar")
+            }
+            else if (isManager)
+            {
+                @await Html.PartialAsync(
+                    "_ManagerSidebar")
+            }
+
+        </aside>
+
+
+        <!-- ========================================= -->
+        <!-- SIDEBAR TOGGLE                           -->
+        <!-- ========================================= -->
+
+        <button class="sidebar-toggle-inline"
+                id="sidebarToggle"
+                aria-label="Toggle sidebar"
+                aria-expanded="true"
+                aria-controls="sidebar">
+
+            <i class="bi bi-chevron-left"
+               aria-hidden="true">
+            </i>
+
+        </button>
+
+
+        <!-- ========================================= -->
+        <!-- MAIN CONTENT                             -->
+        <!-- ========================================= -->
+
+        <div class="main-content">
+
+
+            <!-- ========================================= -->
+            <!-- HEADER                                    -->
+            <!-- ========================================= -->
+
+            <div class="site-header">
+
+                <div class="header-content">
+
+
+                    <!-- Header left -->
+                    <div class="header-left">
+
+                        <h2 class="header-welcome">
+                            Welcome back, @welcomeName!
+                        </h2>
+
+                        <p class="header-message">
+                            @headerMessage
+                        </p>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- HEADER USER                               -->
+                    <!-- ========================================= -->
+
+                    <div class="header-right">
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <div class="dropdown">
+
+                                <button class="header-user-dropdown"
+                                        type="button"
+                                        id="headerUserDropdown"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        aria-label="User menu">
+
+                                    <div class="header-user-info">
+
+
+                                        <!-- Header avatar -->
+                                        <div class="header-user-avatar"
+                                             aria-hidden="true">
+
+                                            <img class="header-user-profile-picture"
+                                                 src="@profilePicture"
+                                                 alt="User Profile Picture" />
+
+                                        </div>
+
+
+                                        <!-- Header user information -->
+                                        <div class="header-user-details">
+
+                                            <div class="header-user-name">
+                                                @rawName
+                                            </div>
+
+                                            <div class="header-user-role">
+                                                @roleLabel
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- Chevron -->
+                                        <i class="bi bi-chevron-down ms-2"
+                                           aria-hidden="true">
+                                        </i>
+
+                                    </div>
+
+                                </button>
+
+
+                                <!-- Header dropdown -->
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="headerUserDropdown">
+
+                                    @await Html.PartialAsync(
+                                        "_DashboardUserMenuItems")
+
+                                </ul>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- PAGE CONTENT                             -->
+            <!-- ========================================= -->
+
+            <main class="content-area"
+                  role="main"
+                  aria-label="Main content">
+
+                @RenderBody()
+
+            </main>
+
         </div>
 
-        <!-- apexcharts library -->
-        <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
+    </div>
 
-        <!-- Bootstrap JS -->
-        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
 
-        <!-- Dashboard Scripts -->
-        <script src="~/js/dashboard/dashboard-layout.js" asp-append-version="true"></script>
+    <!-- ========================================= -->
+    <!-- APEXCHARTS                               -->
+    <!-- ========================================= -->
 
-        @await RenderSectionAsync("Scripts", required: false)
-    </body>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js">
+    </script>
+
+
+    <!-- ========================================= -->
+    <!-- BOOTSTRAP                                -->
+    <!-- ========================================= -->
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+            asp-append-version="true">
+    </script>
+
+
+    <!-- ========================================= -->
+    <!-- DASHBOARD JAVASCRIPT                     -->
+    <!-- ========================================= -->
+
+    <script src="~/js/dashboard/dashboard-layout.js"
+            asp-append-version="true">
+    </script>
+
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
+
+</body>
+
 </html>

@@ -337,7 +337,8 @@
                 })
                 .then(function (data) {
                     const newUrl = data.imageUrl;
-                    if (!newUrl) {
+                    const displayUrl = data.displayUrl;
+                    if (!newUrl || !displayUrl) {
                         throw new Error("Upload did not return an image URL.");
                     }
 
@@ -346,7 +347,7 @@
                     }
 
                     if (previewImg) {
-                        previewImg.src = newUrl;
+                        previewImg.src = displayUrl;
                         previewImg.style.display = "block";
                     } else {
                         const container = document.querySelector(
@@ -356,7 +357,7 @@
                             const imgEl = document.createElement("img");
                             imgEl.id = "profilePhotoPreview";
                             imgEl.alt = "Profile photo";
-                            imgEl.src = newUrl;
+                            imgEl.src = displayUrl;
                             container.innerHTML = "";
                             container.appendChild(imgEl);
                         }
@@ -366,7 +367,7 @@
                     }
 
                     if (avatarImg) {
-                        avatarImg.src = newUrl;
+                        avatarImg.src = displayUrl;
                         avatarImg.style.display = "block";
                     }
                     if (avatarInitials) {

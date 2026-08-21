@@ -23,6 +23,7 @@ namespace TeamYellow.Controllers
         private readonly DiscountRepository _discountRepository;
         private readonly UserProfileRepository _userProfileRepository;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<ManagerController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagerController"/> class.
@@ -39,7 +40,8 @@ namespace TeamYellow.Controllers
             IPlanService planService,
             DiscountRepository discountRepository,
             UserProfileRepository userProfileRepository,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            ILogger<ManagerController> logger)
         {
             _counsellorRepository = counsellorRepository;
             _planRepository = planRepository;
@@ -47,45 +49,62 @@ namespace TeamYellow.Controllers
             _discountRepository = discountRepository;
             _userProfileRepository = userProfileRepository;
             _userManager = userManager;
+
+            _logger = logger;
         }
 
         /// <summary>
         /// Populates manager profile display data used by the shared dashboard layout.
         /// </summary>
-        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user != null)
-            {
-                var (profile, counsellorDisplayName) = await _userProfileRepository.GetByUserIdAsync(user.Id);
-
-                if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
-                {
-                    ViewData["UserProfilePicture"] = profile.ProfilePhotoUrl;
-                }
-
-                var displayName = !string.IsNullOrWhiteSpace(counsellorDisplayName)
-                    ? counsellorDisplayName.Trim()
-                    : string.Join(" ", new[] { profile?.FirstName, profile?.LastName }
-                        .Where(value => !string.IsNullOrWhiteSpace(value)))
-                        .Trim();
-
-                if (string.IsNullOrWhiteSpace(displayName))
-                {
-                    displayName = await _userManager.GetUserNameAsync(user) ?? user.Email;
-                }
-
-                if (!string.IsNullOrWhiteSpace(displayName))
-                {
-                    ViewData["DisplayName"] = displayName;
-                }
-            }
-
-            await next();
-        }
+ 
 
         /// <summary>
+        public override async Task OnActionExecutionAsync(
+    ActionExecutingContext context,
+    ActionExecutionDelegate next)
+{
+    var user = await _userManager.GetUserAsync(User);
+
+    if (user != null)
+    {
+        var (profile, counsellorDisplayName) =
+            await _userProfileRepository.GetByUserIdAsync(user.Id);
+
+        if (!string.IsNullOrWhiteSpace(profile?.ProfilePhotoUrl))
+        {
+            ViewData["UserProfilePicture"] =
+                profile.ProfilePhotoUrl;
+        }
+
+        var displayName =
+            !string.IsNullOrWhiteSpace(counsellorDisplayName)
+                ? counsellorDisplayName.Trim()
+                : string.Join(
+                    " ",
+                    new[]
+                    {
+                        profile?.FirstName,
+                        profile?.LastName
+                    }
+                    .Where(value =>
+                        !string.IsNullOrWhiteSpace(value)))
+                .Trim();
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            displayName =
+                await _userManager.GetUserNameAsync(user)
+                ?? user.Email;
+        }
+
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            ViewData["DisplayName"] = displayName;
+        }
+    }
+
+    await next();
+}
         /// Displays the manager dashboard with counsellor payment transactions and summary statistics.
         /// </summary>
         /// <param name="searchEmail">An optional email filter for transaction records.</param>

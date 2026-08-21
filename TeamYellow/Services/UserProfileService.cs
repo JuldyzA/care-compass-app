@@ -65,7 +65,29 @@ public class UserProfileService
             return null;
         }
 
-        UserProfileVM vm = UserHelper.MapToVM(profile, user.Identity?.Name, counsellorDisplayName);
+        UserProfileVM vm = UserHelper.MapToVM(
+    profile,
+    user.Identity?.Name,
+    counsellorDisplayName
+);
+
+if (!string.IsNullOrWhiteSpace(profile.ProfilePhotoUrl))
+{
+    if (profile.ProfilePhotoUrl.Contains(
+        "blob.core.windows.net",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        vm.ProfilePhotoUrl = await _blobStorageService.GetReadUrlAsync(
+            profile.ProfilePhotoUrl,
+            TimeSpan.FromHours(1)
+        );
+    }
+    else
+    {
+        // Existing external profile photo
+        vm.ProfilePhotoUrl = profile.ProfilePhotoUrl;
+    }
+}
 
         return vm;
     }

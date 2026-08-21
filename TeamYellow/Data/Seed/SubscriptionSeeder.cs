@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TeamYellow.Models;
 
 namespace TeamYellow.Data.Seed;
@@ -38,9 +38,12 @@ public class SubscriptionSeeder : IDataSeeder
         var counsellor4 = await _db.Counsellors
             .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellor4@test.ca");
+        var counsellorDemo = await _db.Counsellors
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.User != null && c.User.Email == "counsellordemo@test.ca");
 
         // Exit if any counsellor is not found
-        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null)
+        if (counsellor1 == null || counsellor2 == null || counsellor3 == null || counsellor4 == null || counsellorDemo == null)
         {
             Console.WriteLine("One or more counsellors not found for Subscription seeding.");
             return;
@@ -64,6 +67,15 @@ public class SubscriptionSeeder : IDataSeeder
             {
                 PlanId = yearlyPlan.PlanId,
                 CounsellorId = counsellor2.CounsellorId,
+                Status = SubscriptionStatus.Active,
+                CycleStart = now,
+                CycleEnd = now.AddYears(1),
+                UpdatedAt = now
+            },
+            new Subscription
+            {
+                PlanId = yearlyPlan.PlanId,
+                CounsellorId = counsellorDemo.CounsellorId,
                 Status = SubscriptionStatus.Active,
                 CycleStart = now,
                 CycleEnd = now.AddYears(1),
