@@ -21,4 +21,10 @@ public class SeedConfiguration
     /// </summary>
     public string DefaultPassword =>
         _configuration["Seed:DefaultPassword"] ?? throw new InvalidOperationException("Seed password not configured");
+
+    /// <summary>
+    /// Gets the password for the demo counsellor account.
+    /// </summary>
+    public string DemoPassword =>
+        _configuration["Seed:DemoPassword"] ?? throw new InvalidOperationException("Seed demo password not configured");
 }
