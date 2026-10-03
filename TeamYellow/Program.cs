@@ -25,7 +25,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     }
     else
     {
-        options.UseSqlite(connectionString);
+        options.UseSqlite(connectionString, sqlOptions = >
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToLoad: new[]{40613}
+            );
+        }
+        else{
+            options.UseSqlite(connectionString);
+        }
+        );
     }
 });
 
