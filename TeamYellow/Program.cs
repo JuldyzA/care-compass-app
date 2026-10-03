@@ -21,22 +21,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     if (useSqlServer)
     {
-        options.UseSqlServer(connectionString);
-    }
-    else
-    {
-        options.UseSqlite(connectionString, sqlOptions = >
+        options.UseSqlServer(connectionString, sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToLoad: new[]{40613}
+                errorNumbersToAdd: new[] { 40613 }
             );
-        }
-        else{
-            options.UseSqlite(connectionString);
-        }
-        );
+        });
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
     }
 });
 
