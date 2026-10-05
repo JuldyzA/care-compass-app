@@ -31,13 +31,16 @@ namespace TeamYellow.Workers
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("SubscriptionExpiryWorker started.");
+            
+            var checkInterval = TimeSpan.FromDays(7);
+             var errorRetryInterval = TimeSpan.FromHours(6);
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
                     await ExpireSubscriptionsAsync(stoppingToken);
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    await Task.Delay( checkInterval, stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -45,8 +48,8 @@ namespace TeamYellow.Workers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during expiry check. Will retry in approximately 1 minute.");
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    _logger.LogError(ex, "Error during expiry check. Will retry in approximately 6 hours.");
+                    await Task.Delay(errorRetryInterval, stoppingToken);
                 }
             }
 
